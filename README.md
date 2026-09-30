@@ -50,7 +50,7 @@ cp .env.example .env
 
 ```env
 ANTHROPIC_API_KEY=your_api_key
-REDIS_PASSWORD=openmed123
+REDIS_PASSWORD=your_redis_password
 ```
 
 ### 3. 启动服务
@@ -152,7 +152,6 @@ mcp/tool_manager.py          工具层、缓存、熔断、精排调用
 mcp/knowledge_base.py        BM25 + 向量混合检索知识库
 monitor/performance_monitor.py 在线监控
 evaluation/evaluator.py      端到端评测（LLM-as-Judge）
-wiki/                        详细文档
 skills/                      动态业务规则
 data/                        持久化数据
 tests/                       pytest 单元测试
@@ -207,12 +206,3 @@ pytest -q
 5. /eval/run
 ```
 
-如果你只想看项目怎么工作，直接读：
-
-- [OpenMed定位与技术亮点](wiki/OpenMed定位与技术亮点.md)
-- [技术亮点](wiki/技术亮点.md)
-- [重点代码](wiki/重点代码.md)
-
-## 一句话概括
-
-OpenMed 是一个可观测、可评测、可降级的多 Agent 医疗问诊分流运行时。
