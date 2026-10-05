@@ -186,6 +186,8 @@ async def lifespan(app: FastAPI):  #lifespan是一个异步事件循环函数，
     await _monitor.stop()       #程训结束，执行yield后面的代码。停止监控。
     if _memory is not None:     #关闭memory，释放redis连接，ChromaDB客户端等。防御性写法，防止初始化失败
         await _memory.close()
+    if _orchestrator is not None:   #停止轨迹写线程，把队列中剩余轨迹落盘（v2 阶段 0.1）
+        _orchestrator.close_trajectory_logger()
     logger.info("OpenMed 已关闭")  #打印日志，应用完全关闭
 
 

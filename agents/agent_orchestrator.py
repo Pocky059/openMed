@@ -42,6 +42,7 @@ from agents.tools import (
 )
 from core.intent_recognizer import IntentCategory, IntentRecognizer, UrgencyLevel
 from core.llm_utils import extract_text_content
+from core.trajectory_logger import TrajectoryLogger, classify_messages, hash_user_id
 
 logger = logging.getLogger(__name__)
 
@@ -121,6 +122,8 @@ class AgentResponse:
     escalate:    bool  = False   # 是否需要升级
     tools_used:  List[str] = field(default_factory=list)
     tool_traces: List[Dict[str, Any]] = field(default_factory=list)
+    messages:    List[Dict[str, Any]] = field(default_factory=list)  # 完整 LLM 消息流（SFT 模具）
+    steps:       List[Dict[str, Any]] = field(default_factory=list)  # 每轮工具调用统计（评测视图）
 
 
 @dataclass
@@ -195,6 +198,8 @@ class BaseAgent:
         self.stats   = AgentStats()
         self._last_tools_used: List[str] = []
         self._last_tool_traces: List[Dict[str, Any]] = []
+        self._last_messages: List[Dict[str, Any]] = []   # 供轨迹落盘：完整 LLM 消息流
+        self._last_steps: List[Dict[str, Any]] = []      # 供轨迹落盘：每轮工具调用统计
         self._shared_tools: Dict[str, AgentToolSpec] = {}
 
     def get_tools(self) -> Dict[str, AgentToolSpec]:
@@ -209,6 +214,8 @@ class BaseAgent:
         t0 = time.monotonic()
         self._last_tools_used = []
         self._last_tool_traces = []
+        self._last_messages = []
+        self._last_steps = []
         try:
             content = await self._call_llm(req)
             ms = (time.monotonic() - t0) * 1000
@@ -226,6 +233,8 @@ class BaseAgent:
                 escalate=escalate,
                 tools_used=list(self._last_tools_used),
                 tool_traces=list(self._last_tool_traces),
+                messages=list(self._last_messages),
+                steps=list(self._last_steps),
             )
         except Exception as ex:
             ms = (time.monotonic() - t0) * 1000
@@ -238,6 +247,8 @@ class BaseAgent:
                 success=False,
                 latency_ms=ms,
                 tool_traces=list(self._last_tool_traces),
+                messages=list(self._last_messages),
+                steps=list(self._last_steps),
             )
 
     #实际上真正干活的，负责调用llm和处理工具调用的循环
@@ -266,11 +277,12 @@ class BaseAgent:
         tools = self.get_tools()
         tools_used: List[str] = []
         tool_traces: List[Dict[str, Any]] = []
+        steps: List[Dict[str, Any]] = []   # 每轮的轻量统计（轨迹评测视图），与 tool_traces 同源
 
 
         #跟LLM对话，直到LLM不再要求调用工具，返回最终文本。最大轮次：三轮。
         #实际上就是ReAct循环
-        for _ in range(3):
+        for round_idx in range(3):
             request_kwargs: Dict[str, Any] = {
                 "model": self._model,
                 "max_tokens": self.profile.max_tokens,
@@ -288,15 +300,29 @@ class BaseAgent:
                     for spec in tools.values()
                 ]
 
-            #resp：llm模型返回的结构化输出
+            #resp：llm模型返回的结构化输出；计时即本轮"思考+决策"耗时
+            llm_t0 = time.monotonic()
             resp = await self._client.messages.create(**request_kwargs)
+            llm_latency_ms = (time.monotonic() - llm_t0) * 1000
             tool_uses = [block for block in (resp.content or []) if self._block_type(block) == "tool_use"]
             if not tool_uses:  #如果输出中不包含任何工具调用
                 self._last_tools_used = tools_used
+                self._last_messages = messages
+                self._last_steps = steps
                 return extract_text_content(resp.content)
 
             #因此把本轮LLM的回复（包括要求调用工具的信息）先加到messages里
             messages.append({"role": "assistant", "content": resp.content})
+
+            #本轮 step 记录（评测视图）：阶段 1 评测器按它算检索步数/多跳成功率，
+            #不用重新解析 messages 里的消息流
+            step: Dict[str, Any] = {
+                "step_id": round_idx + 1,
+                "agent_type": self.agent_type.value,
+                "llm_latency_ms": round(llm_latency_ms, 1),
+                "tool_calls": [],
+                "tool_results": [],
+            }
 
             tool_results = []
             for block in tool_uses:
@@ -350,6 +376,15 @@ class BaseAgent:
                     }
                 )
 
+                #同一条工具调用同时记入本轮 step（评测视图），字段与 trace 保持同源
+                step["tool_calls"].append(
+                    {"tool_name": name, "args": dict(args), "tool_use_id": tool_use_id}
+                )
+                step["tool_results"].append(
+                    {key: tool_traces[-1][key] for key in
+                     ("tool_name", "success", "result_success", "latency_ms", "cached", "reranked", "error")}
+                )
+
                 #把工具结果加入tool_results
                 tool_results.append({
                     "type": "tool_result",
@@ -357,12 +392,16 @@ class BaseAgent:
                     "content": json.dumps(result, ensure_ascii=False),
                 })
 
+            steps.append(step)
             #tool_results加入messages
             messages.append({"role": "user", "content": tool_results})
         #第n次循环结束，这里最多调用3次
 
         self._last_tools_used = tools_used
         self._last_tool_traces = tool_traces
+        self._last_messages = messages
+        self._last_steps = steps
+        #超轮数轨迹同样落盘：阶段 2 的失败 case 正是训练数据的来源
         raise RuntimeError(f"{self.agent_type.value} 工具调用超过最大轮数")
 
     #兼容Anthropic字典、对象两种不同返回方式的调用
@@ -707,6 +746,7 @@ class AgentOrchestrator:
         model:    str = "claude-3-5-sonnet-20241022",
         skill_manager: Optional[Any] = None,
         rag_tool_manager: Optional[Any] = None,
+        trajectory_logger: Optional[TrajectoryLogger] = None,
     ):
         kwargs: Dict[str, Any] = {"api_key": api_key}
         if base_url:
@@ -718,6 +758,13 @@ class AgentOrchestrator:
         self._composer = ResponseComposer(client, model, skill_manager)
         self._shared_tools: Dict[str, AgentToolSpec] = {}
         self._recent_tool_traces = deque(maxlen=_env_int("OPENMED_TOOL_TRACE_MAX", 200))
+
+        # 轨迹落盘器（v2 阶段 0.1）：环境变量控制目录与开关；本地文件、user_id 已哈希化，
+        # 默认开启。测试可注入自定义实例（如 enabled=False）。
+        self._trajectory_logger = trajectory_logger or TrajectoryLogger(
+            log_dir=os.getenv("OPENMED_TRAJECTORY_DIR", "data/trajectories"),
+            enabled=os.getenv("OPENMED_TRAJECTORY_LOGGING", "1").strip().lower() not in ("0", "false", "off"),
+        )
 
         # Agent 池：每种类型可有多个实例（水平扩展）
         self._pool: Dict[AgentType, List[BaseAgent]] = {
@@ -794,6 +841,61 @@ class AgentOrchestrator:
         limit = max(1, min(int(limit or 20), len(self._recent_tool_traces)))
         return list(reversed(list(self._recent_tool_traces)[-limit:]))
 
+    # ── 轨迹落盘（v2 阶段 0.1）────────────────────────────────────────────────
+
+    @staticmethod
+    def _build_trajectory_messages(responses: List[AgentResponse]) -> List[Dict[str, Any]]:
+        """把各 Agent 的消息流打上 kind 标记，拼成轨迹的 messages 视图（SFT 模具）。
+
+        并行请求时多个 Agent 各有一段消息流，按执行顺序拼接；每条消息都带
+        agent_type 标签，阶段 2 构造训练数据时可按 Agent 过滤。
+        """
+        messages: List[Dict[str, Any]] = []
+        for response in responses:
+            messages.extend(classify_messages(response.messages, response.agent_type.value))
+        return messages
+
+    def _log_trajectory(
+        self,
+        req: Request,
+        result: OrchestratorResult,
+        responses: List[AgentResponse],
+        phase: str = "normal",
+    ) -> None:
+        """组装一次请求的完整轨迹（meta + messages + steps）并交给后台线程落盘。
+
+        轨迹采集是尽力而为的旁路：任何异常只告警，绝不影响在线响应。
+        """
+        try:
+            record = {
+                "trajectory_id": str(uuid.uuid4()),
+                "request_id": result.request_id,
+                "timestamp": datetime.now().isoformat(),
+                "meta": {
+                    "user_id_hash": hash_user_id(req.user_id),
+                    "conv_id": req.conv_id,
+                    "intent": result.intent.value if result.intent else None,
+                    "urgency": req.urgency.name if req.urgency else None,
+                    "agent_types": [agent.value for agent in result.agent_types],
+                    "primary_agent": result.primary_agent.value if result.primary_agent else None,
+                    "routing_reason": result.routing_reason,
+                    "routing_confidence": result.routing_confidence,
+                    "escalated": result.escalated,
+                    "success": all(response.success for response in responses) if responses else True,
+                    "latency_ms": round(result.latency_ms, 1),
+                    "phase": phase,   # normal=单Agent / parallel=并行 / clarification=澄清追问
+                },
+                "messages": self._build_trajectory_messages(responses),
+                "steps": [step for response in responses for step in response.steps],
+            }
+            self._trajectory_logger.record(record)
+        except Exception as ex:
+            logger.warning("轨迹组装/落盘失败: %s", ex)
+
+    def close_trajectory_logger(self) -> None:
+        """服务关闭时优雅停止轨迹写线程（lifespan 收尾阶段调用）。"""
+        self._trajectory_logger.close()
+
     # ── 主入口 ────────────────────────────────────────────────────────────────
 
     async def run(self, req: Request) -> OrchestratorResult:
@@ -825,6 +927,7 @@ class AgentOrchestrator:
                 routing_confidence=req.intent_confidence,
             )
             self._record_tool_trace(result)
+            self._log_trajectory(req, result, [], phase="clarification")
             return result
 
         #2. 复杂问题自动并行协作，例如同一句同时涉及症状咨询和用药相互作用。
@@ -862,6 +965,7 @@ class AgentOrchestrator:
             routing_confidence=decision.confidence,
         )
         self._record_tool_trace(result)
+        self._log_trajectory(req, result, [response])
         return result
 
     async def run_parallel(self, req: Request, decision: RoutingDecision) -> OrchestratorResult:
@@ -906,6 +1010,7 @@ class AgentOrchestrator:
             routing_confidence=decision.confidence,
         )
         self._record_tool_trace(result)
+        self._log_trajectory(req, result, valid_responses, phase="parallel")
         return result
 
     # ── 路由逻辑 ──────────────────────────────────────────────────────────────
