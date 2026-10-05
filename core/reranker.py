@@ -11,9 +11,20 @@ Cross-Encoder 把 query 和文档拼在一起送入模型联合编码，能建�
 优雅降级为基于 jieba 分词的词重叠打分，保证检索链路不因为精排模块故障而中断。
 """
 import logging
+import os
+import threading
 from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
+
+# huggingface_hub 在 import 时读取该环境变量（值固定到常量），所以尽量早设置：
+# 给下载的"死连接"加 30s 读超时。注意这只防连接卡死，不防"慢但活着"的下载，
+# 慢下载由 _ensure_model 的墙钟超时兜底。
+os.environ.setdefault("HF_HUB_DOWNLOAD_TIMEOUT", "30")
+
+# 首次加载 Cross-Encoder 模型（含从 HuggingFace 下载 ~1.1GB）的墙钟超时（秒）。
+# 可用环境变量覆盖。超时后本次请求降级为词重叠精排，下载在后台线程继续。
+_LOAD_TIMEOUT_S = float(os.getenv("OPENMED_RERANKER_LOAD_TIMEOUT", "120"))
 
 try:
     import jieba
@@ -33,16 +44,52 @@ class CrossEncoderReranker:
         self._model_name = model_name
         self._model: Any = None
         self._load_failed = False
+        self._bg_box: List[Any] = []   # 后台加载线程完成后把模型放进这里，等待接管
 
     def _ensure_model(self) -> bool:
-        """懒加载 Cross-Encoder 模型；只尝试加载一次，失败后不再重复尝试。"""
+        """
+        懒加载 Cross-Encoder 模型；只尝试加载一次，失败后不再重复尝试。
+
+        模型首次使用会从 HuggingFace 下载（~1.1GB），网络慢时可能耗时很久。
+        因此加载放在后台线程，主线程最多等 _LOAD_TIMEOUT_S 秒：
+          - 超时：本次调用降级为词重叠精排；下载线程继续跑，
+            完成后 _bg_box 被填充，后续调用自动接管、恢复正常精排
+          - 加载异常：同样降级（词重叠），且不再重试
+        """
         if self._model is not None:
+            return True
+        # 上次超时的后台下载完成了，接管模型并解除降级
+        if self._bg_box:
+            self._model = self._bg_box[0]
+            self._bg_box = []
+            self._load_failed = False
+            logger.info(f"Cross-Encoder 精排模型已加载（后台下载完成）: {self._model_name}")
             return True
         if self._load_failed:
             return False
         try:
             from sentence_transformers import CrossEncoder
-            self._model = CrossEncoder(self._model_name)
+
+            def _load() -> None:
+                try:
+                    self._bg_box.append(CrossEncoder(self._model_name))
+                except Exception as ex:
+                    logger.warning(f"Cross-Encoder 后台加载失败，持续使用词重叠精排: {ex}")
+
+            thread = threading.Thread(target=_load, daemon=True, name="reranker-model-loader")
+            thread.start()
+            thread.join(timeout=_LOAD_TIMEOUT_S)
+
+            if not self._bg_box:
+                # 超时或加载失败：本次降级。下载若仍在后台进行，完成后会被上面的分支接管
+                self._load_failed = True
+                logger.warning(
+                    f"Cross-Encoder 模型加载超过 {_LOAD_TIMEOUT_S:.0f}s，本次降级为词重叠精排；"
+                    f"模型将在后台继续下载，完成后自动恢复精排"
+                )
+                return False
+            self._model = self._bg_box[0]
+            self._bg_box = []
             logger.info(f"Cross-Encoder 精排模型已加载: {self._model_name}")
             return True
         except Exception as ex:

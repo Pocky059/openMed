@@ -89,6 +89,9 @@ services:
       - ./data/eval:/app/data/eval
       - ./skills:/app/skills
       - ./logs:/app/logs
+      # HuggingFace 模型缓存持久化：bge-reranker-base ~1.1GB，
+      # 不挂载的话每次重建容器都要重新下载
+      - ./data/huggingface:/home/openmed/.cache/huggingface
     depends_on:
       redis:
         condition: service_healthy

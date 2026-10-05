@@ -207,12 +207,14 @@ class BaseAgent:
     #agent执行入口，负责记录开始、结束时间，调用call_llm，包装成AgentResponse返回
     async def handle(self, req: Request) -> AgentResponse:
         t0 = time.monotonic()
-        self.stats.total += 1
         self._last_tools_used = []
         self._last_tool_traces = []
         try:
             content = await self._call_llm(req)
             ms = (time.monotonic() - t0) * 1000
+            # 统计在请求完成时才更新：in-flight 请求不算失败，
+            # 否则长时间运行的请求会被 Monitor 误判为成功率下降
+            self.stats.total += 1
             self.stats.success += 1
             self.stats.total_ms += ms
             escalate = self._needs_escalation(content)
@@ -227,6 +229,7 @@ class BaseAgent:
             )
         except Exception as ex:
             ms = (time.monotonic() - t0) * 1000
+            self.stats.total += 1
             self.stats.total_ms += ms
             logger.error(f"{self.agent_type.value} 处理失败: {ex}")
             return AgentResponse(
@@ -571,7 +574,6 @@ class EmergencyAgent(BaseAgent):
 
     async def handle(self, req: Request) -> AgentResponse:
         t0 = time.monotonic()
-        self.stats.total += 1
         intent = req.intent.value if req.intent else "unknown"
         urgency = req.urgency.name if req.urgency else "UNKNOWN"
         entities = req.entities or {}
@@ -583,6 +585,7 @@ class EmergencyAgent(BaseAgent):
             "其他情况人工客服会根据会话记录尽快跟进，请不要发送身份证号、支付密码等敏感信息。"
         )
         ms = (time.monotonic() - t0) * 1000
+        self.stats.total += 1
         self.stats.success += 1
         self.stats.total_ms += ms
 

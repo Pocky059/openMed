@@ -111,11 +111,13 @@ class PerformanceMonitor:
     """
 
     # 告警阈值
+    # agent_avg_ms 按 LLM 多步流水线的现实量级设定：意图识别 + 工具调用 + 生成，
+    # 单次 6~15s 属于正常范围，3000ms 会把每次正常调用都打成告警
     THRESHOLDS = {
         "agent_success_rate":  (0.90, Severity.ERROR,   "less_than"),
         "tool_success_rate":   (0.95, Severity.WARNING,  "less_than"),
-        "agent_avg_ms":        (3000, Severity.WARNING,  "greater_than"),
-        "tool_avg_ms":         (5000, Severity.ERROR,    "greater_than"),
+        "agent_avg_ms":        (15000, Severity.WARNING, "greater_than"),
+        "tool_avg_ms":         (8000, Severity.ERROR,    "greater_than"),
     }
 
     def __init__(
@@ -246,8 +248,9 @@ class PerformanceMonitor:
         penalty = 0.0
         if success_rate < 0.90:
             penalty += min(0.5, (0.90 - success_rate) * 2)
-        if avg_ms > 3000:
-            penalty += min(0.4, (avg_ms - 3000) / 10000)
+        # 延迟惩罚的起点与 agent_avg_ms 告警阈值对齐（LLM 流水线正常单次要 6~15s）
+        if avg_ms > 15000:
+            penalty += min(0.4, (avg_ms - 15000) / 30000)
         return min(penalty, 0.9)
 
     def _check_threshold(self, metric: str, value: float, label: str) -> None:
@@ -256,10 +259,15 @@ class PerformanceMonitor:
         threshold, severity, operator = self.THRESHOLDS[metric]
         triggered = (operator == "less_than" and value < threshold) or \
                     (operator == "greater_than" and value > threshold)
+        alert_key = f"{metric}:{label}"
         if triggered:
+            # 去重：同一指标同一对象的告警在恢复前只记录一次，
+            # 否则每 10s 的采集循环会不断追加重复告警、刷屏日志
+            if any(not a.resolved and a.metric == alert_key for a in self._alerts):
+                return
             alert = Alert(
                 severity=severity,
-                metric=f"{metric}:{label}",
+                metric=alert_key,
                 message=f"{label} 的 {metric} = {value:.3f}，阈值 {threshold}",
                 value=value,
                 threshold=threshold,
@@ -269,6 +277,12 @@ class PerformanceMonitor:
             # 异步发送 Webhook（不阻塞采集循环）
             if self._webhook:
                 asyncio.create_task(self._send_webhook(alert))
+        else:
+            # 指标恢复正常：把对应告警标记为已恢复
+            for a in self._alerts:
+                if not a.resolved and a.metric == alert_key:
+                    a.resolved = True
+                    logger.info(f"告警已恢复: {a.metric}")
 
     def _generate_routing_suggestions(self, agent_stats: Dict[str, Any]) -> None:
         """

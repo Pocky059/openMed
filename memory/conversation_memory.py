@@ -189,9 +189,17 @@ class MemoryManager:
                 model=self._model, max_tokens=512, temperature=0.0,
                 messages=[{"role": "user", "content": prompt}],
             )
-            raw = extract_text_content(resp.content)
-            s, e = raw.find("{"), raw.rfind("}") + 1
-            profile_data = json.loads(raw[s:e])
+            raw = (extract_text_content(resp.content) or "").strip()
+            # LLM 可能返回空内容或无花括号的文本（如限流/异常响应），此时跳过本次更新，
+            # 而不是让 json.loads("") 抛 "Expecting value" 异常
+            s, e = raw.find("{"), raw.rfind("}")
+            if not raw or s < 0 or e <= s:
+                logger.warning(f"画像提炼返回内容不含 JSON，跳过本次更新: {raw[:80]!r}")
+                return
+            profile_data = json.loads(raw[s:e + 1])
+            if not isinstance(profile_data, dict):
+                logger.warning(f"画像提炼返回内容不是 JSON 对象，跳过本次更新: {raw[:80]!r}")
+                return
 
             doc_id = self._profile_doc_id(user_id)
             doc_text = self._safe_text(json.dumps(profile_data, ensure_ascii=False))
@@ -325,7 +333,12 @@ class MemoryManager:
             results = await self._query_episodic(
                 query_text,
                 n_results=self.HISTORY_TOP_K,
-                where={"user_id": self._safe_text(user_id), "conv_id": self._safe_text(conv_id)},
+                # chromadb 0.5.x 起多条件过滤必须用 $and 数组，多键字典会报
+                # "Expected where to have exactly one operator"
+                where={"$and": [
+                    {"user_id": self._safe_text(user_id)},
+                    {"conv_id": self._safe_text(conv_id)},
+                ]},
             )
             docs = self._extract_docs(results)
             if len(docs) < self.HISTORY_TOP_K:
