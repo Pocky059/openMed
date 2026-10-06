@@ -3,6 +3,7 @@
 data/chroma
 data/huggingface
 data/trajectories
+logs/
 __pycache__/
 *.pyc
 .venv/

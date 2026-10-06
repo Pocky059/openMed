@@ -81,6 +81,11 @@ services:
     environment:
       # 容器内固定值，覆盖 .env 中的本地路径
       - REDIS_URL=redis://:${REDIS_PASSWORD:-openmed123}@redis:6379/0
+      # .env 的 CHROMA_HOST=localhost / CHROMA_PORT=8001 是本地开发用的；容器里必须
+      # 指向服务名 chromadb 的 8000 端口，否则会连不上独立向量库服务、静默降级为
+      # 嵌入式模式（compose 里的 chromadb 服务就白跑了）
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
       - CHROMA_PERSIST_DIRECTORY=/app/data/chroma
       - EVAL_BASELINE_PATH=/app/data/eval/baseline.json
       - OPENMED_SKILLS_DIR=/app/skills
@@ -92,6 +97,9 @@ services:
       # HuggingFace 模型缓存持久化：bge-reranker-base ~1.1GB，
       # 不挂载的话每次重建容器都要重新下载
       - ./data/huggingface:/home/openmed/.cache/huggingface
+      # 轨迹日志持久化（v2 阶段 0.1 TrajectoryLogger 的输出，后续 SFT 训练数据）
+      # 不挂载的话每次重建容器都会丢失已采集的轨迹
+      - ./data/trajectories:/app/data/trajectories
     depends_on:
       redis:
         condition: service_healthy
