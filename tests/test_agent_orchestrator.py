@@ -54,7 +54,7 @@ def test_agent_profiles_have_distinct_contracts_and_generation_config():
     assert MedicationAgent.profile.workflow != AppointmentAgent.profile.workflow
     assert MedicationAgent.profile.temperature < SymptomTriageAgent.profile.temperature
     assert "search_knowledge_base" in SymptomTriageAgent.profile.tool_scope
-    assert "lookup_drug_info" in MedicationAgent.profile.tool_scope
+    assert "build_medication_plan" in MedicationAgent.profile.tool_scope
     assert "check_appointment_fields" in AppointmentAgent.profile.tool_scope
 
 
@@ -133,7 +133,7 @@ def test_agent_tool_scopes_are_real_and_isolated():
     emergency_tools = set(EmergencyAgent(FakeClient(), "test-model").get_tools())
 
     assert symptom_tools == {"inspect_request_context", "suggest_required_fields"}
-    assert medication_tools == {"lookup_drug_info", "build_medication_plan"}
+    assert medication_tools == {"build_medication_plan"}
     assert appointment_tools == {"check_appointment_fields", "compare_registration_fees"}
     assert emergency_tools == {"create_handoff_summary"}
     assert not symptom_tools & medication_tools
@@ -164,10 +164,10 @@ def test_shared_rag_tool_is_available_to_all_agents():
 
 def test_tool_input_validation_rejects_unknown_fields():
     agent = MedicationAgent(FakeClient(), "test-model")
-    spec = agent.get_tools()["lookup_drug_info"]
+    spec = agent.get_tools()["build_medication_plan"]
 
     try:
-        agent._validate_tool_input(spec, {"drug_name": "布洛芬", "secret": "nope"})
+        agent._validate_tool_input(spec, {"current_medications": "华法林", "has_allergy": False, "secret": "nope"})
     except ValueError as exc:
         assert "不允许的工具参数" in str(exc)
     else:
@@ -178,12 +178,12 @@ def test_tool_use_round_trip_executes_only_whitelisted_tool():
     class ToolUseBlock:
         type = "tool_use"
         id = "toolu_1"
-        name = "lookup_drug_info"
-        input = {"drug_name": "布洛芬"}
+        name = "build_medication_plan"
+        input = {"current_medications": "华法林", "has_allergy": False}
 
     class TextBlock:
         type = "text"
-        text = "已根据布洛芬的说明信息给出用药提示。"
+        text = "已根据现用药清单生成用药核查步骤。"
 
     class ToolClient:
         def __init__(self):
@@ -210,10 +210,9 @@ def test_tool_use_round_trip_executes_only_whitelisted_tool():
     response = asyncio.run(agent.handle(make_request()))
 
     assert response.success is True
-    assert response.tools_used == ["lookup_drug_info"]
+    assert response.tools_used == ["build_medication_plan"]
     assert len(client.calls) == 2
     assert {tool["name"] for tool in client.calls[0]["tools"]} == {
-        "lookup_drug_info",
         "build_medication_plan",
     }
     assert "tool_result" in str(client.calls[1]["messages"])

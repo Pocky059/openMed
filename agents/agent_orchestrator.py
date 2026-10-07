@@ -41,7 +41,7 @@ from agents.tools import (
     symptom_triage_tools,
 )
 from core.intent_recognizer import IntentCategory, IntentRecognizer, UrgencyLevel
-from core.llm_utils import extract_text_content
+from core.llm_utils import create_llm_client, extract_text_content
 from core.trajectory_logger import TrajectoryLogger, classify_messages, hash_user_id
 
 logger = logging.getLogger(__name__)
@@ -372,6 +372,7 @@ class BaseAgent:
                         "latency_ms": round(tool_latency_ms, 1),
                         "cached": bool(result.get("cached")) if isinstance(result, dict) else False,
                         "reranked": bool(result.get("reranked")) if isinstance(result, dict) else False,
+                        "rerank_degraded": bool(result.get("rerank_degraded")) if isinstance(result, dict) else False,
                         "error": error_text,
                     }
                 )
@@ -382,7 +383,7 @@ class BaseAgent:
                 )
                 step["tool_results"].append(
                     {key: tool_traces[-1][key] for key in
-                     ("tool_name", "success", "result_success", "latency_ms", "cached", "reranked", "error")}
+                     ("tool_name", "success", "result_success", "latency_ms", "cached", "reranked", "rerank_degraded", "error")}
                 )
 
                 #把工具结果加入tool_results
@@ -514,7 +515,7 @@ class MedicationAgent(BaseAgent):
         input_contract=("药品名称", "现用药清单", "过敏史", "症状与用药时间", "知识库上下文"),
         output_contract=("现象复述", "可核验的用药信息", "编号说明步骤", "需要核实的信息", "免责与就医建议"),
         handoff_conditions=("怀疑严重药物不良反应或过敏反应", "涉及处方药调整或停药决策", "孕妇/儿童/慢性病患者特殊用药场景"),
-        tool_scope=("search_knowledge_base", "lookup_drug_info", "build_medication_plan"),
+        tool_scope=("search_knowledge_base", "build_medication_plan"),
         temperature=0.1,
         max_tokens=1200,
     )
@@ -748,10 +749,9 @@ class AgentOrchestrator:
         rag_tool_manager: Optional[Any] = None,
         trajectory_logger: Optional[TrajectoryLogger] = None,
     ):
-        kwargs: Dict[str, Any] = {"api_key": api_key}
-        if base_url:
-            kwargs["base_url"] = base_url
-        client = AsyncAnthropic(**kwargs)
+        #双协议客户端（v2 阶段 0.5）：按 OPENMED_LLM_PROTOCOL 切换 Anthropic/OpenAI 协议，
+        #两种客户端都有 messages.create，下游 Agent/Composer 无感知
+        client = create_llm_client(api_key=api_key, base_url=base_url)
 
         self._intent_recognizer = IntentRecognizer(api_key=api_key, base_url=base_url, model=model)
         self._skill_manager = skill_manager

@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Optional
 
 from anthropic import AsyncAnthropic
 
-from core.llm_utils import extract_text_content
+from core.llm_utils import create_llm_client, extract_text_content
 
 from core.intent_recognizer import IntentCategory, IntentRecognizer
 
@@ -253,10 +253,8 @@ class EndToEndEvaluator:
         model:    str = "claude-3-5-sonnet-20241022",
         baseline_path: Optional[str] = None,
     ):
-        kwargs: Dict[str, Any] = {"api_key": api_key}
-        if base_url:
-            kwargs["base_url"] = base_url
-        client = AsyncAnthropic(**kwargs)
+        #双协议客户端（v2 阶段 0.5）：评测器可用 OPENMED_LLM_PROTOCOL=openai 指向 vLLM
+        client = create_llm_client(api_key=api_key, base_url=base_url)
 
         self._orchestrator     = orchestrator
         self._judge            = LLMJudge(client, model)

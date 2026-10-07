@@ -1,0 +1,3057 @@
+[
+  {
+    "id": "DDI-001",
+    "drug_a": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令",
+        "苄丙酮香豆素"
+      ]
+    },
+    "drug_b": {
+      "name": "阿司匹林",
+      "type": "西药",
+      "aliases": [
+        "aspirin",
+        "乙酰水杨酸",
+        "拜阿司匹林"
+      ]
+    },
+    "mechanism": "阿司匹林抑制血小板聚集并损伤胃黏膜，与华法林抗凝作用叠加，显著增加出血风险",
+    "severity": "major",
+    "advice": "避免常规联用；确需抗血小板+抗凝时须在医生指导下严格监测 INR 与出血征象",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-002",
+    "drug_a": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "drug_b": {
+      "name": "非甾体抗炎药",
+      "type": "西药",
+      "aliases": [
+        "NSAIDs",
+        "布洛芬",
+        "双氯芬酸",
+        "萘普生",
+        "吲哚美辛",
+        "塞来昔布",
+        "ibuprofen",
+        "diclofenac"
+      ]
+    },
+    "mechanism": "NSAIDs 抑制血小板功能、损伤胃黏膜，同时部分药物竞争血浆蛋白或抑制华法林代谢，出血风险叠加",
+    "severity": "major",
+    "advice": "避免联用；疼痛处理可短期用对乙酰氨基酚替代，须监测 INR 与消化道出血征象",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-003",
+    "drug_a": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "drug_b": {
+      "name": "胺碘酮",
+      "type": "西药",
+      "aliases": [
+        "amiodarone",
+        "可达龙"
+      ]
+    },
+    "mechanism": "胺碘酮抑制 CYP2C9，减慢华法林代谢，使 INR 显著升高、出血风险增加",
+    "severity": "major",
+    "advice": "联用时华法林常需减量 30-50%，起始 2 周内频繁监测 INR 并调整剂量",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-004",
+    "drug_a": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "drug_b": {
+      "name": "甲硝唑",
+      "type": "西药",
+      "aliases": [
+        "metronidazole",
+        "灭滴灵"
+      ]
+    },
+    "mechanism": "甲硝唑抑制华法林代谢酶，增强抗凝作用，INR 升高",
+    "severity": "major",
+    "advice": "联用期间加强 INR 监测，通常需下调华法林剂量",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-005",
+    "drug_a": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "drug_b": {
+      "name": "氟康唑",
+      "type": "西药",
+      "aliases": [
+        "fluconazole",
+        "大扶康"
+      ]
+    },
+    "mechanism": "氟康唑抑制 CYP2C9，减慢华法林代谢，INR 升高",
+    "severity": "major",
+    "advice": "联用期间加强 INR 监测，通常需下调华法林剂量",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-006",
+    "drug_a": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "drug_b": {
+      "name": "复方磺胺甲噁唑",
+      "type": "西药",
+      "aliases": [
+        "复方新诺明",
+        "SMZ-TMP",
+        "cotrimoxazole"
+      ]
+    },
+    "mechanism": "磺胺甲噁唑-甲氧苄啶抑制华法林代谢并竞争蛋白结合，抗凝作用显著增强",
+    "severity": "major",
+    "advice": "尽量选择替代抗生素；必须联用时频繁监测 INR",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-007",
+    "drug_a": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "drug_b": {
+      "name": "利福平",
+      "type": "西药",
+      "aliases": [
+        "rifampicin",
+        "rifampin"
+      ]
+    },
+    "mechanism": "利福平诱导肝药酶（CYP2C9/3A4），加速华法林代谢，抗凝作用减弱、血栓风险上升",
+    "severity": "major",
+    "advice": "联用时需增加华法林剂量并监测 INR；停用利福平后及时下调，防止出血",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-008",
+    "drug_a": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "drug_b": {
+      "name": "卡马西平",
+      "type": "西药",
+      "aliases": [
+        "carbamazepine",
+        "得理多"
+      ]
+    },
+    "mechanism": "卡马西平为强肝药酶诱导剂，加速华法林代谢，抗凝不足",
+    "severity": "major",
+    "advice": "联用及停用卡马西平前后均须密切监测 INR 调整剂量",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-009",
+    "drug_a": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "drug_b": {
+      "name": "苯妥英",
+      "type": "西药",
+      "aliases": [
+        "phenytoin",
+        "大仑丁"
+      ]
+    },
+    "mechanism": "苯妥英与华法林相互影响代谢并竞争蛋白结合，作用复杂：初期可能增强、长期诱导减弱抗凝",
+    "severity": "major",
+    "advice": "联用期间必须频繁监测 INR，剂量调整不可自行进行",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-010",
+    "drug_a": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "drug_b": {
+      "name": "左甲状腺素",
+      "type": "西药",
+      "aliases": [
+        "levothyroxine",
+        "优甲乐",
+        "甲状腺素"
+      ]
+    },
+    "mechanism": "甲状腺素促进凝血因子分解代谢，增强华法林抗凝作用",
+    "severity": "moderate",
+    "advice": "起始或调整甲状腺素剂量时监测 INR，必要时下调华法林",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-011",
+    "drug_a": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "drug_b": {
+      "name": "对乙酰氨基酚",
+      "type": "西药",
+      "aliases": [
+        "acetaminophen",
+        "扑热息痛",
+        "泰诺",
+        "paracetamol"
+      ]
+    },
+    "mechanism": "长期大剂量对乙酰氨基酚（一般超过 2g/天持续数天）可抑制维生素 K 循环酶，升高 INR",
+    "severity": "moderate",
+    "advice": "短期小剂量相对安全；长期规律服用者应监测 INR",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-012",
+    "drug_a": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "drug_b": {
+      "name": "广谱抗生素",
+      "type": "西药",
+      "aliases": [
+        "头孢哌酮",
+        "头孢曲松",
+        "阿莫西林",
+        "青霉素类",
+        "头孢类",
+        "cefoperazone"
+      ]
+    },
+    "mechanism": "广谱抗生素抑制肠道菌群，减少维生素 K 内源性合成，增强抗凝作用；含 N-甲基硫四氮唑侧链的头孢类还可直接抑制凝血因子",
+    "severity": "moderate",
+    "advice": "联用期间监测 INR；营养摄入差的患者需特别注意",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-013",
+    "drug_a": {
+      "name": "氯吡格雷",
+      "type": "西药",
+      "aliases": [
+        "clopidogrel",
+        "波立维"
+      ]
+    },
+    "drug_b": {
+      "name": "奥美拉唑",
+      "type": "西药",
+      "aliases": [
+        "omeprazole",
+        "洛赛克"
+      ]
+    },
+    "mechanism": "奥美拉唑抑制 CYP2C19，减少氯吡格雷活性代谢物生成，抗血小板作用减弱",
+    "severity": "major",
+    "advice": "避免联用；需要护胃时换用泮托拉唑或雷贝拉唑等影响较小的 PPI",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+临床指南"
+  },
+  {
+    "id": "DDI-014",
+    "drug_a": {
+      "name": "阿司匹林",
+      "type": "西药",
+      "aliases": [
+        "aspirin",
+        "乙酰水杨酸"
+      ]
+    },
+    "drug_b": {
+      "name": "布洛芬",
+      "type": "西药",
+      "aliases": [
+        "ibuprofen",
+        "芬必得"
+      ]
+    },
+    "mechanism": "布洛芬占据 COX-1 结合位点，阻断阿司匹林的不可逆抗血小板作用",
+    "severity": "moderate",
+    "advice": "需抗血小板作用时，布洛芬应在阿司匹林后至少 2 小时服用，或改用其他 NSAIDs",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-015",
+    "drug_a": {
+      "name": "SSRI 类抗抑郁药",
+      "type": "西药",
+      "aliases": [
+        "舍曲林",
+        "氟西汀",
+        "帕罗西汀",
+        "西酞普兰",
+        "艾司西酞普兰",
+        "sertraline",
+        "fluoxetine",
+        "paroxetine"
+      ]
+    },
+    "drug_b": {
+      "name": "MAOI 类抗抑郁药",
+      "type": "西药",
+      "aliases": [
+        "吗氯贝胺",
+        "苯乙肼",
+        "司来吉兰",
+        "MAOI",
+        "moclobemide"
+      ]
+    },
+    "mechanism": "两类药物均升高突触间隙 5-羟色胺，叠加可致 5-羟色胺综合征（高热、肌强直、意识障碍）",
+    "severity": "major",
+    "advice": "禁止联用；换药须有足够洗脱期（一般 2 周以上，氟西汀更长），由医生指导",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-016",
+    "drug_a": {
+      "name": "SSRI 类抗抑郁药",
+      "type": "西药",
+      "aliases": [
+        "舍曲林",
+        "氟西汀",
+        "帕罗西汀",
+        "西酞普兰",
+        "艾司西酞普兰"
+      ]
+    },
+    "drug_b": {
+      "name": "曲坦类抗偏头痛药",
+      "type": "西药",
+      "aliases": [
+        "舒马曲坦",
+        "佐米曲坦",
+        "利扎曲坦",
+        "sumatriptan"
+      ]
+    },
+    "mechanism": "两类药物均影响 5-羟色胺能系统，理论上可致 5-羟色胺综合征；但大型队列显示联用者明确综合征发生率极低（约 0.6/10,000 人年，PMID 29482205）",
+    "severity": "moderate",
+    "advice": "可在医生评估后联用，告知 5-羟色胺综合征警示症状（躁动、震颤、高热）并监测",
+    "evidence_level": "observational",
+    "source": "综述文献+DrugBank"
+  },
+  {
+    "id": "DDI-017",
+    "drug_a": {
+      "name": "SSRI 类抗抑郁药",
+      "type": "西药",
+      "aliases": [
+        "舍曲林",
+        "氟西汀",
+        "帕罗西汀",
+        "西酞普兰",
+        "艾司西酞普兰"
+      ]
+    },
+    "drug_b": {
+      "name": "曲马多",
+      "type": "西药",
+      "aliases": [
+        "tramadol",
+        "奇曼丁"
+      ]
+    },
+    "mechanism": "曲马多抑制 5-HT 再摄取并降低癫痫阈值，与 SSRI 联用增加 5-羟色胺综合征和惊厥风险",
+    "severity": "major",
+    "advice": "避免联用；必须使用时降低剂量并密切观察",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-018",
+    "drug_a": {
+      "name": "SSRI 类抗抑郁药",
+      "type": "西药",
+      "aliases": [
+        "舍曲林",
+        "氟西汀",
+        "帕罗西汀",
+        "西酞普兰",
+        "艾司西酞普兰"
+      ]
+    },
+    "drug_b": {
+      "name": "利奈唑胺",
+      "type": "西药",
+      "aliases": [
+        "linezolid",
+        "斯沃"
+      ]
+    },
+    "mechanism": "利奈唑胺具有可逆 MAO 抑制作用，与 SSRI 联用可致 5-羟色胺综合征",
+    "severity": "major",
+    "advice": "原则上避免联用；确需联用须住院密切监测神经系统症状",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-019",
+    "drug_a": {
+      "name": "辛伐他汀",
+      "type": "西药",
+      "aliases": [
+        "simvastatin",
+        "舒降之"
+      ]
+    },
+    "drug_b": {
+      "name": "克拉霉素",
+      "type": "西药",
+      "aliases": [
+        "clarithromycin",
+        "甲红霉素"
+      ]
+    },
+    "mechanism": "克拉霉素强效抑制 CYP3A4，使辛伐他汀血药浓度数倍升高，肌病/横纹肌溶解风险大增",
+    "severity": "major",
+    "advice": "避免联用；克拉霉素治疗期间暂停辛伐他汀或换用相互作用小的他汀（如普伐他汀）",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-020",
+    "drug_a": {
+      "name": "辛伐他汀",
+      "type": "西药",
+      "aliases": [
+        "simvastatin",
+        "舒降之"
+      ]
+    },
+    "drug_b": {
+      "name": "胺碘酮",
+      "type": "西药",
+      "aliases": [
+        "amiodarone",
+        "可达龙"
+      ]
+    },
+    "mechanism": "胺碘酮抑制 CYP3A4，升高辛伐他汀浓度，增加肌病风险",
+    "severity": "major",
+    "advice": "辛伐他汀日剂量不宜超过 20mg，或换用普伐他汀/瑞舒伐他汀并监测肌痛、肌酸激酶",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-021",
+    "drug_a": {
+      "name": "辛伐他汀",
+      "type": "西药",
+      "aliases": [
+        "simvastatin",
+        "舒降之"
+      ]
+    },
+    "drug_b": {
+      "name": "维拉帕米",
+      "type": "西药",
+      "aliases": [
+        "verapamil",
+        "异搏定"
+      ]
+    },
+    "mechanism": "维拉帕米抑制 CYP3A4，升高辛伐他汀浓度，肌病风险增加",
+    "severity": "major",
+    "advice": "辛伐他汀日剂量不宜超过 10mg，或换用其他他汀并监测肌痛",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-022",
+    "drug_a": {
+      "name": "辛伐他汀",
+      "type": "西药",
+      "aliases": [
+        "simvastatin",
+        "舒降之"
+      ]
+    },
+    "drug_b": {
+      "name": "地尔硫卓",
+      "type": "西药",
+      "aliases": [
+        "diltiazem",
+        "恬尔心"
+      ]
+    },
+    "mechanism": "地尔硫卓抑制 CYP3A4，升高辛伐他汀浓度，肌病风险增加",
+    "severity": "major",
+    "advice": "辛伐他汀日剂量不宜超过 10mg，或换用其他他汀并监测肌痛",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-023",
+    "drug_a": {
+      "name": "他汀类降脂药",
+      "type": "西药",
+      "aliases": [
+        "辛伐他汀",
+        "阿托伐他汀",
+        "洛伐他汀",
+        "statins",
+        "立普妥"
+      ]
+    },
+    "drug_b": {
+      "name": "吉非贝齐",
+      "type": "西药",
+      "aliases": [
+        "gemfibrozil",
+        "诺衡"
+      ]
+    },
+    "mechanism": "吉非贝齐抑制他汀葡萄糖醛酸化并影响其转运，血药浓度升高，肌病/横纹肌溶解风险显著增加",
+    "severity": "major",
+    "advice": "避免联用；降甘油三酯可考虑非诺贝特（风险相对低）并监测肌酸激酶",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-024",
+    "drug_a": {
+      "name": "他汀类降脂药",
+      "type": "西药",
+      "aliases": [
+        "辛伐他汀",
+        "阿托伐他汀",
+        "洛伐他汀",
+        "statins"
+      ]
+    },
+    "drug_b": {
+      "name": "氟康唑",
+      "type": "西药",
+      "aliases": [
+        "fluconazole",
+        "大扶康"
+      ]
+    },
+    "mechanism": "氟康唑抑制 CYP3A4，升高他汀浓度，增加肌病风险",
+    "severity": "major",
+    "advice": "联用期间监测肌痛、肌酸激酶；辛伐他汀/洛伐他汀应避免联用",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-025",
+    "drug_a": {
+      "name": "辛伐他汀",
+      "type": "西药",
+      "aliases": [
+        "simvastatin",
+        "舒降之"
+      ]
+    },
+    "drug_b": {
+      "name": "环孢素",
+      "type": "西药",
+      "aliases": [
+        "ciclosporin",
+        "新山地明"
+      ]
+    },
+    "mechanism": "环孢素抑制辛伐他汀代谢及肝摄取转运体，血药浓度大幅升高，横纹肌溶解风险显著增加（现行美国说明书列为禁忌）",
+    "severity": "major",
+    "advice": "禁忌联用；确需降脂治疗时换用其他方案（其他他汀也须核对说明书对环孢素的剂量限制）",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-108",
+    "drug_a": {
+      "name": "阿托伐他汀",
+      "type": "西药",
+      "aliases": [
+        "atorvastatin",
+        "立普妥"
+      ]
+    },
+    "drug_b": {
+      "name": "环孢素",
+      "type": "西药",
+      "aliases": [
+        "ciclosporin",
+        "新山地明"
+      ]
+    },
+    "mechanism": "环孢素抑制阿托伐他汀代谢及转运，血药浓度升高，肌病风险增加（说明书限定剂量上限）",
+    "severity": "moderate",
+    "advice": "按说明书剂量上限联用（阿托伐他汀日剂量不超过 10mg）并监测肌痛、肌酸激酶",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-026",
+    "drug_a": {
+      "name": "他汀类降脂药",
+      "type": "西药",
+      "aliases": [
+        "辛伐他汀",
+        "阿托伐他汀",
+        "瑞舒伐他汀",
+        "statins"
+      ]
+    },
+    "drug_b": {
+      "name": "秋水仙碱",
+      "type": "西药",
+      "aliases": [
+        "colchicine",
+        "秋水仙素"
+      ]
+    },
+    "mechanism": "秋水仙碱与他汀均可引起肌病，联用毒性叠加；且秋水仙碱经 CYP3A4/P-gp 代谢，与部分他汀互相升高浓度",
+    "severity": "major",
+    "advice": "联用时监测肌痛、肌酸激酶；肾功能不全者避免联用",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-027",
+    "drug_a": {
+      "name": "地高辛",
+      "type": "西药",
+      "aliases": [
+        "digoxin",
+        "狄戈辛"
+      ]
+    },
+    "drug_b": {
+      "name": "胺碘酮",
+      "type": "西药",
+      "aliases": [
+        "amiodarone",
+        "可达龙"
+      ]
+    },
+    "mechanism": "胺碘酮抑制 P-糖蛋白，减少地高辛肾排泄，血药浓度可升高近一倍，诱发地高辛中毒（恶心、心律失常、视觉异常）",
+    "severity": "major",
+    "advice": "联用时地高辛剂量减半并监测血药浓度与心电图",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-028",
+    "drug_a": {
+      "name": "地高辛",
+      "type": "西药",
+      "aliases": [
+        "digoxin",
+        "狄戈辛"
+      ]
+    },
+    "drug_b": {
+      "name": "维拉帕米",
+      "type": "西药",
+      "aliases": [
+        "verapamil",
+        "异搏定"
+      ]
+    },
+    "mechanism": "维拉帕米抑制 P-糖蛋白，减少地高辛清除，血药浓度升高，中毒风险增加",
+    "severity": "major",
+    "advice": "联用时监测地高辛血药浓度，通常需减量",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-029",
+    "drug_a": {
+      "name": "地高辛",
+      "type": "西药",
+      "aliases": [
+        "digoxin",
+        "狄戈辛"
+      ]
+    },
+    "drug_b": {
+      "name": "克拉霉素",
+      "type": "西药",
+      "aliases": [
+        "clarithromycin",
+        "甲红霉素"
+      ]
+    },
+    "mechanism": "克拉霉素抑制 P-糖蛋白，减少地高辛清除，血药浓度升高，中毒风险增加",
+    "severity": "major",
+    "advice": "联用时监测地高辛血药浓度与中毒症状",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-030",
+    "drug_a": {
+      "name": "地高辛",
+      "type": "西药",
+      "aliases": [
+        "digoxin",
+        "狄戈辛"
+      ]
+    },
+    "drug_b": {
+      "name": "排钾利尿剂",
+      "type": "西药",
+      "aliases": [
+        "呋塞米",
+        "氢氯噻嗪",
+        "速尿",
+        "双克",
+        "furosemide"
+      ]
+    },
+    "mechanism": "排钾利尿剂引起低钾血症，心肌对地高辛敏感性增加，正常剂量下也可发生中毒性心律失常",
+    "severity": "major",
+    "advice": "联用时监测血钾，及时补钾；出现心悸、恶心、视觉异常立即就医",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-031",
+    "drug_a": {
+      "name": "胺碘酮",
+      "type": "西药",
+      "aliases": [
+        "amiodarone",
+        "可达龙"
+      ]
+    },
+    "drug_b": {
+      "name": "氟喹诺酮类抗生素",
+      "type": "西药",
+      "aliases": [
+        "左氧氟沙星",
+        "莫西沙星",
+        "环丙沙星",
+        "levofloxacin",
+        "moxifloxacin"
+      ]
+    },
+    "mechanism": "两类药物均延长 QT 间期，联用增加尖端扭转型室速风险",
+    "severity": "major",
+    "advice": "避免联用；必须使用时监测心电图 QT 间期与电解质（血钾、血镁）",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-032",
+    "drug_a": {
+      "name": "阿奇霉素",
+      "type": "西药",
+      "aliases": [
+        "azithromycin",
+        "希舒美"
+      ]
+    },
+    "drug_b": {
+      "name": "延长 QT 间期的药物",
+      "type": "西药",
+      "aliases": [
+        "胺碘酮",
+        "多潘立酮",
+        "西酞普兰",
+        "氟哌啶醇",
+        "莫西沙星"
+      ]
+    },
+    "mechanism": "阿奇霉素本身可延长 QT 间期，与其他延长 QT 的药物联用风险叠加，可诱发尖端扭转型室速",
+    "severity": "major",
+    "advice": "QT 间期延长风险高的患者（低钾、心动过缓、老年）避免联用；联用期间监测心电图",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+综述文献"
+  },
+  {
+    "id": "DDI-033",
+    "drug_a": {
+      "name": "多潘立酮",
+      "type": "西药",
+      "aliases": [
+        "domperidone",
+        "吗丁啉"
+      ]
+    },
+    "drug_b": {
+      "name": "唑类抗真菌药",
+      "type": "西药",
+      "aliases": [
+        "酮康唑",
+        "伊曲康唑",
+        "氟康唑",
+        "ketoconazole",
+        "itraconazole"
+      ]
+    },
+    "mechanism": "唑类抗真菌药抑制 CYP3A4，显著升高多潘立酮浓度并叠加 QT 延长作用，尖端扭转型室速风险增加",
+    "severity": "major",
+    "advice": "禁止联用；需要促动力药时换用莫沙必利等替代",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-034",
+    "drug_a": {
+      "name": "西酞普兰",
+      "type": "西药",
+      "aliases": [
+        "citalopram",
+        "喜普妙"
+      ]
+    },
+    "drug_b": {
+      "name": "延长 QT 间期的药物",
+      "type": "西药",
+      "aliases": [
+        "胺碘酮",
+        "氟哌啶醇",
+        "莫西沙星",
+        "阿奇霉素",
+        "多潘立酮"
+      ]
+    },
+    "mechanism": "西酞普兰呈剂量依赖性延长 QT 间期，与其他延长 QT 药物联用增加尖端扭转型室速风险",
+    "severity": "major",
+    "advice": "避免与延长 QT 药物联用；西酞普兰日剂量不超过 40mg（老年人不超过 20mg）",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+综述文献"
+  },
+  {
+    "id": "DDI-035",
+    "drug_a": {
+      "name": "ACEI 类降压药",
+      "type": "西药",
+      "aliases": [
+        "依那普利",
+        "贝那普利",
+        "培哚普利",
+        "卡托普利",
+        "enalapril",
+        "ACEI"
+      ]
+    },
+    "drug_b": {
+      "name": "螺内酯",
+      "type": "西药",
+      "aliases": [
+        "spironolactone",
+        "安体舒通"
+      ]
+    },
+    "mechanism": "ACEI 减少醛固酮分泌、螺内酯拮抗醛固酮作用，双重机制升高血钾，可致高钾血症及心律失常",
+    "severity": "major",
+    "advice": "联用（如心衰标准治疗）时监测血钾与肾功能；肾功能不全者慎用",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+临床指南"
+  },
+  {
+    "id": "DDI-036",
+    "drug_a": {
+      "name": "ACEI 类降压药",
+      "type": "西药",
+      "aliases": [
+        "依那普利",
+        "贝那普利",
+        "培哚普利",
+        "卡托普利",
+        "enalapril",
+        "ACEI"
+      ]
+    },
+    "drug_b": {
+      "name": "ARB 类降压药",
+      "type": "西药",
+      "aliases": [
+        "缬沙坦",
+        "氯沙坦",
+        "厄贝沙坦",
+        "替米沙坦",
+        "valsartan",
+        "ARB"
+      ]
+    },
+    "mechanism": "双重阻断肾素-血管紧张素系统，高钾血症、低血压、急性肾损伤风险显著增加",
+    "severity": "major",
+    "advice": "指南不推荐常规联用；确需联用须由专科医生评估并严密监测肾功能与血钾",
+    "evidence_level": "guideline_label",
+    "source": "临床指南+DrugBank"
+  },
+  {
+    "id": "DDI-037",
+    "drug_a": {
+      "name": "ACEI 类降压药",
+      "type": "西药",
+      "aliases": [
+        "依那普利",
+        "贝那普利",
+        "培哚普利",
+        "卡托普利",
+        "enalapril",
+        "ACEI"
+      ]
+    },
+    "drug_b": {
+      "name": "钾补充剂",
+      "type": "西药",
+      "aliases": [
+        "氯化钾",
+        "枸橼酸钾",
+        "补达秀",
+        "potassium"
+      ]
+    },
+    "mechanism": "ACEI 减少醛固酮分泌、抑制排钾，联用钾补充剂可致严重高钾血症",
+    "severity": "major",
+    "advice": "避免联用；确需补钾须监测血钾与心电图",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-038",
+    "drug_a": {
+      "name": "螺内酯",
+      "type": "西药",
+      "aliases": [
+        "spironolactone",
+        "安体舒通"
+      ]
+    },
+    "drug_b": {
+      "name": "钾补充剂",
+      "type": "西药",
+      "aliases": [
+        "氯化钾",
+        "枸橼酸钾",
+        "potassium"
+      ]
+    },
+    "mechanism": "螺内酯为保钾利尿剂，联用钾补充剂易致高钾血症",
+    "severity": "major",
+    "advice": "避免常规联用；必须使用时密切监测血钾",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-039",
+    "drug_a": {
+      "name": "锂盐",
+      "type": "西药",
+      "aliases": [
+        "碳酸锂",
+        "lithium",
+        "锂"
+      ]
+    },
+    "drug_b": {
+      "name": "非甾体抗炎药",
+      "type": "西药",
+      "aliases": [
+        "布洛芬",
+        "双氯芬酸",
+        "萘普生",
+        "吲哚美辛",
+        "NSAIDs"
+      ]
+    },
+    "mechanism": "NSAIDs 减少肾脏前列腺素合成，降低锂清除率，血锂升高可致锂中毒（震颤、共济失调、意识障碍）",
+    "severity": "major",
+    "advice": "避免联用；必须使用时监测血锂浓度并注意中毒症状",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-040",
+    "drug_a": {
+      "name": "锂盐",
+      "type": "西药",
+      "aliases": [
+        "碳酸锂",
+        "lithium",
+        "锂"
+      ]
+    },
+    "drug_b": {
+      "name": "噻嗪类利尿剂",
+      "type": "西药",
+      "aliases": [
+        "氢氯噻嗪",
+        "双克",
+        "hydrochlorothiazide"
+      ]
+    },
+    "mechanism": "噻嗪类利尿剂增加近端肾小管对锂的重吸收，血锂升高，中毒风险增加",
+    "severity": "major",
+    "advice": "联用时监测血锂浓度，通常需下调锂剂量",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-041",
+    "drug_a": {
+      "name": "锂盐",
+      "type": "西药",
+      "aliases": [
+        "碳酸锂",
+        "lithium",
+        "锂"
+      ]
+    },
+    "drug_b": {
+      "name": "ACEI 类降压药",
+      "type": "西药",
+      "aliases": [
+        "依那普利",
+        "贝那普利",
+        "卡托普利",
+        "enalapril",
+        "ACEI"
+      ]
+    },
+    "mechanism": "ACEI 减少肾小球滤过并影响钠平衡，降低锂清除率，血锂升高",
+    "severity": "major",
+    "advice": "联用时监测血锂浓度与肾功能，注意锂中毒症状",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-042",
+    "drug_a": {
+      "name": "别嘌醇",
+      "type": "西药",
+      "aliases": [
+        "allopurinol",
+        "别嘌呤醇"
+      ]
+    },
+    "drug_b": {
+      "name": "硫唑嘌呤",
+      "type": "西药",
+      "aliases": [
+        "azathioprine",
+        "依木兰"
+      ]
+    },
+    "mechanism": "别嘌醇抑制黄嘌呤氧化酶，阻断硫唑嘌呤代谢灭活，血药浓度升高可致严重骨髓抑制",
+    "severity": "major",
+    "advice": "避免联用；必须联用时硫唑嘌呤剂量减至常规的 25% 并严密监测血常规",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-043",
+    "drug_a": {
+      "name": "别嘌醇",
+      "type": "西药",
+      "aliases": [
+        "allopurinol",
+        "别嘌呤醇"
+      ]
+    },
+    "drug_b": {
+      "name": "巯嘌呤",
+      "type": "西药",
+      "aliases": [
+        "6-巯基嘌呤",
+        "mercaptopurine",
+        "6-MP"
+      ]
+    },
+    "mechanism": "别嘌醇抑制黄嘌呤氧化酶，阻断巯嘌呤代谢灭活，血药浓度升高可致严重骨髓抑制",
+    "severity": "major",
+    "advice": "避免联用；必须联用时巯嘌呤剂量减至常规的 25% 并严密监测血常规",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-044",
+    "drug_a": {
+      "name": "秋水仙碱",
+      "type": "西药",
+      "aliases": [
+        "colchicine",
+        "秋水仙素"
+      ]
+    },
+    "drug_b": {
+      "name": "克拉霉素",
+      "type": "西药",
+      "aliases": [
+        "clarithromycin",
+        "甲红霉素"
+      ]
+    },
+    "mechanism": "克拉霉素强效抑制 CYP3A4/P-糖蛋白，秋水仙碱血药浓度急剧升高，可致致死性中毒（骨髓抑制、多器官衰竭）",
+    "severity": "major",
+    "advice": "禁止联用；已有致死病例报告，肾功能不全者风险更高",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+病例报告"
+  },
+  {
+    "id": "DDI-045",
+    "drug_a": {
+      "name": "二甲双胍",
+      "type": "西药",
+      "aliases": [
+        "metformin",
+        "格华止"
+      ]
+    },
+    "drug_b": {
+      "name": "碘造影剂",
+      "type": "西药",
+      "aliases": [
+        "碘海醇",
+        "碘克沙醇",
+        "contrast media"
+      ]
+    },
+    "mechanism": "碘造影剂致急性肾损伤时，二甲双胍蓄积可诱发乳酸酸中毒；但肾功能正常患者风险极低（ACR 现行指南）",
+    "severity": "major",
+    "advice": "eGFR≥30 mL/min/1.73m² 且无急性肾损伤的患者接受静脉碘造影一般无需停药；急性肾损伤、eGFR<30 或高风险动脉内造影者需暂停二甲双胍，约 48 小时后复查肾功能正常再恢复",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+临床指南",
+    "condition": "仅急性肾损伤、eGFR<30 mL/min/1.73m² 或高风险动脉内造影时构成风险"
+  },
+  {
+    "id": "DDI-046",
+    "drug_a": {
+      "name": "甲氨蝶呤",
+      "type": "西药",
+      "aliases": [
+        "methotrexate",
+        "MTX",
+        "氨甲喋呤"
+      ]
+    },
+    "drug_b": {
+      "name": "非甾体抗炎药",
+      "type": "西药",
+      "aliases": [
+        "布洛芬",
+        "双氯芬酸",
+        "萘普生",
+        "NSAIDs"
+      ]
+    },
+    "mechanism": "NSAIDs 竞争性抑制甲氨蝶呤肾小管排泄，血药浓度升高，骨髓抑制与肾毒性风险增加（大剂量甲氨蝶呤时尤为危险）",
+    "severity": "major",
+    "advice": "大剂量甲氨蝶呤化疗期间禁止联用 NSAIDs；低剂量（如类风湿治疗）联用也须监测血常规与肾功能",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-047",
+    "drug_a": {
+      "name": "甲氨蝶呤",
+      "type": "西药",
+      "aliases": [
+        "methotrexate",
+        "MTX",
+        "氨甲喋呤"
+      ]
+    },
+    "drug_b": {
+      "name": "复方磺胺甲噁唑",
+      "type": "西药",
+      "aliases": [
+        "复方新诺明",
+        "SMZ-TMP",
+        "cotrimoxazole"
+      ]
+    },
+    "mechanism": "磺胺类竞争蛋白结合并抑制肾排泄，且与甲氨蝶呤均有抗叶酸作用，联用可致严重骨髓抑制",
+    "severity": "major",
+    "advice": "避免联用；必须使用时严密监测血常规",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-048",
+    "drug_a": {
+      "name": "茶碱",
+      "type": "西药",
+      "aliases": [
+        "氨茶碱",
+        "theophylline",
+        "喘定"
+      ]
+    },
+    "drug_b": {
+      "name": "环丙沙星",
+      "type": "西药",
+      "aliases": [
+        "ciprofloxacin",
+        "悉复欢"
+      ]
+    },
+    "mechanism": "环丙沙星抑制 CYP1A2，减慢茶碱代谢，茶碱中毒风险（恶心、心悸、惊厥、心律失常）",
+    "severity": "major",
+    "advice": "联用时监测茶碱血药浓度，通常需减量；出现心悸、呕吐立即就诊",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-049",
+    "drug_a": {
+      "name": "西地那非",
+      "type": "西药",
+      "aliases": [
+        "sildenafil",
+        "万艾可",
+        "伟哥"
+      ]
+    },
+    "drug_b": {
+      "name": "硝酸酯类药物",
+      "type": "西药",
+      "aliases": [
+        "硝酸甘油",
+        "单硝酸异山梨酯",
+        "消心痛",
+        "nitroglycerin"
+      ]
+    },
+    "mechanism": "两者均扩张血管，联用可致严重低血压、晕厥甚至心肌梗死",
+    "severity": "major",
+    "advice": "绝对禁忌；服用硝酸酯类药物者 24-48 小时内禁用 PDE5 抑制剂",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-050",
+    "drug_a": {
+      "name": "维拉帕米",
+      "type": "西药",
+      "aliases": [
+        "verapamil",
+        "异搏定"
+      ]
+    },
+    "drug_b": {
+      "name": "β受体阻滞剂",
+      "type": "西药",
+      "aliases": [
+        "美托洛尔",
+        "普萘洛尔",
+        "阿替洛尔",
+        "倍他乐克",
+        "metoprolol"
+      ]
+    },
+    "mechanism": "两者均有负性肌力、负性传导作用，联用可致严重心动过缓、传导阻滞、低血压甚至心衰",
+    "severity": "major",
+    "advice": "避免联用；必须使用时监测心率、血压与心电图",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-051",
+    "drug_a": {
+      "name": "他莫昔芬",
+      "type": "西药",
+      "aliases": [
+        "tamoxifen",
+        "三苯氧胺"
+      ]
+    },
+    "drug_b": {
+      "name": "帕罗西汀",
+      "type": "西药",
+      "aliases": [
+        "paroxetine",
+        "赛乐特"
+      ]
+    },
+    "mechanism": "帕罗西汀强效抑制 CYP2D6，阻断他莫昔芬转化为活性代谢物，降低乳腺癌疗效",
+    "severity": "major",
+    "advice": "避免联用；抗抑郁可换用西酞普兰、文拉法辛等对 CYP2D6 影响小的药物",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+综述文献"
+  },
+  {
+    "id": "DDI-052",
+    "drug_a": {
+      "name": "可待因",
+      "type": "西药",
+      "aliases": [
+        "codeine",
+        "磷酸可待因"
+      ]
+    },
+    "drug_b": {
+      "name": "CYP2D6 抑制剂",
+      "type": "西药",
+      "aliases": [
+        "氟西汀",
+        "帕罗西汀",
+        "安非他酮",
+        "奎尼丁"
+      ]
+    },
+    "mechanism": "可待因须经 CYP2D6 转化为吗啡才起效，抑制剂阻断该转化，镇痛效果丧失",
+    "severity": "moderate",
+    "advice": "避免联用；止痛可换用不经 CYP2D6 活化的镇痛药",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-053",
+    "drug_a": {
+      "name": "左甲状腺素",
+      "type": "西药",
+      "aliases": [
+        "levothyroxine",
+        "优甲乐",
+        "甲状腺素"
+      ]
+    },
+    "drug_b": {
+      "name": "钙剂/铁剂",
+      "type": "西药",
+      "aliases": [
+        "碳酸钙",
+        "硫酸亚铁",
+        "钙尔奇",
+        "calcium",
+        "iron"
+      ]
+    },
+    "mechanism": "钙、铁在肠道与左甲状腺素形成难吸收复合物，降低其生物利用度，甲状腺功能减退控制不佳",
+    "severity": "moderate",
+    "advice": "服药间隔至少 4 小时；定期复查 TSH 评估疗效",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-054",
+    "drug_a": {
+      "name": "氟喹诺酮类抗生素",
+      "type": "西药",
+      "aliases": [
+        "左氧氟沙星",
+        "环丙沙星",
+        "莫西沙星",
+        "levofloxacin",
+        "ciprofloxacin"
+      ]
+    },
+    "drug_b": {
+      "name": "含铝/镁抗酸药",
+      "type": "西药",
+      "aliases": [
+        "氢氧化铝",
+        "铝碳酸镁",
+        "达喜",
+        "antacids"
+      ]
+    },
+    "mechanism": "铝镁离子与喹诺酮类螯合形成不溶性复合物，肠道吸收显著下降，抗感染治疗失败",
+    "severity": "moderate",
+    "advice": "服药间隔至少 2-4 小时（喹诺酮先服）；或改用 H2 受体拮抗剂",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-055",
+    "drug_a": {
+      "name": "四环素类抗生素",
+      "type": "西药",
+      "aliases": [
+        "多西环素",
+        "米诺环素",
+        "四环素",
+        "doxycycline",
+        "tetracycline"
+      ]
+    },
+    "drug_b": {
+      "name": "钙剂/奶制品",
+      "type": "西药",
+      "aliases": [
+        "碳酸钙",
+        "牛奶",
+        "钙尔奇",
+        "calcium"
+      ]
+    },
+    "mechanism": "钙离子与四环素类螯合，肠道吸收显著下降，抗感染治疗失败",
+    "severity": "moderate",
+    "advice": "避免同服牛奶、钙片；服药间隔至少 2 小时",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-056",
+    "drug_a": {
+      "name": "口服避孕药",
+      "type": "西药",
+      "aliases": [
+        "复方短效避孕药",
+        "优思明",
+        "达英-35",
+        "oral contraceptives"
+      ]
+    },
+    "drug_b": {
+      "name": "利福平",
+      "type": "西药",
+      "aliases": [
+        "rifampicin",
+        "rifampin"
+      ]
+    },
+    "mechanism": "利福平诱导肝药酶加速避孕药代谢，避孕失败风险显著增加",
+    "severity": "major",
+    "advice": "服药期间及停药后 4 周内加用屏障避孕法",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-057",
+    "drug_a": {
+      "name": "口服避孕药",
+      "type": "西药",
+      "aliases": [
+        "复方短效避孕药",
+        "优思明",
+        "达英-35"
+      ]
+    },
+    "drug_b": {
+      "name": "卡马西平",
+      "type": "西药",
+      "aliases": [
+        "carbamazepine",
+        "得理多"
+      ]
+    },
+    "mechanism": "卡马西平诱导肝药酶加速避孕药代谢，避孕失败风险显著增加",
+    "severity": "major",
+    "advice": "服药期间及停药后 4 周内加用屏障避孕法",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-058",
+    "drug_a": {
+      "name": "卡马西平",
+      "type": "西药",
+      "aliases": [
+        "carbamazepine",
+        "得理多"
+      ]
+    },
+    "drug_b": {
+      "name": "克拉霉素",
+      "type": "西药",
+      "aliases": [
+        "clarithromycin",
+        "甲红霉素"
+      ]
+    },
+    "mechanism": "克拉霉素抑制 CYP3A4，卡马西平血药浓度急剧升高，出现共济失调、嗜睡、复视等中毒表现",
+    "severity": "major",
+    "advice": "避免联用；必须使用时监测卡马西平血药浓度与神经系统症状",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-059",
+    "drug_a": {
+      "name": "苯妥英",
+      "type": "西药",
+      "aliases": [
+        "phenytoin",
+        "大仑丁"
+      ]
+    },
+    "drug_b": {
+      "name": "氟康唑",
+      "type": "西药",
+      "aliases": [
+        "fluconazole",
+        "大扶康"
+      ]
+    },
+    "mechanism": "氟康唑抑制苯妥英代谢，血药浓度升高，出现眼球震颤、共济失调等中毒表现",
+    "severity": "major",
+    "advice": "联用时监测苯妥英血药浓度与神经系统症状",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-060",
+    "drug_a": {
+      "name": "氟尿嘧啶",
+      "type": "西药",
+      "aliases": [
+        "5-FU",
+        "fluorouracil",
+        "5-氟尿嘧啶"
+      ]
+    },
+    "drug_b": {
+      "name": "甲硝唑",
+      "type": "西药",
+      "aliases": [
+        "metronidazole",
+        "灭滴灵"
+      ]
+    },
+    "mechanism": "甲硝唑抑制二氢嘧啶脱氢酶（DPD），氟尿嘧啶清除减慢，骨髓抑制、黏膜炎等毒性显著加重",
+    "severity": "major",
+    "advice": "避免联用；必须使用时减少氟尿嘧啶剂量并严密监测血常规",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-061",
+    "drug_a": {
+      "name": "格列本脲",
+      "type": "西药",
+      "aliases": [
+        "glibenclamide",
+        "优降糖"
+      ]
+    },
+    "drug_b": {
+      "name": "复方磺胺甲噁唑",
+      "type": "西药",
+      "aliases": [
+        "复方新诺明",
+        "SMZ-TMP",
+        "cotrimoxazole"
+      ]
+    },
+    "mechanism": "磺胺类竞争蛋白结合并抑制磺脲类代谢，降糖作用增强，可致严重低血糖",
+    "severity": "major",
+    "advice": "避免联用；必须使用时监测血糖并警惕低血糖症状",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-062",
+    "drug_a": {
+      "name": "异烟肼",
+      "type": "西药",
+      "aliases": [
+        "isoniazid",
+        "雷米封"
+      ]
+    },
+    "drug_b": {
+      "name": "苯妥英",
+      "type": "西药",
+      "aliases": [
+        "phenytoin",
+        "大仑丁"
+      ]
+    },
+    "mechanism": "异烟肼抑制苯妥英代谢，血药浓度升高，出现共济失调、眼球震颤等中毒表现",
+    "severity": "major",
+    "advice": "联用时监测苯妥英血药浓度与神经系统症状",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-063",
+    "drug_a": {
+      "name": "异烟肼",
+      "type": "西药",
+      "aliases": [
+        "isoniazid",
+        "雷米封"
+      ]
+    },
+    "drug_b": {
+      "name": "对乙酰氨基酚",
+      "type": "西药",
+      "aliases": [
+        "acetaminophen",
+        "扑热息痛",
+        "paracetamol"
+      ]
+    },
+    "mechanism": "异烟肼诱导 CYP2E1，增加对乙酰氨基酚毒性代谢物生成，肝损伤风险显著增加",
+    "severity": "major",
+    "advice": "避免长期联用；服药期间限制酒精摄入并监测肝功能",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-064",
+    "drug_a": {
+      "name": "氯氮平",
+      "type": "西药",
+      "aliases": [
+        "clozapine",
+        "氯扎平"
+      ]
+    },
+    "drug_b": {
+      "name": "苯二氮卓类药物",
+      "type": "西药",
+      "aliases": [
+        "地西泮",
+        "劳拉西泮",
+        "艾司唑仑",
+        "diazepam"
+      ]
+    },
+    "mechanism": "两者均抑制呼吸中枢，联用可致严重呼吸抑制、低血压甚至呼吸骤停",
+    "severity": "major",
+    "advice": "避免联用；必须使用时住院监测呼吸与血压",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-065",
+    "drug_a": {
+      "name": "呋塞米",
+      "type": "西药",
+      "aliases": [
+        "furosemide",
+        "速尿"
+      ]
+    },
+    "drug_b": {
+      "name": "氨基糖苷类抗生素",
+      "type": "西药",
+      "aliases": [
+        "庆大霉素",
+        "阿米卡星",
+        "妥布霉素",
+        "gentamicin",
+        "amikacin"
+      ]
+    },
+    "mechanism": "两者均有耳毒性，联用耳毒性风险显著叠加，可致不可逆听力损伤",
+    "severity": "major",
+    "advice": "避免联用；必须使用时监测听力与前庭功能（尤其肾功能不全者）",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-066",
+    "drug_a": {
+      "name": "万古霉素",
+      "type": "西药",
+      "aliases": [
+        "vancomycin",
+        "稳可信"
+      ]
+    },
+    "drug_b": {
+      "name": "氨基糖苷类抗生素",
+      "type": "西药",
+      "aliases": [
+        "庆大霉素",
+        "阿米卡星",
+        "妥布霉素",
+        "gentamicin"
+      ]
+    },
+    "mechanism": "两者均有肾毒性，联用肾毒性风险显著叠加，可致急性肾损伤",
+    "severity": "major",
+    "advice": "避免联用；必须使用时监测肾功能与血药浓度",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-067",
+    "drug_a": {
+      "name": "氟喹诺酮类抗生素",
+      "type": "西药",
+      "aliases": [
+        "左氧氟沙星",
+        "环丙沙星",
+        "莫西沙星",
+        "levofloxacin"
+      ]
+    },
+    "drug_b": {
+      "name": "糖皮质激素",
+      "type": "西药",
+      "aliases": [
+        "泼尼松",
+        "甲泼尼龙",
+        "地塞米松",
+        "prednisone"
+      ]
+    },
+    "mechanism": "两者联用显著增加肌腱炎与肌腱断裂风险（老年患者尤为突出）",
+    "severity": "moderate",
+    "advice": "联用时告知患者肌腱疼痛立即停药就医；60 岁以上尽量避免联用",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+综述文献"
+  },
+  {
+    "id": "DDI-068",
+    "drug_a": {
+      "name": "瑞格列奈",
+      "type": "西药",
+      "aliases": [
+        "repaglinide",
+        "诺和龙"
+      ]
+    },
+    "drug_b": {
+      "name": "氯吡格雷",
+      "type": "西药",
+      "aliases": [
+        "clopidogrel",
+        "波立维"
+      ]
+    },
+    "mechanism": "氯吡格雷代谢物抑制 CYP2C8，瑞格列奈血药浓度升高，低血糖风险增加",
+    "severity": "moderate",
+    "advice": "联用时监测血糖；必要时下调瑞格列奈剂量",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+综述文献"
+  },
+  {
+    "id": "DDI-069",
+    "drug_a": {
+      "name": "别嘌醇",
+      "type": "西药",
+      "aliases": [
+        "allopurinol",
+        "别嘌呤醇"
+      ]
+    },
+    "drug_b": {
+      "name": "氨苄西林",
+      "type": "西药",
+      "aliases": [
+        "ampicillin",
+        "氨苄青霉素"
+      ]
+    },
+    "mechanism": "两者联用皮疹发生率明显增加（机制未完全明确）",
+    "severity": "moderate",
+    "advice": "尽量选择替代抗生素；出现皮疹及时就医评估",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+综述文献"
+  },
+  {
+    "id": "DDI-070",
+    "drug_a": {
+      "name": "辛伐他汀",
+      "type": "西药",
+      "aliases": [
+        "simvastatin",
+        "舒降之"
+      ]
+    },
+    "drug_b": {
+      "name": "秋水仙碱",
+      "type": "西药",
+      "aliases": [
+        "colchicine",
+        "秋水仙素"
+      ]
+    },
+    "mechanism": "两者均有肌毒性，联用药效学叠加，肌病/横纹肌溶解风险增加；肾功能不全、高剂量或合并 CYP3A4/P-糖蛋白抑制剂时风险进一步放大",
+    "severity": "major",
+    "advice": "避免联用；痛风合并高血脂者换用相互作用小的他汀（如普伐他汀）并监测肌酸激酶",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+DrugBank"
+  },
+  {
+    "id": "DDI-071",
+    "drug_a": {
+      "name": "银杏叶提取物",
+      "type": "草药/保健品",
+      "aliases": [
+        "银杏叶",
+        "银杏叶片",
+        "银杏叶茶",
+        "ginkgo",
+        "ginkgo biloba",
+        "银杏叶胶囊"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "银杏叶成分在体外可抑制血小板活化因子（PAF）介导的血小板聚集，与华法林抗凝作用理论上叠加；但随机交叉研究中标准银杏制剂未显著改变华法林药代/药效参数（PMID 15801937），EGb 761 较大 RCT 二次分析未显示凝血/出血时间增加（PMID 34946404）——证据不一致，确定性临床出血相互作用未被证实",
+    "severity": "moderate",
+    "advice": "谨慎联用而非绝对禁忌；同服期间监测 INR，出现瘀斑、牙龈出血、黑便立即就医",
+    "evidence_level": "mixed",
+    "source": "药品说明书+随机交叉研究（PMID 15801937）+RCT 二次分析（PMID 34946404）+综述文献"
+  },
+  {
+    "id": "DDI-072",
+    "drug_a": {
+      "name": "银杏叶提取物",
+      "type": "草药/保健品",
+      "aliases": [
+        "银杏叶",
+        "银杏叶片",
+        "银杏叶茶",
+        "ginkgo"
+      ]
+    },
+    "drug_b": {
+      "name": "阿司匹林",
+      "type": "西药",
+      "aliases": [
+        "aspirin",
+        "乙酰水杨酸"
+      ]
+    },
+    "mechanism": "银杏叶在体外抑制血小板活化因子介导的血小板聚集，与阿司匹林抗血小板作用理论上叠加；随机研究中标准银杏制剂（EGb 761）联合阿司匹林未显示额外凝血/出血时间效应（PMID 16752942），临床重要出血风险未被证实",
+    "severity": "minor",
+    "advice": "常规剂量同服风险低；出血高风险或大剂量使用者注意观察出血倾向",
+    "evidence_level": "theoretical",
+    "source": "随机对照研究（PMID 16752942）+综述文献"
+  },
+  {
+    "id": "DDI-073",
+    "drug_a": {
+      "name": "银杏叶提取物",
+      "type": "草药/保健品",
+      "aliases": [
+        "银杏叶",
+        "银杏叶片",
+        "ginkgo"
+      ]
+    },
+    "drug_b": {
+      "name": "氯吡格雷",
+      "type": "西药",
+      "aliases": [
+        "clopidogrel",
+        "波立维"
+      ]
+    },
+    "mechanism": "银杏叶在体外抑制 PAF 介导的血小板聚集，与氯吡格雷抗血小板作用理论上叠加；小型人体研究未稳定显示临床重要的额外抗血小板/出血效应",
+    "severity": "minor",
+    "advice": "常规剂量同服风险低；出血高风险或大剂量使用者注意观察出血倾向",
+    "evidence_level": "theoretical",
+    "source": "综述文献"
+  },
+  {
+    "id": "DDI-074",
+    "drug_a": {
+      "name": "银杏叶提取物",
+      "type": "草药/保健品",
+      "aliases": [
+        "银杏叶",
+        "银杏叶片",
+        "ginkgo"
+      ]
+    },
+    "drug_b": {
+      "name": "SSRI/SNRI 类抗抑郁药",
+      "type": "西药",
+      "aliases": [
+        "舍曲林",
+        "氟西汀",
+        "文拉法辛",
+        "帕罗西汀"
+      ]
+    },
+    "mechanism": "银杏叶抑制血小板聚集，与抗抑郁药（亦影响血小板功能）联用理论上增加出血风险",
+    "severity": "minor",
+    "advice": "无明确禁忌，但出血高危人群（合用抗凝药、胃溃疡）应谨慎",
+    "evidence_level": "theoretical",
+    "source": "综述文献"
+  },
+  {
+    "id": "DDI-075",
+    "drug_a": {
+      "name": "圣约翰草",
+      "type": "草药/保健品",
+      "aliases": [
+        "贯叶连翘",
+        "圣约翰草提取物",
+        "st. john's wort",
+        "st johns wort"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "圣约翰草诱导 CYP2C9/3A4，加速华法林代谢，抗凝作用减弱、血栓风险上升",
+    "severity": "major",
+    "advice": "避免同服；必须同用时监测 INR 并相应调整华法林剂量",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+综述文献"
+  },
+  {
+    "id": "DDI-076",
+    "drug_a": {
+      "name": "圣约翰草",
+      "type": "草药/保健品",
+      "aliases": [
+        "贯叶连翘",
+        "圣约翰草提取物",
+        "st. john's wort"
+      ]
+    },
+    "drug_b": {
+      "name": "SSRI 类抗抑郁药",
+      "type": "西药",
+      "aliases": [
+        "舍曲林",
+        "氟西汀",
+        "帕罗西汀",
+        "西酞普兰",
+        "艾司西酞普兰"
+      ]
+    },
+    "mechanism": "圣约翰草本身具有 5-羟色胺能活性，与 SSRI 联用可致 5-羟色胺综合征（躁动、高热、肌强直）",
+    "severity": "major",
+    "advice": "禁止同服；清除期需区分所停药物（圣约翰草诱导效应约 2 周消退，SSRI 类需结合具体品种说明书判定）",
+    "evidence_level": "guideline_label",
+    "source": "SSRI 类药品说明书+病例报告+综述文献"
+  },
+  {
+    "id": "DDI-077",
+    "drug_a": {
+      "name": "圣约翰草",
+      "type": "草药/保健品",
+      "aliases": [
+        "贯叶连翘",
+        "圣约翰草提取物",
+        "st. john's wort"
+      ]
+    },
+    "drug_b": {
+      "name": "口服避孕药",
+      "type": "西药",
+      "aliases": [
+        "复方短效避孕药",
+        "优思明",
+        "达英-35"
+      ]
+    },
+    "mechanism": "圣约翰草诱导 CYP3A4，加速避孕药代谢，避孕失败、突破性出血风险增加",
+    "severity": "major",
+    "advice": "避免同服；同服期间及停药后 4 周内加用屏障避孕法",
+    "evidence_level": "guideline_label",
+    "source": "综述文献"
+  },
+  {
+    "id": "DDI-078",
+    "drug_a": {
+      "name": "圣约翰草",
+      "type": "草药/保健品",
+      "aliases": [
+        "贯叶连翘",
+        "圣约翰草提取物",
+        "st. john's wort"
+      ]
+    },
+    "drug_b": {
+      "name": "环孢素",
+      "type": "西药",
+      "aliases": [
+        "ciclosporin",
+        "新山地明"
+      ]
+    },
+    "mechanism": "圣约翰草诱导 CYP3A4/P-糖蛋白，环孢素血药浓度显著下降，可诱发移植排斥",
+    "severity": "major",
+    "advice": "移植患者禁止服用圣约翰草制品",
+    "evidence_level": "guideline_label",
+    "source": "病例报告+综述文献"
+  },
+  {
+    "id": "DDI-079",
+    "drug_a": {
+      "name": "圣约翰草",
+      "type": "草药/保健品",
+      "aliases": [
+        "贯叶连翘",
+        "圣约翰草提取物",
+        "st. john's wort"
+      ]
+    },
+    "drug_b": {
+      "name": "地高辛",
+      "type": "西药",
+      "aliases": [
+        "digoxin",
+        "狄戈辛"
+      ]
+    },
+    "mechanism": "圣约翰草诱导 P-糖蛋白，地高辛血药浓度下降，疗效降低",
+    "severity": "major",
+    "advice": "避免同服；必须同用时监测地高辛血药浓度",
+    "evidence_level": "guideline_label",
+    "source": "综述文献"
+  },
+  {
+    "id": "DDI-080",
+    "drug_a": {
+      "name": "圣约翰草",
+      "type": "草药/保健品",
+      "aliases": [
+        "贯叶连翘",
+        "圣约翰草提取物",
+        "st. john's wort"
+      ]
+    },
+    "drug_b": {
+      "name": "他克莫司",
+      "type": "西药",
+      "aliases": [
+        "tacrolimus",
+        "普乐可复"
+      ]
+    },
+    "mechanism": "圣约翰草诱导 CYP3A4，他克莫司血药浓度显著下降，可诱发移植排斥",
+    "severity": "major",
+    "advice": "移植患者禁止服用圣约翰草制品",
+    "evidence_level": "guideline_label",
+    "source": "综述文献"
+  },
+  {
+    "id": "DDI-081",
+    "drug_a": {
+      "name": "圣约翰草",
+      "type": "草药/保健品",
+      "aliases": [
+        "贯叶连翘",
+        "圣约翰草提取物",
+        "st. john's wort"
+      ]
+    },
+    "drug_b": {
+      "name": "辛伐他汀",
+      "type": "西药",
+      "aliases": [
+        "simvastatin",
+        "舒降之"
+      ]
+    },
+    "mechanism": "圣约翰草诱导 CYP3A4，加速他汀代谢，降脂疗效下降",
+    "severity": "moderate",
+    "advice": "避免同服；必须同用时监测血脂并评估疗效",
+    "evidence_level": "guideline_label",
+    "source": "综述文献"
+  },
+  {
+    "id": "DDI-082",
+    "drug_a": {
+      "name": "人参（亚洲种）",
+      "type": "草药/保健品",
+      "aliases": [
+        "人参",
+        "红参",
+        "高丽参",
+        "ginseng",
+        "asian ginseng",
+        "panax ginseng",
+        "人参皂苷"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "不同研究报告结论不一（既有 INR 下降也有出血个案），亚洲人参各制剂对华法林的影响存在个体与制剂差异（PMID 28797065）",
+    "severity": "moderate",
+    "advice": "避免同服；必须同用时加强 INR 监测（起始 2 周内每周复查）",
+    "evidence_level": "mixed",
+    "source": "病例报告+综述文献",
+    "species_formulation": "亚洲人参（Panax ginseng：人参/红参/高丽参）"
+  },
+  {
+    "id": "DDI-109",
+    "drug_a": {
+      "name": "西洋参（美洲人参）",
+      "type": "草药/保健品",
+      "aliases": [
+        "西洋参",
+        "花旗参",
+        "american ginseng",
+        "panax quinquefolius"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "随机双盲安慰剂对照试验显示西洋参使峰值 INR 及华法林暴露下降（PMID 15238367），抗凝效应下降、血栓风险上升；具体机制尚未确定（酶诱导仅为可能解释之一）",
+    "severity": "moderate",
+    "advice": "避免同服；必须同用时加强 INR 监测并调整华法林剂量",
+    "evidence_level": "clinical_trial",
+    "source": "随机双盲安慰剂对照试验（PMID 15238367）+综述文献",
+    "species_formulation": "美洲人参（Panax quinquefolius）"
+  },
+  {
+    "id": "DDI-083",
+    "drug_a": {
+      "name": "人参",
+      "type": "草药/保健品",
+      "aliases": [
+        "红参",
+        "高丽参",
+        "ginseng"
+      ]
+    },
+    "drug_b": {
+      "name": "降糖药",
+      "type": "西药",
+      "aliases": [
+        "二甲双胍",
+        "格列美脲",
+        "胰岛素",
+        "阿卡波糖",
+        "metformin"
+      ]
+    },
+    "mechanism": "人参具有轻度降血糖作用，与降糖药联用理论上增加低血糖风险",
+    "severity": "minor",
+    "advice": "使用胰岛素或磺脲类的患者同服期间加强血糖监测，警惕心慌、出汗等低血糖症状；不建议预防性大幅调整降糖药剂量",
+    "evidence_level": "theoretical",
+    "source": "综述文献",
+    "condition": "与胰岛素或磺脲类等强降糖作用药物联用时风险相对较高"
+  },
+  {
+    "id": "DDI-084",
+    "drug_a": {
+      "name": "人参",
+      "type": "草药/保健品",
+      "aliases": [
+        "红参",
+        "高丽参",
+        "ginseng"
+      ]
+    },
+    "drug_b": {
+      "name": "MAOI 类抗抑郁药",
+      "type": "西药",
+      "aliases": [
+        "吗氯贝胺",
+        "苯乙肼",
+        "MAOI"
+      ]
+    },
+    "mechanism": "人参与 MAOI 联用有头痛、震颤、躁狂样症状的个案报告",
+    "severity": "moderate",
+    "advice": "避免大剂量同服；出现兴奋、失眠、头痛、躁狂样表现时停用并就医",
+    "evidence_level": "case_report",
+    "source": "病例报告"
+  },
+  {
+    "id": "DDI-085",
+    "drug_a": {
+      "name": "大蒜提取物",
+      "type": "草药/保健品",
+      "aliases": [
+        "大蒜素",
+        "大蒜油",
+        "garlic",
+        "蒜",
+        "大蒜"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "大蒜成分抑制血小板聚集，与华法林抗凝作用理论上叠加；存在 INR 升高个案，但陈蒜提取物（aged garlic extract）受控研究未显示对华法林的稳定影响——证据不一致",
+    "severity": "minor",
+    "advice": "大量服用大蒜补充剂者同服期间监测 INR；出现瘀斑、牙龈出血及时就医",
+    "evidence_level": "mixed",
+    "source": "病例报告+受控研究+综述文献"
+  },
+  {
+    "id": "DDI-086",
+    "drug_a": {
+      "name": "大蒜提取物",
+      "type": "草药/保健品",
+      "aliases": [
+        "大蒜素",
+        "大蒜油",
+        "garlic",
+        "大蒜"
+      ]
+    },
+    "drug_b": {
+      "name": "沙奎那韦",
+      "type": "西药",
+      "aliases": [
+        "saquinavir",
+        "抗HIV药物"
+      ]
+    },
+    "mechanism": "人体药代研究显示大蒜补充剂使沙奎那韦 AUC 下降约 51%、谷浓度下降约 49%、Cmax 下降约 54%（PMID 11740713），提示肠道 P-糖蛋白/肝药酶诱导，抗病毒治疗失败风险",
+    "severity": "major",
+    "advice": "抗 HIV 治疗期间避免服用大蒜补充剂",
+    "evidence_level": "clinical_trial",
+    "source": "人体药代研究（PMID 11740713）+综述文献"
+  },
+  {
+    "id": "DDI-087",
+    "drug_a": {
+      "name": "当归",
+      "type": "草药/保健品",
+      "aliases": [
+        "当归片",
+        "当归丸",
+        "angelica",
+        "danggui"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "当归含香豆素类成分，本身具有抗凝作用，与华法林联用 INR 升高、出血风险增加（有多个案报告）",
+    "severity": "major",
+    "advice": "避免同服；必须同用时严密监测 INR",
+    "evidence_level": "case_report",
+    "source": "病例报告+综述文献"
+  },
+  {
+    "id": "DDI-088",
+    "drug_a": {
+      "name": "当归",
+      "type": "草药/保健品",
+      "aliases": [
+        "当归片",
+        "当归丸",
+        "angelica"
+      ]
+    },
+    "drug_b": {
+      "name": "阿司匹林",
+      "type": "西药",
+      "aliases": [
+        "aspirin",
+        "乙酰水杨酸"
+      ]
+    },
+    "mechanism": "当归含香豆素类成分，与阿司匹林抗血小板作用理论上可能叠加；缺乏该特定组合的直接病例或系统研究",
+    "severity": "minor",
+    "advice": "常规剂量同服风险低；大量服用或出血高风险患者注意观察出血倾向；手术前 2 周停用当归制品",
+    "evidence_level": "theoretical",
+    "source": "综述文献+体外研究"
+  },
+  {
+    "id": "DDI-089",
+    "drug_a": {
+      "name": "丹参",
+      "type": "草药/保健品",
+      "aliases": [
+        "丹参片",
+        "复方丹参滴丸",
+        "丹参注射液",
+        "salvia",
+        "danshen"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "丹参具有抗血小板、抗凝活性成分，与华法林联用 INR 显著升高、出血风险增加；2026 年 525 人自控病例系列观察到丹参与口服抗凝药并用后出血风险增加（PMID 42136797）",
+    "severity": "major",
+    "advice": "避免同服；必须同用时严密监测 INR 与出血征象",
+    "evidence_level": "observational",
+    "source": "病例报告+观察性病例系列（PMID 42136797）+综述文献"
+  },
+  {
+    "id": "DDI-090",
+    "drug_a": {
+      "name": "丹参",
+      "type": "草药/保健品",
+      "aliases": [
+        "丹参片",
+        "复方丹参滴丸",
+        "salvia",
+        "danshen"
+      ]
+    },
+    "drug_b": {
+      "name": "阿司匹林",
+      "type": "西药",
+      "aliases": [
+        "aspirin",
+        "乙酰水杨酸"
+      ]
+    },
+    "mechanism": "丹参抗血小板活性与阿司匹林叠加，理论上出血风险增加；存在实验/临床研究路径，临床出血并非确定结局",
+    "severity": "moderate",
+    "advice": "避免大量同服；出现瘀斑、牙龈出血及时就医",
+    "evidence_level": "mixed",
+    "source": "病例报告+综述文献"
+  },
+  {
+    "id": "DDI-091",
+    "drug_a": {
+      "name": "三七",
+      "type": "草药/保健品",
+      "aliases": [
+        "三七粉",
+        "三七总皂苷",
+        "血塞通",
+        "notoginseng",
+        "sanqi"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "三七皂苷具有抑制血小板聚集和抗凝活性，与华法林联用理论上出血风险增加；存在出血个案警示但缺乏可追溯的对照研究，且三七+阿司匹林 20 项 RCT 汇总（PMID 36569332）未见出血事件显著增加——证据不一致",
+    "severity": "moderate",
+    "advice": "避免同服；必须同用时加强 INR 监测；手术前 1-2 周停用三七制品",
+    "evidence_level": "mixed",
+    "source": "病例报告+综述文献+RCT 汇总（PMID 36569332）"
+  },
+  {
+    "id": "DDI-110",
+    "drug_a": {
+      "name": "三七",
+      "type": "草药/保健品",
+      "aliases": [
+        "三七粉",
+        "三七总皂苷",
+        "notoginseng",
+        "sanqi"
+      ]
+    },
+    "drug_b": {
+      "name": "阿司匹林",
+      "type": "西药",
+      "aliases": [
+        "aspirin",
+        "乙酰水杨酸"
+      ]
+    },
+    "mechanism": "三七皂苷可进一步影响血小板/凝血指标，但 RCT 汇总分析未显示出血事件显著增加——个体风险不确定（PMID 36569332）",
+    "severity": "moderate",
+    "advice": "联用可接受但需注意出血倾向；手术前 1-2 周停用三七制品",
+    "evidence_level": "mixed",
+    "source": "综述文献"
+  },
+  {
+    "id": "DDI-111",
+    "drug_a": {
+      "name": "三七",
+      "type": "草药/保健品",
+      "aliases": [
+        "三七粉",
+        "三七总皂苷",
+        "notoginseng",
+        "sanqi"
+      ]
+    },
+    "drug_b": {
+      "name": "氯吡格雷",
+      "type": "西药",
+      "aliases": [
+        "clopidogrel",
+        "波立维"
+      ]
+    },
+    "mechanism": "三七皂苷的抗血小板活性与氯吡格雷叠加，理论上增加出血风险（缺乏直接临床证据）",
+    "severity": "moderate",
+    "advice": "联用注意出血倾向；手术前 1-2 周停用三七制品",
+    "evidence_level": "theoretical",
+    "source": "综述文献"
+  },
+  {
+    "id": "DDI-092",
+    "drug_a": {
+      "name": "甘草",
+      "type": "草药/保健品",
+      "aliases": [
+        "甘草片",
+        "复方甘草片",
+        "甘草酸",
+        "licorice",
+        "glycyrrhiza"
+      ]
+    },
+    "drug_b": {
+      "name": "地高辛",
+      "type": "西药",
+      "aliases": [
+        "digoxin",
+        "狄戈辛"
+      ]
+    },
+    "mechanism": "甘草酸具有醛固酮样作用，引起低钾血症，心肌对地高辛敏感性增加，可诱发地高辛中毒性心律失常",
+    "severity": "major",
+    "advice": "避免同服；必须同用时监测血钾与地高辛血药浓度",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+综述文献"
+  },
+  {
+    "id": "DDI-093",
+    "drug_a": {
+      "name": "甘草",
+      "type": "草药/保健品",
+      "aliases": [
+        "甘草片",
+        "复方甘草片",
+        "甘草酸",
+        "licorice"
+      ]
+    },
+    "drug_b": {
+      "name": "排钾利尿剂",
+      "type": "西药",
+      "aliases": [
+        "呋塞米",
+        "氢氯噻嗪",
+        "速尿",
+        "furosemide"
+      ]
+    },
+    "mechanism": "甘草酸与排钾利尿剂的低钾效应叠加，可致严重低钾血症（乏力、心律失常）",
+    "severity": "moderate",
+    "advice": "避免长期同服；同服期间监测血钾",
+    "evidence_level": "guideline_label",
+    "source": "综述文献"
+  },
+  {
+    "id": "DDI-094",
+    "drug_a": {
+      "name": "甘草",
+      "type": "草药/保健品",
+      "aliases": [
+        "甘草片",
+        "复方甘草片",
+        "甘草酸",
+        "licorice"
+      ]
+    },
+    "drug_b": {
+      "name": "螺内酯",
+      "type": "西药",
+      "aliases": [
+        "spironolactone",
+        "安体舒通"
+      ]
+    },
+    "mechanism": "甘草酸的醛固酮样作用与螺内酯的醛固酮拮抗作用相互对抗，螺内酯降压/利尿疗效下降",
+    "severity": "minor",
+    "advice": "避免长期同服；服用螺内酯期间如服甘草制品，注意监测血压",
+    "evidence_level": "theoretical",
+    "source": "综述文献"
+  },
+  {
+    "id": "DDI-095",
+    "drug_a": {
+      "name": "甘草",
+      "type": "草药/保健品",
+      "aliases": [
+        "甘草片",
+        "复方甘草片",
+        "甘草酸",
+        "licorice"
+      ]
+    },
+    "drug_b": {
+      "name": "糖皮质激素",
+      "type": "西药",
+      "aliases": [
+        "泼尼松",
+        "甲泼尼龙",
+        "地塞米松",
+        "prednisone"
+      ]
+    },
+    "mechanism": "人体药代研究显示甘草酸可提高泼尼松龙暴露、降低清除并延长平均滞留时间（PMID 1752235、2253583），联用可增强激素效应、加重水钠潴留与低钾",
+    "severity": "moderate",
+    "advice": "避免长期同服；监测血压、血钾与水肿情况",
+    "evidence_level": "clinical_trial",
+    "source": "人体药代研究（PMID 1752235）+综述文献"
+  },
+  {
+    "id": "DDI-096",
+    "drug_a": {
+      "name": "鱼油",
+      "type": "草药/保健品",
+      "aliases": [
+        "深海鱼油",
+        "omega-3",
+        "EPA",
+        "DHA",
+        "fish oil"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "个案提示出血风险，但随机双盲试验中 3-6g/天鱼油未显著改变稳定华法林患者的 INR（PMID 10767122），2024 年 11 项 RCT、12 万余人汇总分析总体未增加出血（PMID 38742535）；高剂量纯化 EPA 存在小幅出血信号，但并非固定阈值——证据不一致",
+    "severity": "minor",
+    "advice": "常规膳食剂量无明确风险；高剂量补充剂（尤其纯化 EPA）或出血高风险患者同服期间监测 INR",
+    "evidence_level": "mixed",
+    "source": "病例报告+随机双盲试验（PMID 10767122）+RCT 汇总分析（PMID 38742535）",
+    "condition": "仅高剂量补充剂（尤其纯化 EPA）或出血高风险患者需监测"
+  },
+  {
+    "id": "DDI-097",
+    "drug_a": {
+      "name": "鱼油",
+      "type": "草药/保健品",
+      "aliases": [
+        "深海鱼油",
+        "omega-3",
+        "fish oil"
+      ]
+    },
+    "drug_b": {
+      "name": "阿司匹林",
+      "type": "西药",
+      "aliases": [
+        "aspirin",
+        "乙酰水杨酸"
+      ]
+    },
+    "mechanism": "高剂量鱼油抑制血小板聚集，与阿司匹林抗血小板作用理论上叠加；大型 RCT 汇总分析（PMID 38742535）显示 omega-3 总体出血风险未增加，背景抗血小板治疗并非显著解释因素——临床风险未被证实",
+    "severity": "minor",
+    "advice": "常规剂量同服风险低；高剂量服用时注意出血倾向",
+    "evidence_level": "theoretical",
+    "source": "综述文献+RCT 汇总分析（PMID 38742535）"
+  },
+  {
+    "id": "DDI-098",
+    "drug_a": {
+      "name": "辅酶 Q10",
+      "type": "草药/保健品",
+      "aliases": [
+        "辅酶Q10",
+        "coenzyme Q10",
+        "泛醌",
+        "CoQ10"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "辅酶 Q10 化学结构与维生素 K 相似：个案报告提示其减弱华法林效应（INR 下降、停用后恢复），但随机双盲交叉试验未复现——证据不一致，方向为「可能减弱抗凝」（PMID 9621803、12772396）",
+    "severity": "moderate",
+    "advice": "同服期间监测 INR（尤其开始/停用/调整剂量时）；出现 INR 下降及时告知医生",
+    "evidence_level": "mixed",
+    "source": "病例报告（PMID 9621803）+随机交叉研究+综述文献"
+  },
+  {
+    "id": "DDI-099",
+    "drug_a": {
+      "name": "维生素 E",
+      "type": "草药/保健品",
+      "aliases": [
+        "维生素E",
+        "生育酚",
+        "vitamin E",
+        "VE"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "高剂量维生素 E 抑制维生素 K 依赖性凝血因子并抑制血小板聚集，与华法林联用出血风险增加",
+    "severity": "moderate",
+    "advice": "避免长期大剂量（>400IU/天）同服；同服期间监测 INR",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+综述文献"
+  },
+  {
+    "id": "DDI-100",
+    "drug_a": {
+      "name": "维生素 K",
+      "type": "草药/保健品",
+      "aliases": [
+        "维生素K",
+        "维生素K1",
+        "vitamin K",
+        "VK"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "华法林通过抑制维生素 K 环氧还原酶发挥抗凝作用，外源性维生素 K 直接拮抗其作用，抗凝失效、血栓风险上升",
+    "severity": "major",
+    "advice": "服用华法林期间避免额外补充维生素 K；饮食摄入保持稳定",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+临床指南"
+  },
+  {
+    "id": "DDI-101",
+    "drug_a": {
+      "name": "绿茶（大量饮用）",
+      "type": "草药/保健品",
+      "aliases": [
+        "绿茶",
+        "浓茶",
+        "green tea"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "大量饮用冲泡绿茶带来高量维生素 K，拮抗华法林抗凝作用——经典病例报告 INR 明显下降、抗凝减弱（PMID 10332534）；与浓缩提取物胶囊不是同一暴露",
+    "severity": "moderate",
+    "advice": "普通饮茶量影响小；突然大幅改变饮茶量（尤其大量饮用）期间监测 INR",
+    "evidence_level": "case_report",
+    "source": "病例报告",
+    "species_formulation": "冲泡绿茶饮品（非提取物胶囊）"
+  },
+  {
+    "id": "DDI-102",
+    "drug_a": {
+      "name": "蔓越莓",
+      "type": "草药/保健品",
+      "aliases": [
+        "蔓越莓汁",
+        "蔓越莓提取物",
+        "cranberry"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "机制未确定：个案提示 INR 升高，但 250 mL/日蔓越莓汁受控试验未见 INR 显著变化（PMID 17126638），人体药代研究亦不支持明确的 CYP2C9 抑制（PMID 19553405、17392729、18516070、20865058）",
+    "severity": "minor",
+    "advice": "普通摄入无明确风险；大量摄入（果汁 >1L/天或浓缩补充剂）或出血高风险患者同服期间监测 INR",
+    "evidence_level": "mixed",
+    "source": "病例报告+受控试验+综述文献",
+    "condition": "仅大量摄入（果汁 >1L/天或浓缩补充剂）时需监测"
+  },
+  {
+    "id": "DDI-103",
+    "drug_a": {
+      "name": "枸杞",
+      "type": "草药/保健品",
+      "aliases": [
+        "枸杞子",
+        "枸杞茶",
+        "goji berry",
+        "goji"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "多个案报告显示大量饮用枸杞汁/茶后 INR 显著升高并伴出血（机制未完全明确，体外实验仅提示弱 CYP2C9 抑制作用，可能另有途径）",
+    "severity": "major",
+    "advice": "避免大量饮用枸杞汁/茶；同服期间监测 INR",
+    "evidence_level": "case_report",
+    "source": "病例报告+综述文献"
+  },
+  {
+    "id": "DDI-104",
+    "drug_a": {
+      "name": "姜黄素",
+      "type": "草药/保健品",
+      "aliases": [
+        "姜黄",
+        "姜黄素补充剂",
+        "curcumin",
+        "turmeric"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "两层机制：① 药监通报有个案在服用含姜黄产品后 INR 显著升高（>10），具体机制未明；② 姜黄素另有独立抗血小板效应，从另一途径增加出血风险",
+    "severity": "moderate",
+    "advice": "膳食量姜黄风险低；高剂量补充剂避免与华法林同服，同服期间监测 INR",
+    "evidence_level": "case_report",
+    "source": "病例报告+综述文献"
+  },
+  {
+    "id": "DDI-105",
+    "drug_a": {
+      "name": "麻黄",
+      "type": "草药/保健品",
+      "aliases": [
+        "麻黄碱",
+        "麻黄素",
+        "ephedra",
+        "ma huang"
+      ]
+    },
+    "drug_b": {
+      "name": "降压药",
+      "type": "西药",
+      "aliases": [
+        "硝苯地平",
+        "氨氯地平",
+        "美托洛尔",
+        "依那普利",
+        "降压药类"
+      ]
+    },
+    "mechanism": "麻黄碱拟交感兴奋作用升高血压，对抗降压药疗效，可致血压失控",
+    "severity": "major",
+    "advice": "高血压患者禁用含麻黄制剂；出现头痛、心悸、血压升高立即停用就医",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+综述文献"
+  },
+  {
+    "id": "DDI-106",
+    "drug_a": {
+      "name": "麻黄",
+      "type": "草药/保健品",
+      "aliases": [
+        "麻黄碱",
+        "麻黄素",
+        "ephedra",
+        "ma huang"
+      ]
+    },
+    "drug_b": {
+      "name": "MAOI 类抗抑郁药",
+      "type": "西药",
+      "aliases": [
+        "吗氯贝胺",
+        "苯乙肼",
+        "MAOI"
+      ]
+    },
+    "mechanism": "麻黄碱促进儿茶酚胺释放，与 MAOI 联用可致高血压危象、高热",
+    "severity": "major",
+    "advice": "禁止同服",
+    "evidence_level": "guideline_label",
+    "source": "药品说明书+综述文献"
+  },
+  {
+    "id": "DDI-107",
+    "drug_a": {
+      "name": "缬草根",
+      "type": "草药/保健品",
+      "aliases": [
+        "缬草",
+        "缬草提取物",
+        "valerian"
+      ]
+    },
+    "drug_b": {
+      "name": "苯二氮卓类药物",
+      "type": "西药",
+      "aliases": [
+        "地西泮",
+        "劳拉西泮",
+        "艾司唑仑",
+        "diazepam"
+      ]
+    },
+    "mechanism": "缬草具有 GABA 能镇静作用，与苯二氮卓类中枢抑制作用叠加，嗜睡、注意力下降风险增加",
+    "severity": "moderate",
+    "advice": "避免同服；同服期间避免驾驶与操作机械",
+    "evidence_level": "theoretical",
+    "source": "综述文献"
+  },
+  {
+    "id": "DDI-112",
+    "drug_a": {
+      "name": "咖啡因",
+      "type": "西药",
+      "aliases": [
+        "咖啡",
+        "能量饮料",
+        "caffeine"
+      ]
+    },
+    "drug_b": {
+      "name": "茶碱",
+      "type": "西药",
+      "aliases": [
+        "氨茶碱",
+        "theophylline"
+      ]
+    },
+    "mechanism": "同为甲基黄嘌呤类，腺苷受体拮抗作用叠加；人体药代研究显示现实摄入量咖啡因可降低茶碱清除、提高茶碱暴露（PMID 2007319、8491248）",
+    "severity": "moderate",
+    "advice": "茶碱治疗期间应限制咖啡因摄入（咖啡、茶、能量饮料、含咖啡因补充剂）；出现心悸、震颤、失眠加重需就医",
+    "evidence_level": "clinical_trial",
+    "source": "人体药代研究（PMID 2007319、8491248）+茶碱药品说明书",
+    "condition": "严重风险主要见于茶碱血药浓度偏高、咖啡因大量摄入或心律失常高危患者"
+  },
+  {
+    "id": "DDI-113",
+    "drug_a": {
+      "name": "大黄",
+      "type": "草药/保健品",
+      "aliases": [
+        "大黄片",
+        "番泻苷类泻药",
+        "rhubarb"
+      ]
+    },
+    "drug_b": {
+      "name": "地高辛",
+      "type": "西药",
+      "aliases": [
+        "digoxin",
+        "洋地黄"
+      ]
+    },
+    "mechanism": "大黄长期或过量使用因泻下作用导致钾经肠道丢失，可能引起低钾血症；心肌细胞外钾浓度降低使心肌对地高辛敏感性增加，易诱发中毒性心律失常。大黄不改变地高辛血药浓度，为药效学间接作用",
+    "severity": "moderate",
+    "advice": "常规短期使用风险低；长期/过量使用者或已低钾患者避免同服，确需同用时监测血钾与地高辛血药浓度",
+    "evidence_level": "theoretical",
+    "source": "地高辛药品说明书+刺激性泻药说明书/综述文献",
+    "condition": "已存在低钾血症或长期/过量使用者风险显著升高，按高风险处理"
+  },
+  {
+    "id": "DDI-114",
+    "drug_a": {
+      "name": "红曲米",
+      "type": "草药/保健品",
+      "aliases": [
+        "红曲",
+        "红曲提取物",
+        "red yeast rice"
+      ]
+    },
+    "drug_b": {
+      "name": "环孢素",
+      "type": "西药",
+      "aliases": [
+        "cyclosporine",
+        "环孢菌素A"
+      ]
+    },
+    "mechanism": "莫纳可林 K 与洛伐他汀为同一化学物质，主要经 CYP3A4 代谢；环孢素为强 CYP3A4/P-糖蛋白抑制剂，使他汀血药浓度显著升高。已有肾移植患者服用含红曲米制剂后发生横纹肌溶解的直接病例（PMID 12438974）",
+    "severity": "major",
+    "advice": "接受环孢素治疗者应避免使用未标注莫纳可林 K 含量的红曲米产品；必须使用时视为他汀类处理，监测肌痛、肌无力、CK 水平",
+    "evidence_level": "case_report",
+    "source": "病例报告（PMID 12438974）+洛伐他汀药品说明书（FDA）+NCCIH"
+  },
+  {
+    "id": "DDI-115",
+    "drug_a": {
+      "name": "葫芦巴",
+      "type": "草药/保健品",
+      "aliases": [
+        "胡芦巴",
+        "fenugreek"
+      ]
+    },
+    "drug_b": {
+      "name": "降糖药",
+      "type": "西药",
+      "aliases": [
+        "二甲双胍",
+        "磺脲类",
+        "胰岛素",
+        "格列美脲",
+        "metformin"
+      ]
+    },
+    "mechanism": "葫芦巴及其成分（薯蓣皂苷元、4-羟基异亮氨酸等）可能通过多种途径降低血糖，有降糖人体试验支持；与磺脲类、胰岛素等降糖药理论上作用相加，但缺乏该组合的可核验低血糖病例",
+    "severity": "moderate",
+    "advice": "正在使用降糖药（尤其胰岛素、磺脲类）的患者应避免自行加用葫芦巴制剂；如确需使用，应在医生指导下监测血糖",
+    "evidence_level": "theoretical",
+    "source": "人体降糖试验+综述文献"
+  },
+  {
+    "id": "DDI-116",
+    "drug_a": {
+      "name": "野甘菊",
+      "type": "草药/保健品",
+      "aliases": [
+        "小白菊",
+        "feverfew"
+      ]
+    },
+    "drug_b": {
+      "name": "华法林",
+      "type": "西药",
+      "aliases": [
+        "warfarin",
+        "华法令"
+      ]
+    },
+    "mechanism": "小白菊内酯在体外可抑制血小板聚集，与华法林抗凝作用理论上叠加；可核实的是野甘菊本身的出血个案（PMID 34434419），尚无该特定组合的可追溯直接病例",
+    "severity": "minor",
+    "advice": "常规剂量下风险低；长期大量服用或出血高风险患者注意观察出血征象",
+    "evidence_level": "theoretical",
+    "source": "体外研究+个案报告（PMID 34434419）+综述文献"
+  },
+  {
+    "id": "DDI-117",
+    "drug_a": {
+      "name": "野甘菊",
+      "type": "草药/保健品",
+      "aliases": [
+        "小白菊",
+        "feverfew"
+      ]
+    },
+    "drug_b": {
+      "name": "非甾体抗炎药（NSAIDs）",
+      "type": "西药",
+      "aliases": [
+        "布洛芬",
+        "萘普生",
+        "双氯芬酸",
+        "NSAIDs",
+        "ibuprofen"
+      ]
+    },
+    "mechanism": "野甘菊在体外可抑制血小板聚集，与 NSAIDs 的环氧合酶抑制及胃黏膜损伤作用理论上叠加；缺乏该特定组合的系统研究或可追溯病例",
+    "severity": "minor",
+    "advice": "长期大量同服者注意黑便、呕血、腹痛等消化道出血征象",
+    "evidence_level": "theoretical",
+    "source": "体外研究+综述文献"
+  }
+]

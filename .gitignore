@@ -13,3 +13,6 @@ venv/
 # 内部学习/梳理文档（不进公开仓库）
 docs/
 CLAUDE.md
+
+# 语料生成中间产物归档（分药原料/种子/校验报告/审核留档，留档但不上传）
+data/knowledge/_archive/

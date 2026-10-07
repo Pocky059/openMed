@@ -13,7 +13,6 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app
 
 # ── 阶段 2：安装 Python 依赖 ──────────────────────────────────────────────────
-# ── 阶段 2：安装 Python 依赖 ──────────────────────────────────────────────────
 FROM base AS dependencies
 
 COPY requirements.txt .
@@ -23,26 +22,10 @@ RUN pip install --upgrade pip && \
     pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu && \
     pip install -r requirements.txt
 
-# 预下载 ChromaDB 内置的 ONNX embedding 模型（~79MB），避免运行时下载超时
-RUN python - <<'PY'
-import pathlib
-import shutil
-import tarfile
-import urllib.request
-
-url = "https://chroma-onnx-models.s3.amazonaws.com/all-MiniLM-L6-v2/onnx.tar.gz"
-dest_dir = pathlib.Path("/root/.cache/chroma/onnx_models/all-MiniLM-L6-v2")
-dest_dir.mkdir(parents=True, exist_ok=True)
-archive = dest_dir / "onnx.tar.gz"
-
-with urllib.request.urlopen(url, timeout=60) as response, open(archive, "wb") as target:
-    shutil.copyfileobj(response, target)
-
-with tarfile.open(archive, "r:gz") as tar:
-    tar.extractall(dest_dir)
-
-archive.unlink()
-PY
+# 不再预下载 ChromaDB 内置英文 ONNX 模型（all-MiniLM-L6-v2）：
+# 生产链路 embedding 统一由 chromadb 服务端计算（collection 创建时配置中文
+# 模型 bge-small-zh-v1.5），app 容器客户端不需要本地模型缓存；且该模型托管在
+# chroma-onnx-models.s3.amazonaws.com，国内网络拉不动，会导致构建失败。
 
 # ── 阶段 3：生产镜像 ──────────────────────────────────────────────────────────
 FROM base AS production
@@ -53,8 +36,6 @@ RUN useradd -m -u 1000 openmed
 # 从依赖阶段复制已安装的包
 COPY --from=dependencies /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --from=dependencies /usr/local/bin /usr/local/bin
-# 复制预下载的 ONNX 模型缓存
-COPY --from=dependencies --chown=openmed:openmed /root/.cache/chroma /home/openmed/.cache/chroma
 
 # 复制应用代码
 COPY --chown=openmed:openmed . .

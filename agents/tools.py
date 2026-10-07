@@ -91,44 +91,6 @@ def suggest_required_fields(req: Request, args: Dict[str, Any]) -> Dict[str, Any
     }
 
 
-_DRUG_KB: Dict[str, tuple[str, List[str]]] = {
-    "布洛芬": ("解热镇痛药，常用于发热、头痛、关节痛等", [
-        "避免空腹服用，胃部不适者建议饭后服用",
-        "不与其他非甾体抗炎药同时使用",
-        "孕妇及严重肝肾功能不全者慎用",
-    ]),
-    "对乙酰氨基酚": ("解热镇痛药，常用于退烧、轻中度疼痛", [
-        "严格按说明书剂量服用，避免与其他含相同成分药物叠加",
-        "肝功能异常者慎用",
-        "24 小时内服用不超过说明书标注上限",
-    ]),
-    "阿莫西林": ("青霉素类抗生素，用于细菌感染", [
-        "需遵医嘱按疗程服用，不可自行停药",
-        "青霉素过敏者禁用",
-        "服药期间避免饮酒",
-    ]),
-    "头孢类抗生素": ("头孢菌素类抗生素，用于细菌感染", [
-        "服药前后避免饮酒，存在双硫仑样反应风险",
-        "有青霉素/头孢过敏史者需告知医生",
-    ]),
-}
-
-
-def lookup_drug_info(req: Request, args: Dict[str, Any]) -> Dict[str, Any]:
-    """用药工具：给出常见药品的保守用药提示，不声称读取了药品说明书原文。"""
-    name = str(args.get("drug_name", "")).strip()
-    meaning, steps = _DRUG_KB.get(
-        name,
-        ("暂未收录该药品的结构化信息", ["建议查看药品说明书或咨询药师", "如有基础疾病或正在服用其他药物，请告知医生或药师"]),
-    )
-    return {
-        "drug_name": name,
-        "usage_summary": meaning,
-        "guidance": steps,
-        "package_insert_checked": False,
-    }
-
-
 def build_medication_plan(req: Request, args: Dict[str, Any]) -> Dict[str, Any]:
     """用药工具：结合现用药和过敏史生成保守的用药核查步骤。"""
     current_medications = str(args.get("current_medications", "无"))[:200]
@@ -221,7 +183,11 @@ def build_shared_rag_tools(tool_manager: Any) -> Dict[str, AgentToolSpec]:
             "query": query,
             "top_k": top_k,
             "results": result.data,
+            # cached/reranked/rerank_degraded 一路透传到轨迹 tool_results，
+            # 供 v2 评测分辨"缓存回放 / 真精排 / 降级兜底"
+            "cached": bool(getattr(result, "cached", False)),
             "reranked": bool(getattr(result, "reranked", False)),
+            "rerank_degraded": bool(getattr(result, "rerank_degraded", False)),
         }
 
     return {
@@ -256,14 +222,11 @@ def symptom_triage_tools() -> Dict[str, AgentToolSpec]:
 
 
 def medication_tools() -> Dict[str, AgentToolSpec]:
+    # 注：原 lookup_drug_info 捷径工具已移除（2026-10-07）——硬编码 4 条药品提示
+    # 与 RAG 语料（hospital 说明书摘要）内容重叠且更浅，且让模型可以绕开多步搜索
+    # 一步拿到答案，污染轨迹数据（v2 阶段 2 的 SFT 样本需要展示搜索过程）。
+    # 药品信息统一走 search_knowledge_base 检索。
     return {
-        "lookup_drug_info": make_tool(
-            "lookup_drug_info",
-            "查询常见药品的用途和保守用药提示；不会替代药品说明书或医嘱。",
-            {"drug_name": {"type": "string", "description": "药品名称，例如布洛芬"}},
-            lookup_drug_info,
-            required=["drug_name"],
-        ),
         "build_medication_plan": make_tool(
             "build_medication_plan",
             "根据现用药清单和过敏史生成用药安全核查步骤，不执行处方调整。",

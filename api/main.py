@@ -121,6 +121,9 @@ async def lifespan(app: FastAPI):  #lifespan是一个异步事件循环函数，
         api_key=cfg["api_key"],             #mcp工具管理器接收三个参数,abm。为什么工具管理器也需要llm？要决定调用哪个工具
         base_url=cfg.get("base_url"),       #见tool_manager.py
         model=cfg["model"],
+        # v2 评测模式（OPENMED_EVAL_MODE=1）：禁用工具缓存，保证轨迹记录真实检索行为。
+        # 默认关闭——线上开启会显著增加检索延迟（每次查询都真实检索+精排）
+        eval_mode=os.getenv("OPENMED_EVAL_MODE", "0").strip().lower() in ("1", "true", "on", "yes"),
     )
     kb = KnowledgeBase(                     #知识库类，参数和chromaDB记忆管理器配置的一致，后称为kb
         chroma_host=os.getenv("CHROMA_HOST", "chromadb"),
@@ -341,71 +344,6 @@ async def chat(req: ChatRequest):                        #需要一个输入，�
         intent_confidence=round(intent_result.confidence, 4),
         intent_source_scores=intent_result.source_scores,
     )
-
-#这个构建rag上下文函数并没有在/chat中用上。推测是因为rag后来被封装到工具层中，由agent决定是否调用。
-async def _build_knowledge_context(message: str, intent=None, top_k: int = 3) -> tuple[str, bool]:
-    """
-    为 /chat 主链路构建 RAG 知识上下文。
-
-    这里复用 MCPToolManager 的混合召回（BM25+向量）、RRF 融合、Cross-Encoder 精排、fallback 能力。
-    """
-    if _tool_manager is None: #0 排除掉未初始化和不用查知识库的情况。该函数定义在下面。
-        return "", False
-    if not _should_use_knowledge(message, intent=intent):
-        return "", False
-    try:        #把拿到的检索结果result放到上下文中。是完整的知识库查询链路，包括混合召回，RRF融合，精排，topk等。用try防止任何报错挂掉（网络失败，超时，返回格式不对等等）
-        result = await _tool_manager.search_with_rerank("knowledge_search", message, top_k=top_k)
-        if not result.success or not isinstance(result.data, list) or not result.data:  #1 判断搜索失败，数据不是列表，数据为空时不返回
-            return "", False
-
-        parts = ["[知识库检索结果]"]
-        used = False   #该处used配合下方if not used使用。防御性编程，先设置为false，只有真正处理了一条有效结果，通过层层判断，才设置为true
-        for i, item in enumerate(result.data[:top_k], start=1):   #遍历结果，最多取k条
-            if not isinstance(item, dict):                        #2 上面判断了result是不是列表，还要判断里面的item是不是字典
-                continue
-            title = str(item.get("title", "未命名文档"))           #每条取标题，内容，相关度分数
-            content = str(item.get("content", "")).strip()        
-            score = item.get("score", "")
-            if not content:                                       #3 判断完字典，还要判断里面是不是空内容
-                continue
-            used = True       #查询成功后，是否使用了rag的标签-used设置为true
-            parts.append(f"{i}. 标题: {title}\n   相关度: {score}\n   内容: {content[:600]}")  #组装输出，限制600字符防止过长
-
-        if not used:
-            return "", False                                                                  #如果未使用rag则什么都不返回
-        parts.append("请优先依据以上知识库内容回答；如果知识库内容不足，再结合通用医疗问诊能力说明，不要补造诊断结论。")   #若使用rag，默认prompt模板
-        return "\n".join(parts), True
-    except Exception as ex:
-        logger.warning(f"构建知识库上下文失败: {ex}")
-        return "", False           #任何降级，异常都吞掉，返回空避免影响主程序。记录日志。
-
-
-def _should_use_knowledge(message: str, intent=None) -> bool:
-    """跳过纯寒暄，业务类问题才检索知识库，避免无关 RAG 干扰回复。"""
-    msg = (message or "").strip().lower()
-    if not msg:                                                                           #消息为空，不检索
-        return False
-    intent_value = getattr(intent, "value", intent)
-    if intent_value in {"greeting", "feedback", "emergency", "human_handoff", "other"}:   #1监测意图。寒暄、急症（走急症流程不查知识库）、人工接管问题和other不检索
-        return False
-    if intent_value in {
-        "query", "request", "medication", "appointment", "complaint",
-        "symptom_check", "department_guide", "appointment_manage",
-        "appointment_reschedule", "appointment_cancel", "medical_receipt",
-        "appointment_payment_issue", "medication_dosage", "medication_interaction",
-    }:
-        return True                                                                       #意图包含业务关键词，可以检索。
-    greetings = {"你好", "您好", "嗨", "hi", "hello", "hey", "早上好", "晚上好"}            #2监测意图之后的粗略关键词。直接检测到消息属于“寒暄”，不检索
-    if msg in greetings:
-        return False
-    business_keywords = [
-        "挂号", "预约", "科室", "门诊", "专家号", "退号", "改期",
-        "吃药", "用药", "服药", "药品", "说明书", "剂量", "副作用", "不良反应",
-        "发烧", "咳嗽", "头晕", "肚子疼", "腹泻", "皮疹", "呕吐", "症状",
-        "appointment", "medication", "symptom", "department",
-    ]
-    return len(msg) >= 4 or any(kw in msg for kw in business_keywords) #消息长度 >= 4 个字符，或者包含任一业务关键词，就认为该查知识库。
-                                                                       #最粗略，属于意图和词表都判断不出来TF之后，使用的托底方法
 
 @app.get("/monitor")
 async def monitor_summary():

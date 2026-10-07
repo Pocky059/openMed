@@ -17,8 +17,10 @@ ChromaDB 在这里的角色：
 """
 import asyncio
 import hashlib
+import json
 import logging
 import re
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 import chromadb
@@ -38,6 +40,40 @@ except ImportError:
 logger = logging.getLogger(__name__)
 
 _TOKEN_RE = re.compile(r"[A-Za-z0-9]+")
+
+# 文件化医院知识库目录（药品手册/科室指南/症状手册/挂号流程/系统说明）。
+# 用 __file__ 锚定项目根，Docker（工作目录 /app）与本地运行都能定位到同一路径。
+_HOSPITAL_DIR = Path(__file__).resolve().parents[1] / "data" / "knowledge" / "hospital"
+
+# 中文 embedding 工厂已抽到 core/embedding.py（RAG 与三级记忆共用）：
+# ChromaDB 默认的 all-MiniLM-L6-v2 是英文模型（384 维），对中文近乎随机投影，
+# 换用 bge-small-zh-v1.5（512 维）后向量召回才有效；collection 的 embedding
+# 配置创建时固化，重建 collection 的脚本也必须传同一个函数。
+from core.embedding import make_embedding_function
+
+
+def _load_hospital_docs() -> List[Dict[str, str]]:
+    """加载 data/knowledge/hospital/ 下的文件化医院知识库。
+
+    目录里每个 *.json 文件是一个文档数组，元素需含 title 与 content 两个字段。
+    单个文件解析失败只跳过该文件（记 warning），不拖垮整体导入——这保证了
+    以后扩充语料时，一个坏文件不会让整个 RAG 默认语料加载失败。
+    返回空列表表示目录不存在或没有任何可用文档，由调用方决定是否回退内置文档。
+    """
+    docs: List[Dict[str, str]] = []
+    if not _HOSPITAL_DIR.is_dir():
+        return docs
+    for path in sorted(_HOSPITAL_DIR.glob("*.json")):
+        try:
+            items = json.loads(path.read_text(encoding="utf-8"))
+            for item in items:
+                if isinstance(item, dict) and item.get("title") and item.get("content"):
+                    docs.append({"title": item["title"], "content": item["content"]})
+                else:
+                    logger.warning(f"hospital 知识库中缺少 title/content 的条目被跳过: {path.name}")
+        except (json.JSONDecodeError, OSError) as exc:
+            logger.warning(f"hospital 知识库文件解析失败，跳过: {path.name} ({exc})")
+    return docs
 
 
 def _tokenize(text: str) -> List[str]:
@@ -71,6 +107,9 @@ class KnowledgeBase:
         self._use_server = False
         try:
             # HttpClient 默认也会初始化 ChromaDB telemetry；显式关闭避免 posthog 兼容性错误日志。
+            # 注意：0.5.23 的 Settings 没有 HTTP 超时字段（底层 httpx 是 timeout=None 无限等待），
+            # 不要往里加 chroma_server_http_timeout_ms——那是 0.4.x 字段，会触发
+            # pydantic ValidationError，被本 except 吞掉后静默降级为本地模式（踩过坑）
             self._client = chromadb.HttpClient(
                 host=chroma_host,
                 port=chroma_port,
@@ -86,11 +125,14 @@ class KnowledgeBase:
                 settings=chromadb.Settings(anonymized_telemetry=False),
             )
 
-        # 使用服务端时不传 embedding_function，让服务端处理
-        # 本地模式时也不传，使用 ChromaDB 默认的（会触发模型下载）
+        # 统一传中文 embedding 函数（不再用 ChromaDB 默认的英文模型）：
+        # - 服务端模式：EF 只把模型配置序列化发给服务端，由服务端加载 bge-small-zh，
+        #   客户端本地不下载、不跑模型（实测 add 无本地开销）
+        # - 本地模式：EF 在本地惰性加载模型（首次 add/query 时下载到 HF 缓存目录）
         self._collection = self._client.get_or_create_collection(
             name=self.COLLECTION_NAME,
             metadata={"description": "OpenMed 医疗 RAG 知识库"},
+            embedding_function=make_embedding_function(),
         )
 
         # BM25 索引懒构建缓存
@@ -104,14 +146,25 @@ class KnowledgeBase:
 
     # ── 文档管理 ──────────────────────────────────────────────────────────────
 
-    def add_documents(self, documents: List[Dict[str, str]]) -> int:
+    def add_documents(self, documents: List[Dict[str, Any]]) -> int:
         """
         批量导入文档到知识库。
 
-        documents 格式: [{"title": "...", "content": "..."}, ...]
+        documents 格式: [{"title": "...", "content": "...", ...}, ...]
         长文档会自动切片（每片 500 字）。支持 md/txt/json 来源在上层预处理成该结构后统一导入。
+
+        除 title/content 外，可选字段（entities/doc_id/doc_type/source/rule_id/
+        severity/evidence_level/direction）会原样写入每个 chunk 的 metadata——
+        评测时靠它验证「模型有没有搜齐实体、搜对文档类型」；这些字段只进 metadata
+        不进正文，不污染检索内容。可选字段缺省时行为与旧版完全一致（只写
+        title/chunk_index/total_chunks），对既有调用方向后兼容。
         """
         ids, docs, metas = [], [], []
+        # 允许透传进 metadata 的字段白名单（白名单防止脏字段混入）
+        passthrough_fields = (
+            "entities", "doc_id", "doc_type", "source",
+            "rule_id", "severity", "evidence_level", "direction",
+        )
 
         for doc in documents:
             title   = doc.get("title", "")
@@ -122,7 +175,16 @@ class KnowledgeBase:
                 doc_id = hashlib.md5(f"{title}_{i}_{chunk[:50]}".encode()).hexdigest()
                 ids.append(doc_id)
                 docs.append(chunk)
-                metas.append({"title": title, "chunk_index": i, "total_chunks": len(chunks)})
+                meta = {"title": title, "chunk_index": i, "total_chunks": len(chunks)}
+                # 可选字段逐个透传；空值（None/空串/空列表）不写入，避免 ChromaDB 报错。
+                # 注意：本版 ChromaDB 不允许 list 作为 metadata 值，entities 这类
+                # list 字段需序列化为 JSON 字符串存入（评测侧读回时 json.loads 还原）
+                for field in passthrough_fields:
+                    value = doc.get(field)
+                    if value in (None, "", []):
+                        continue
+                    meta[field] = json.dumps(value, ensure_ascii=False) if isinstance(value, list) else value
+                metas.append(meta)
 
         if ids:
             # ChromaDB 会自动生成 Embedding
@@ -132,7 +194,7 @@ class KnowledgeBase:
 
         return len(ids)
 
-    async def add_documents_async(self, documents: List[Dict[str, str]]) -> int:
+    async def add_documents_async(self, documents: List[Dict[str, Any]]) -> int:
         """异步导入文档；ChromaDB 客户端为同步实现，因此放入线程池执行。"""
         return await asyncio.to_thread(self.add_documents, documents)
 
@@ -323,7 +385,20 @@ class KnowledgeBase:
         return chunks
 
     def _load_default_docs(self) -> None:
-        """导入默认医疗知识库文档（药品说明书、科室介绍、常见病问答、挂号流程）。"""
+        """导入默认医疗知识库文档（药品手册、科室指南、症状手册、挂号流程、系统说明）。
+
+        优先从 data/knowledge/hospital/ 目录加载文件化知识库——语料与代码分离，
+        后续扩充医院场景语料（如更多药品手册）只需加 JSON 文件，不用改代码。
+        目录缺失或文件全部不可用时，回退到下方内置文档，保证最小化部署下
+        RAG 仍有兜底语料可用。
+        """
+        docs = _load_hospital_docs()
+        if docs:
+            self.add_documents(docs)
+            logger.info(f"已导入默认医疗知识库（hospital 目录）: {len(docs)} 篇文档")
+            return
+
+        logger.warning("hospital 目录无可用文档，回退到内置默认知识库")
         default_docs = [
             {
                 "title": "布洛芬缓释胶囊说明书摘要",
@@ -414,4 +489,4 @@ class KnowledgeBase:
             },
         ]
         self.add_documents(default_docs)
-        logger.info(f"已导入默认医疗知识库: {len(default_docs)} 篇文档")
+        logger.info(f"已导入默认医疗知识库（内置兜底）: {len(default_docs)} 篇文档")

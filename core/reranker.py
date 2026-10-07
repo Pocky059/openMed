@@ -34,6 +34,11 @@ except ImportError:
 
 _DEFAULT_MODEL = "BAAI/bge-reranker-base"
 
+# rerank_with_status() 返回的状态常量（供轨迹/评测区分精排真实性与降级）
+RERANK_CROSS_ENCODER = "cross_encoder"       # Cross-Encoder 模型真实精排
+RERANK_LEXICAL_FALLBACK = "lexical_fallback" # 模型不可用/推理失败，降级为词重叠打分
+RERANK_SKIPPED = "skipped"                   # 候选数量不足，未执行精排
+
 
 class CrossEncoderReranker:
     """
@@ -99,14 +104,31 @@ class CrossEncoderReranker:
 
     def rerank(self, query: str, items: List[Dict[str, Any]], top_k: int = 5) -> List[Dict[str, Any]]:
         """
-        对召回候选集重新打分排序，取 Top-K。
+        对召回候选集重新打分排序，取 Top-K（兼容旧接口，丢弃状态）。
 
         items 中每个元素需含 "content" 字段（用于和 query 联合编码）。
+        需要区分"真精排 / 降级 / 未精排"时请用 rerank_with_status()。
+        """
+        return self.rerank_with_status(query, items, top_k)[0]
+
+    def rerank_with_status(
+        self, query: str, items: List[Dict[str, Any]], top_k: int = 5
+    ) -> tuple:
+        """
+        精排并返回 (结果列表, 状态)。
+
+        状态（模块级常量）：
+          - RERANK_CROSS_ENCODER：Cross-Encoder 模型真实精排
+          - RERANK_LEXICAL_FALLBACK：模型不可用或推理失败，降级为词重叠打分
+          - RERANK_SKIPPED：候选数量不足，未执行精排
+
+        为什么要把状态暴露出来：轨迹记录（v2 阶段 0.1）需要忠实标注 reranked，
+        否则评测会误把词重叠降级当成精排生效，数字失真。
         """
         if not items:
-            return []
+            return [], RERANK_SKIPPED
         if len(items) <= top_k and len(items) <= 1:
-            return items[:top_k]
+            return items[:top_k], RERANK_SKIPPED
 
         if self._ensure_model():
             try:
@@ -118,11 +140,11 @@ class CrossEncoderReranker:
                     entry = dict(item)
                     entry["rerank_score"] = round(float(score), 4)
                     result.append(entry)
-                return result
+                return result, RERANK_CROSS_ENCODER
             except Exception as ex:
                 logger.warning(f"Cross-Encoder 精排推理失败，降级为词重叠精排: {ex}")
 
-        return self._lexical_rerank(query, items, top_k)
+        return self._lexical_rerank(query, items, top_k), RERANK_LEXICAL_FALLBACK
 
     def _lexical_rerank(self, query: str, items: List[Dict[str, Any]], top_k: int) -> List[Dict[str, Any]]:
         """降级策略：基于 jieba 分词的词重叠比例打分，不依赖任何外部模型。"""

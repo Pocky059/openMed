@@ -9,7 +9,9 @@
 关键设计：
   - 上下文构建时三级记忆融合，按重要性 + 时效性排序
   - 工作记忆超过阈值时自动压缩（LLM 摘要），防止 context 爆炸
-  - 所有 Embedding 通过 Anthropic API 生成，无本地模型
+  - 情景记忆/用户画像的 Embedding 由 collection 配置的中文模型
+    （bge-small-zh-v1.5，core/embedding.py）生成：服务端模式下模型加载在
+    ChromaDB 服务侧（HF 缓存挂载卷），客户端零模型开销
 """
 import hashlib
 import asyncio
@@ -23,9 +25,8 @@ from typing import Any, Dict, List, Optional
 
 import chromadb
 import redis.asyncio as redis
-from anthropic import AsyncAnthropic
-
-from core.llm_utils import extract_text_content
+from core.embedding import make_embedding_function
+from core.llm_utils import create_llm_client, extract_text_content
 
 logger = logging.getLogger(__name__)
 
@@ -96,10 +97,8 @@ class MemoryManager:
         base_url:     Optional[str] = None,
         model:        str = "claude-3-5-sonnet-20241022",
     ):
-        kwargs: Dict[str, Any] = {"api_key": api_key}
-        if base_url:
-            kwargs["base_url"] = base_url
-        self._client = AsyncAnthropic(**kwargs)
+        #双协议客户端（v2 阶段 0.5）：按 OPENMED_LLM_PROTOCOL 切换 Anthropic/OpenAI 协议
+        self._client = create_llm_client(api_key=api_key, base_url=base_url)
         self._model  = model
 
         self._redis = redis.from_url(redis_url, decode_responses=True)
@@ -122,9 +121,16 @@ class MemoryManager:
             )
 
         # 情景记忆：存储历史对话片段
-        self._episodic = chroma.get_or_create_collection("episodic")
+        # 必须传中文 embedding 函数（core/embedding.py）：collection 的 embedding
+        # 配置在创建时固化，漏传会落回 ChromaDB 英文默认模型——中文查询的向量
+        # 召回近乎随机投影，情景记忆静默失效（2026-10-07 修复，与 RAG 同病）。
+        self._episodic = chroma.get_or_create_collection(
+            "episodic", embedding_function=make_embedding_function()
+        )
         # 用户画像：存储提炼出的偏好和实体
-        self._profile  = chroma.get_or_create_collection("user_profile")
+        self._profile  = chroma.get_or_create_collection(
+            "user_profile", embedding_function=make_embedding_function()
+        )
 
     # ── 写入 ──────────────────────────────────────────────────────────────────
 
@@ -325,7 +331,7 @@ class MemoryManager:
         return msgs
 
     async def _search_episodic(self, user_id: str, conv_id: str, query: str) -> List[str]:
-        """语义检索情景记忆。ChromaDB 内置 embedding，不依赖外部 API。"""
+        """语义检索情景记忆。Embedding 由 collection 配置的中文模型生成，不依赖外部 API。"""
         query_text = self._safe_text(query).strip()
         if not query_text:
             return []
@@ -354,7 +360,7 @@ class MemoryManager:
             return []
 
     async def _store_episodic(self, user_id: str, conv_id: str, text: str, summary: str) -> None:
-        """将压缩后的对话片段存入情景记忆。ChromaDB 内置 embedding，不依赖外部 API。"""
+        """将压缩后的对话片段存入情景记忆。Embedding 由 collection 配置的中文模型生成。"""
         try:
             user_id = self._safe_text(user_id)
             conv_id = self._safe_text(conv_id)

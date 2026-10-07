@@ -31,8 +31,12 @@ services:
       - IS_PERSISTENT=TRUE
       - PERSIST_DIRECTORY=/chroma/chroma
       - ANONYMIZED_TELEMETRY=FALSE
+      # 中文 embedding 模型（BAAI/bge-small-zh-v1.5）由服务端加载，缓存到
+      # 挂载卷，容器重建不重新下载；与 app 容器（reranker）共享同一宿主机目录
+      - HF_HOME=/hf-cache
     volumes:
       - chromadb-data:/chroma/chroma
+      - ./data/huggingface:/hf-cache
     restart: unless-stopped
     networks:
       - openmed-network

@@ -25,9 +25,13 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from anthropic import AsyncAnthropic
+from core.llm_utils import create_llm_client
 
-from core.reranker import CrossEncoderReranker
+from core.reranker import (
+    CrossEncoderReranker,
+    RERANK_CROSS_ENCODER,
+    RERANK_LEXICAL_FALLBACK,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -42,13 +46,14 @@ class CircuitState(Enum):
 
 @dataclass
 class ToolResult:
-    success:        bool
-    data:           Any
-    tool_name:      str
-    error:          Optional[str] = None
-    cached:         bool = False
-    latency_ms:     float = 0.0
-    reranked:       bool = False   # 是否经过精排
+    success:          bool
+    data:             Any
+    tool_name:        str
+    error:            Optional[str] = None
+    cached:           bool = False
+    latency_ms:       float = 0.0
+    reranked:         bool = False   # 是否经过 Cross-Encoder 真精排（词重叠降级不算）
+    rerank_degraded:  bool = False   # 精排是否降级（模型不可用/推理失败，用了词重叠兜底）
 
 
 @dataclass
@@ -137,12 +142,22 @@ class MCPToolManager:
       → RRF 融合 → Cross-Encoder 精排（search_with_rerank）→ 返回 Top-K
     """
 
-    def __init__(self, api_key: str, base_url: Optional[str] = None, model: str = "claude-3-5-sonnet-20241022"):
-        kwargs: Dict[str, Any] = {"api_key": api_key}
-        if base_url:
-            kwargs["base_url"] = base_url
-        self._client = AsyncAnthropic(**kwargs)
+    def __init__(
+        self,
+        api_key: str,
+        base_url: Optional[str] = None,
+        model: str = "claude-3-5-sonnet-20241022",
+        eval_mode: bool = False,
+    ):
+        """
+        eval_mode（v2 评测模式）：True 时禁用工具缓存读写。
+        原因：缓存会吞掉重复搜索、跨请求共享结果，轨迹失真，评测数字不可信。
+        由 OPENMED_EVAL_MODE 环境变量在 api/main.py 统一读取后传入，默认关闭。
+        """
+        #双协议客户端（v2 阶段 0.5）：按 OPENMED_LLM_PROTOCOL 切换 Anthropic/OpenAI 协议
+        self._client = create_llm_client(api_key=api_key, base_url=base_url)
         self._model  = model
+        self._eval_mode = eval_mode
         self._tools: Dict[str, Tool] = {}
         self._cache: Dict[str, tuple] = {}   # key → (result, expire_at, reranked)
         self._reranker = CrossEncoderReranker()
@@ -174,8 +189,8 @@ class MCPToolManager:
         if not tool:
             return ToolResult(success=False, data=None, tool_name=name, error=f"工具不存在: {name}")
 
-        # 缓存命中
-        if use_cache and tool.cache_ttl > 0:
+        # 缓存命中（评测模式下跳过：保证每次调用都是真实执行）
+        if use_cache and not self._eval_mode and tool.cache_ttl > 0:
             cached = self._get_cache(name, params)
             if cached is not None:
                 cached_data, cached_reranked = cached
@@ -208,7 +223,7 @@ class MCPToolManager:
             tool.stats.total_latency_ms += latency
             tool.breaker.record_success()
 
-            if tool.cache_ttl > 0:
+            if tool.cache_ttl > 0 and not self._eval_mode:
                 self._set_cache(name, params, data, tool.cache_ttl, reranked=False)
 
             return ToolResult(success=True, data=data, tool_name=name, latency_ms=latency)
@@ -297,13 +312,19 @@ class MCPToolManager:
         if len(result.data) <= top_k:
             return result
 
-        reranked_data = await asyncio.to_thread(self._reranker.rerank, query, result.data, top_k)
+        # 用 rerank_with_status 拿到真实状态：只有 Cross-Encoder 模型真实精排才算 reranked=True，
+        # 降级为词重叠打分时 reranked=False + rerank_degraded=True，评测/轨迹才能分辨
+        reranked_data, rerank_status = await asyncio.to_thread(
+            self._reranker.rerank_with_status, query, result.data, top_k
+        )
         return ToolResult(
             success=True,
             data=reranked_data,
             tool_name=tool_name,
+            cached=result.cached,   # 保留缓存命中标志：召回阶段是否走了缓存（精排总是新鲜执行的）
             latency_ms=result.latency_ms,
-            reranked=True,
+            reranked=(rerank_status == RERANK_CROSS_ENCODER),
+            rerank_degraded=(rerank_status == RERANK_LEXICAL_FALLBACK),
         )
 
     # ── 缓存 ──────────────────────────────────────────────────────────────────

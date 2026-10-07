@@ -23,7 +23,7 @@ __pycache__/
 #   data/eval        → 评测集（挂载 ./data/eval）
 #   data/huggingface → HF 模型缓存（挂载 ./data/huggingface）
 #   data/trajectories→ v2 轨迹日志（挂载 ./data/trajectories）
-# 注意：data/demo_docs 是 RAG 知识库，需要打进镜像，不要排除！
+# 注意：data/knowledge/ 是 RAG 知识库（多跳语料 + 医院场景语料），需要打进镜像，不要排除！
 data/chroma/
 data/eval/
 data/huggingface/

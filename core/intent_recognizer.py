@@ -3,7 +3,9 @@
 
 三路融合策略：
   1. LLM 语义理解（权重 70%）—— 主力，理解复杂语义和上下文
-  2. Embedding 向量相似度（权重 20%）—— 快速匹配常见表达
+  2. Embedding 向量相似度（权重 20%）—— 本地中文模型 bge-small-zh-v1.5
+     （core/embedding.py 惰性单例，与 RAG/记忆库同款，零 API 成本）匹配
+     常见表达；模型不可用时退字符 n-gram 哈希兜底
   3. 关键词模式匹配（权重 10%）—— 零延迟兜底，覆盖症状/用药/预约/急症关键词
 
 三路结果通过加权投票合并，置信度低于阈值时降级为 OTHER。
@@ -19,9 +21,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
 
-from anthropic import AsyncAnthropic
-
-from core.llm_utils import extract_text_content
+from core.embedding import get_local_embedder
+from core.llm_utils import create_llm_client, extract_text_content
 
 logger = logging.getLogger(__name__)
 
@@ -146,8 +147,9 @@ class IntentRecognizer:
     """
     端到端医疗意图识别器。
 
-    初始化时不加载任何本地模型，所有 AI 能力通过 Anthropic API 调用。
-    模板 Embedding 在首次请求时懒加载并缓存，后续复用。
+    初始化时不加载模型；语义路的本地中文 embedding 模型（bge-small-zh-v1.5，
+    core/embedding.py 的进程级惰性单例）在首次请求时加载，模板向量算一次后
+    缓存复用。模型不可用时自动退字符 n-gram 哈希，三路融合不中断。
     """
 
     def __init__(
@@ -157,18 +159,16 @@ class IntentRecognizer:
         model: str = "claude-3-5-sonnet-20241022",
         confidence_threshold: float = 0.5,
     ):
-        #构造客户端，动态构造，一次性传入
-        kwargs: Dict[str, Any] = {"api_key": api_key}
-        if base_url:
-            kwargs["base_url"] = base_url
-        self.client    = AsyncAnthropic(**kwargs) #解包操作 **
+        #构造客户端（v2 阶段 0.5 双协议）：按 OPENMED_LLM_PROTOCOL 决定 Anthropic
+        #协议还是 OpenAI 协议，两种客户端对外接口一致（messages.create）
+        self.client = create_llm_client(api_key=api_key, base_url=base_url)
 
         #保存变量
         self.model     = model
         self.threshold = confidence_threshold
 
-        # 本地字符 n-gram 向量始终可用；如果未来客户端暴露 embeddings 资源，
-        # _embed_text 会优先尝试远端向量，否则自动回退本地向量。
+        # 语义路始终启用：优先本地中文模型（get_local_embedder 惰性加载），
+        # 模型不可用（如离线测试环境）时 _embed_text 自动退字符 n-gram 哈希。
         self._embedding_enabled = True
 
         #准备模板向量化存储dict，先初始化为空，后面填充
@@ -269,6 +269,9 @@ class IntentRecognizer:
 如果用户问题能匹配细粒度业务意图，请优先返回细粒度意图，而不是宽泛大类。
 例如取消预约优先返回 appointment_cancel，剂量咨询优先返回 medication_dosage，科室指引优先返回 department_guide。
 出现胸痛、呼吸困难、大出血、抽搐、昏迷等急症红旗症状时，优先返回 emergency。
+
+示例:
+{examples}
 
         {ctx}
         用户消息: "{message}"
@@ -421,7 +424,8 @@ class IntentRecognizer:
             return
 
         all_texts = [t for cat in missing for t in _TEMPLATES[cat]]
-        vecs = [await self._embed_text(text) for text in all_texts]
+        # 一次批量编码全部模板（本地模型批量比逐条快得多），算完缓存，后续复用
+        vecs = await self._embed_texts(all_texts)
         idx = 0
         for cat in missing:
             n = len(_TEMPLATES[cat])
@@ -429,26 +433,37 @@ class IntentRecognizer:
             idx += n
 
     async def _embed_text(self, text: str) -> List[float]:
-        """
-        生成文本向量。
+        """生成单条文本向量（模板加载走批量版，这里只用于用户消息）。"""
+        return (await self._embed_texts([text]))[0]
 
-        如果未来接入的官方/兼容客户端提供 embeddings.create，会优先使用远端向量；
-        当前 Anthropic SDK 没有该资源时，退化为字符 n-gram 哈希向量。这样不会因为
-        Embedding 服务缺失导致三路融合中断。
+    async def _embed_texts(self, texts: List[str]) -> List[List[float]]:
         """
-        embeddings = getattr(self.client, "embeddings", None)
-        if embeddings is not None:
+        批量生成文本向量。
+
+        优先用本地中文 embedding 模型（bge-small-zh-v1.5，与 RAG/记忆库同款，
+        模型缓存在挂载卷 ./data/huggingface，零 API 成本、离线可用）；模型不可用
+        时退化为字符 n-gram 哈希向量，保证三路融合不中断。
+
+        已删除远端 Embedding API（voyage）分支：双协议客户端
+        （AsyncAnthropic / LLMProtocolAdapter）都不暴露 embeddings 资源，
+        该分支在生产从未生效，留着是死代码加花钱隐患。
+        """
+        model = get_local_embedder()
+        if model is not None:
             try:
-                resp = await embeddings.create(model="voyage-3-lite", input=[text])
-                return list(resp.data[0].embedding)
+                # encode 是 CPU 密集同步调用，放线程池避免阻塞事件循环
+                vecs = await asyncio.to_thread(
+                    model.encode, texts, normalize_embeddings=True
+                )
+                return [[float(v) for v in vec] for vec in vecs]
             except Exception as ex:
-                logger.warning(f"远端 Embedding 失败，使用本地向量兜底: {ex}")
+                logger.warning(f"本地 Embedding 失败，使用字符 n-gram 哈希兜底: {ex}")
 
-        return self._local_embedding(text)
+        return [self._local_embedding(text) for text in texts]
 
     @staticmethod
     def _local_embedding(text: str, dims: int = 256) -> List[float]:
-        """稳定的字符 n-gram 哈希向量，用于无远端 Embedding 时的语义近似匹配。"""
+        """字符 n-gram 哈希向量——本地模型不可用时的最后兜底（字面近似，非语义）。"""
         normalized = text.lower().strip()
         vec = [0.0] * dims
         tokens = set()
