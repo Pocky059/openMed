@@ -167,9 +167,11 @@ class IntentRecognizer:
         self.model     = model
         self.threshold = confidence_threshold
 
-        # 语义路始终启用：优先本地中文模型（get_local_embedder 惰性加载），
-        # 模型不可用（如离线测试环境）时 _embed_text 自动退字符 n-gram 哈希。
-        self._embedding_enabled = True
+        # 语义路固定启用（权重 70/20/10，见 _vote）：优先本地中文模型
+        # （get_local_embedder 惰性加载），模型不可用（如离线测试环境）时
+        # _embed_text 自动退字符 n-gram 哈希——降级发生在语义路内部，融合权重不变。
+        # （曾有一个 _embedding_enabled 开关和 85/15 双路兜底分支，但从未被置 False，
+        # 是死代码，已删除——语义路不可用时靠降级而非关路。）
 
         #准备模板向量化存储dict，先初始化为空，后面填充
         self._tpl_embeddings: Dict[IntentCategory, List[List[float]]] = {}
@@ -198,16 +200,12 @@ class IntentRecognizer:
         t0 = time.monotonic()
 
         # 三路意图识别
-        # LLM 和 Embedding 并行（Embedding 不可用时跳过），pat单独运行
+        # LLM 和 Embedding 并行（语义路不可用时在内部降级），pat 单独运行
         llm_task = asyncio.create_task(self._llm_recognize(message, history))
-        emb_task = asyncio.create_task(self._embedding_recognize(message)) if self._embedding_enabled else None
+        emb_task = asyncio.create_task(self._embedding_recognize(message))
         pat      = self._pattern_recognize(message)
 
-        if emb_task:
-            llm, emb = await asyncio.gather(llm_task, emb_task)
-        else:
-            llm = await llm_task
-            emb = {"intent": IntentCategory.OTHER, "confidence": 0.0}
+        llm, emb = await asyncio.gather(llm_task, emb_task)
 
         #vote融合三路
         intent, confidence, source_scores = self._vote(llm, emb, pat)
@@ -232,15 +230,6 @@ class IntentRecognizer:
                 del self._cache[k]
         self._cache[key] = result
         return result
-
-    def learn(self, message: str, correct: IntentCategory) -> None:
-        """在线学习：将纠正样本加入模板，清除对应 Embedding 缓存。"""
-        tpls = _TEMPLATES.setdefault(correct, [])
-        if message not in tpls:
-            tpls.append(message)
-            self._tpl_embeddings.pop(correct, None)  # 删除缓存，下次重新计算
-            self._cache.clear()  # 同理。模板更新后旧缓存可能对应过时结果
-            logger.info(f"学习新样本 → {correct.value}: {message[:40]}") # 记入日志
 
     # ── 三路识别策略 ──────────────────────────────────────────────────────────
 
@@ -371,10 +360,8 @@ class IntentRecognizer:
                 return pat["intent"], source_scores["pattern"], source_scores
             return IntentCategory.OTHER, 0.0, source_scores
 
-        if self._embedding_enabled:
-            weights = [(llm, 0.7), (emb, 0.2), (pat, 0.1)]
-        else:
-            weights = [(llm, 0.85), (pat, 0.15)]
+        # 三路加权投票：LLM 70% / Embedding 20% / 关键词 10%
+        weights = [(llm, 0.7), (emb, 0.2), (pat, 0.1)]
         scores: Dict[IntentCategory, float] = {}
         for result, w in weights:
             cat  = result.get("intent", IntentCategory.OTHER)
@@ -385,9 +372,14 @@ class IntentRecognizer:
         best_score = scores[best]
         pat_intent = pat.get("intent", IntentCategory.OTHER)
         pat_conf = float(pat.get("confidence", 0.0) or 0.0)
+        # 精修：融合结果落在通用意图、而关键词路命中具体意图时，用关键词覆盖。
+        # 注意精修结果同样要过置信度门槛（默认阈值 0.5 时恒过；自定义更高阈值时
+        # 低于门槛的精修结果仍应降级为 OTHER，与模块 docstring 的承诺一致）
         if best in _GENERIC_INTENTS and pat_intent in _SPECIFIC_INTENTS and pat_conf >= 0.5 and best_score < 0.8:
-            source_scores["refined_by_pattern"] = pat_conf
-            return pat_intent, max(best_score, pat_conf), source_scores
+            refined_score = max(best_score, pat_conf)
+            if refined_score >= self.threshold:
+                source_scores["refined_by_pattern"] = pat_conf
+                return pat_intent, refined_score, source_scores
 
         #整体置信度低于阈值，走澄清流程
         if best_score < self.threshold:

@@ -74,6 +74,31 @@ def test_classify_messages_tags_kinds_by_structure():
     assert all(entry["agent_type"] == "medication" for entry in classified)
 
 
+def test_classify_messages_recognizes_sdk_block_objects():
+    """生产默认协议（anthropic）下消息块是 SDK 对象而非 dict——只认 dict 会把
+    工具调用误标成 final（审查 H2 修复的回归测试）。"""
+
+    class _FakeBlock:  # 模拟 anthropic SDK 的 ToolUseBlock（pydantic 对象形态）
+        def __init__(self, type_, **fields):
+            self.type = type_
+            for key, value in fields.items():
+                setattr(self, key, value)
+
+    messages = [
+        {"role": "user", "content": "在吃华法林，能喝银杏叶茶吗？"},
+        {"role": "assistant", "content": [
+            _FakeBlock("tool_use", id="toolu_1", name="search_knowledge_base", input={"query": "银杏叶 华法林"})
+        ]},
+        {"role": "user", "content": [{"type": "tool_result", "tool_use_id": "toolu_1", "content": "{}"}]},
+        {"role": "assistant", "content": "不建议同服。"},
+    ]
+
+    classified = classify_messages(messages, "medication")
+
+    kinds = [entry["kind"] for entry in classified]
+    assert kinds == ["query", "tool_call", "tool_result", "final"]
+
+
 def test_orchestrator_logs_full_trajectory_with_three_views(tmp_path):
     logger = TrajectoryLogger(log_dir=str(tmp_path), enabled=True)
     orchestrator = AgentOrchestrator(api_key="test-key", trajectory_logger=logger)

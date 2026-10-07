@@ -13,7 +13,7 @@
 不能用作匹配键。A 类条目按 rule_id 匹配（每个 rule_id 在语料中唯一），
 B 类条目与 herb/component 按 title 匹配（撞名 title 加 source 特征区分）。
 
-用法：python scripts/fix_audit_round2.py
+用法（在项目根目录）：python scripts/fix_audit_round2.py
 执行后需重跑合并+校验：python scripts/build_multihop_corpus.py --merge
 """
 

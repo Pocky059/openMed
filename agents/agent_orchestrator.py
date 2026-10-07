@@ -36,7 +36,6 @@ from agents.tools import (
     AgentToolSpec,
     build_shared_rag_tools,
     appointment_tools,
-    emergency_tools,
     medication_tools,
     symptom_triage_tools,
 )
@@ -306,10 +305,17 @@ class BaseAgent:
             llm_latency_ms = (time.monotonic() - llm_t0) * 1000
             tool_uses = [block for block in (resp.content or []) if self._block_type(block) == "tool_use"]
             if not tool_uses:  #如果输出中不包含任何工具调用
+                # 最终回答也要 append 进消息流：轨迹/SFT 模具需要完整的问答对，
+                # 且纯文本的 assistant 消息在 classify_messages 里按"最后一条"被标为 final
+                final_text = extract_text_content(resp.content)
+                messages.append({"role": "assistant", "content": final_text})
                 self._last_tools_used = tools_used
+                # 与循环走完分支（超轮数）对称：这里曾漏设，导致正常结束的请求
+                # tool_traces 被 handle() 开头的 reset 清空（/trace 接口恒为空）
+                self._last_tool_traces = tool_traces
                 self._last_messages = messages
                 self._last_steps = steps
-                return extract_text_content(resp.content)
+                return final_text
 
             #因此把本轮LLM的回复（包括要求调用工具的信息）先加到messages里
             messages.append({"role": "assistant", "content": resp.content})
@@ -596,7 +602,9 @@ class EmergencyAgent(BaseAgent):
         input_contract=("用户消息", "意图", "紧急度", "结构化实体", "对话背景"),
         output_contract=("升级原因", "已知信息摘要", "还需补充的信息", "保守的后续说明（尽快就医/拨打急救电话）"),
         handoff_conditions=("用户明确要求人工", "识别为急症或高风险场景"),
-        tool_scope=("search_knowledge_base", "create_handoff_summary"),
+        # 急症响应是硬编码文本（不走 LLM、不调工具，保证确定性与零延迟），
+        # 工具白名单如实为空——共享 RAG 工具也不注入，避免"声称可用实际永不执行"
+        tool_scope=(),
         temperature=0.0,
         max_tokens=500,
     )
@@ -608,9 +616,8 @@ class EmergencyAgent(BaseAgent):
     _webhook_url = os.getenv("OPENMED_EMERGENCY_WEBHOOK_URL", "").strip() or None
 
     def get_tools(self) -> Dict[str, AgentToolSpec]:
-        tools = super().get_tools()
-        tools.update(emergency_tools())
-        return tools
+        # 只返回共享工具（RAG）；急症响应硬编码，不注册专属工具
+        return super().get_tools()
 
     async def handle(self, req: Request) -> AgentResponse:
         t0 = time.monotonic()
@@ -718,27 +725,13 @@ class AgentOrchestrator:
     """
     多 Agent 编排器。
 
-    路由逻辑（三层）：
-      1. 意图 → Agent 类型映射
-      2. 同类多实例时按 routing_score() 选最优
-      3. 专属 Agent 失败时降级到 SymptomTriageAgent
+    路由逻辑（三层，实现见 _route_decision）：
+      1. 安全门控：CRITICAL 紧急度或 EMERGENCY/HUMAN_HANDOFF 意图 → EmergencyAgent
+      2. 领域打分：_domain_scores 按意图+关键词+实体给各领域 Agent 打分，
+         配合 _collaboration_targets 决定主 Agent 与辅助 Agent（可并行）
+      3. 兜底降级：无可用专属 Agent → SYMPTOM_TRIAGE；执行失败 → 降级处理
+    同类多实例时按 routing_score() 选最优。
     """
-
-    # 意图 → Agent 类型的静态映射（路由表）
-    _INTENT_ROUTING: Dict[IntentCategory, AgentType] = {
-        IntentCategory.MEDICATION:  AgentType.MEDICATION,
-        IntentCategory.MEDICATION_DOSAGE: AgentType.MEDICATION,
-        IntentCategory.MEDICATION_INTERACTION: AgentType.MEDICATION,
-        IntentCategory.APPOINTMENT:    AgentType.APPOINTMENT,
-        IntentCategory.APPOINTMENT_MANAGE:    AgentType.APPOINTMENT,
-        IntentCategory.APPOINTMENT_RESCHEDULE: AgentType.APPOINTMENT,
-        IntentCategory.APPOINTMENT_CANCEL: AgentType.APPOINTMENT,
-        IntentCategory.MEDICAL_RECEIPT: AgentType.APPOINTMENT,
-        IntentCategory.APPOINTMENT_PAYMENT_ISSUE: AgentType.APPOINTMENT,
-        IntentCategory.EMERGENCY: AgentType.EMERGENCY,
-        IntentCategory.HUMAN_HANDOFF: AgentType.EMERGENCY,
-        # 其余意图 → SYMPTOM_TRIAGE（默认）
-    }
 
     def __init__(
         self,
@@ -947,7 +940,8 @@ class AgentOrchestrator:
         ):
             escalated = True
             logger.warning(f"请求 {req.request_id} 触发升级: urgency={req.urgency}")
-            # 生产环境：此处创建工单、通知人工/急诊
+            # TODO（阶段外）：对接工单/通知系统。当前升级只体现在结果 escalated 标记
+            # 与日志告警；主动通知仅存在于急症路由（EmergencyAgent.handle 的 webhook）
 
         result = OrchestratorResult(
             request_id=req.request_id,
@@ -1014,24 +1008,6 @@ class AgentOrchestrator:
         return result
 
     # ── 路由逻辑 ──────────────────────────────────────────────────────────────
-
-    def _route(self, intent: Optional[IntentCategory], urgency: Optional[UrgencyLevel]) -> AgentType:
-        """
-        三层路由决策：
-          1. 意图映射
-          2. 紧急度覆盖（CRITICAL 直接升级到急症节点）
-          3. 默认 SYMPTOM_TRIAGE
-        """
-        if urgency == UrgencyLevel.CRITICAL:
-            return AgentType.EMERGENCY
-
-        if intent and intent in self._INTENT_ROUTING:
-            target = self._INTENT_ROUTING[intent]
-            # 如果目标类型有可用实例则使用，否则降级
-            if target in self._pool and self._pool[target]:
-                return target
-
-        return AgentType.SYMPTOM_TRIAGE
 
     def _route_decision(self, req: Request) -> RoutingDecision:
         """
@@ -1226,7 +1202,12 @@ class AgentOrchestrator:
         return max(agents, key=lambda a: a.stats.routing_score())
 
     async def _execute(self, req: Request, agent_type: AgentType) -> AgentResponse:
-        """执行 Agent，失败时降级到 SymptomTriageAgent。"""
+        """执行 Agent；专属 Agent 失败时降级到 SymptomTriageAgent。
+
+        降级排除两类：SymptomTriageAgent 本身（无处可降）；EMERGENCY——
+        急症响应是硬编码文本，几乎不可能失败，即便失败也不能拿分诊文案搪塞
+        （失败时保留原响应的 success=False，由上层按急症升级逻辑处理）。
+        """
         agent = self._best_agent(agent_type)
         if agent is None:
             agent = self._best_agent(AgentType.SYMPTOM_TRIAGE)

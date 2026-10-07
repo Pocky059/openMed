@@ -1,6 +1,6 @@
 """知识库入库脚本：多跳语料 + 医院场景语料 → ChromaDB
 
-用途：把审核通过的 217 篇多跳语料（multihop_corpus.jsonl）和 12 篇医院场景
+用途：把审核通过的 217 篇多跳语料（multihop_corpus.jsonl）和 26 篇医院场景
 文档（data/knowledge/hospital/*.json）批量导入 ChromaDB 知识库集合。
 
 设计要点：
@@ -90,7 +90,7 @@ def main():
         n_corpus_chunks += kb.add_documents(batch)
         print(f"  多跳语料 {min(start + batch_size, len(corpus_docs))}/{len(corpus_docs)} 篇已导入")
 
-    # 4. 导入医院场景语料（12 篇，无 entities，纯 title/content）
+    # 4. 导入医院场景语料（26 篇，无 entities，纯 title/content）
     hospital_docs = _load_hospital_docs()
     n_hospital_chunks = kb.add_documents(hospital_docs)
 

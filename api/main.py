@@ -1,7 +1,6 @@
 """
 OpenMed 智能问诊分流系统 — FastAPI 入口
 
-启动时打印小熊饼干图案。
 所有核心组件在 lifespan 中初始化，通过环境变量配置。
 负责生命周期管理、核心组件初始化、依赖组装，HTTP API请求记入记忆、意图识别和Agent编排主链路
 """
@@ -36,7 +35,7 @@ logger = logging.getLogger(__name__)          #当前logger的名字定义为当
 
 BANNER = r"""
 
-  OpenMed   v1.0
+  OpenMed   v2.0.0
   智能问诊分流系统
 
 """
@@ -68,7 +67,7 @@ def _anthropic_cfg() -> Dict[str, Any]:     #从环境变量中读取大模型�
 async def lifespan(app: FastAPI):  #lifespan是一个异步事件循环函数，哪个事件“就绪”了，就执行对应异步await函数
     global _orchestrator, _memory, _tool_manager, _monitor, _evaluator, _skill_manager #后面要修改这些全局变量，前面初始化为了None
 
-    print(BANNER, flush=True)  #打印logo
+    print(BANNER, flush=True)  #打印启动横幅
 
     from agents.agent_orchestrator import AgentOrchestrator, Request, build_shared_rag_tools  #从编排器库导入编排器，请求体
     from core.intent_recognizer import IntentRecognizer                                       #从意图识别器库导入意图识别器
@@ -159,8 +158,8 @@ async def lifespan(app: FastAPI):  #lifespan是一个异步事件循环函数，
         cache_ttl=300.0,                  #结果缓存，同样的搜索在5分钟内重读调用直接返回。
         fallback=knowledge_fallback,      #fallback使用上面定义的fallback函数
     ))
-    if _orchestrator is not None:         #防御性检查，防止前面初始化失败
-        _orchestrator.set_shared_tools(build_shared_rag_tools(_tool_manager))   #从工具管理器类中，构建agent编排器可用的rag工具集。意思是多个agent可以用同一套rag工具
+    if _orchestrator is not None:         #兜底写法：lifespan 里是同步直接构造（失败会抛异常终止启动，不会得到 None），
+        _orchestrator.set_shared_tools(build_shared_rag_tools(_tool_manager))   #此检查只防"未来初始化改为可失败/延迟创建"。功能：从工具管理器类中，构建agent编排器可用的rag工具集。意思是多个agent可以用同一套rag工具
 
     # 性能监控（可选启动 Prometheus，默认为0，即不启动）
     prom_port = int(os.getenv("PROMETHEUS_PORT", "0")) or None
@@ -187,9 +186,9 @@ async def lifespan(app: FastAPI):  #lifespan是一个异步事件循环函数，
     yield   #启动前会先执行yield前的所有代码，因此打印完日志文件才会启动服务。关闭后执行之后的代码。
 
     await _monitor.stop()       #程训结束，执行yield后面的代码。停止监控。
-    if _memory is not None:     #关闭memory，释放redis连接，ChromaDB客户端等。防御性写法，防止初始化失败
+    if _memory is not None:     #关闭memory，释放redis连接，ChromaDB客户端等。兜底写法（同 _orchestrator：构造失败会终止启动，不会得到 None）
         await _memory.close()
-    if _orchestrator is not None:   #停止轨迹写线程，把队列中剩余轨迹落盘（v2 阶段 0.1）
+    if _orchestrator is not None:   #停止轨迹写线程，把队列中剩余轨迹落盘（v2 阶段 0.1）。兜底写法（同 162 行）
         _orchestrator.close_trajectory_logger()
     logger.info("OpenMed 已关闭")  #打印日志，应用完全关闭
 
@@ -282,6 +281,8 @@ async def chat(req: ChatRequest):                        #需要一个输入，�
       记忆读取 → 意图识别 → Agent 路由 → 执行 → 记忆写入
     """
     if _orchestrator is None or _memory is None:
+        # 兜底写法：lifespan 同步构造这两个对象，失败会终止启动，正常运行时到不了这里；
+        # 只防"未来初始化改为可失败/延迟创建"时，把未就绪状态如实报 503 而不是 500
         raise HTTPException(503, "服务未就绪")
 
     from agents.agent_orchestrator import Request as OrcReq
@@ -407,7 +408,6 @@ class EvalIntentInput(BaseModel):
     """意图识别评测用例。"""
     message: str
     expected_intent: str
-    context: Optional[Dict[str, Any]] = None
 
 
 class EvalDialogInput(BaseModel):
@@ -517,7 +517,6 @@ async def run_eval(body: Optional[EvalRunInput] = None):  #可传一个评测集
             IntentTestCase(
                 message=c.message,
                 expected_intent=c.expected_intent,
-                context=c.context,
             )
             for c in body.intent_cases
         ]

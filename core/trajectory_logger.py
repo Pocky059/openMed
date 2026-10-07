@@ -27,6 +27,18 @@ logger = logging.getLogger(__name__)
 _PREAMBLE_PREFIXES = ("[背景信息]", "[结构化实体]", "[角色输入契约]")
 
 
+def _block_type(block: Any) -> Optional[str]:
+    """取 LLM 内容块的 type 字段，兼容两种形态（与编排器 _block_type 同套路）：
+
+    - dict 块：OpenAI 协议（LLMProtocolAdapter 返回 dict）
+    - SDK 对象：anthropic 协议（AsyncAnthropic 返回 TextBlock/ToolUseBlock 等）
+    只认 dict 的话，生产默认协议下工具调用会被误判成最终回答（审查 H2 修复）。
+    """
+    if isinstance(block, dict):
+        return block.get("type")
+    return getattr(block, "type", None)
+
+
 def hash_user_id(user_id: str) -> str:
     """user_id 单向哈希：轨迹落盘不保存原始标识（医疗隐私），取 SHA256 前 16 位。"""
     return hashlib.sha256(user_id.encode("utf-8")).hexdigest()[:16]
@@ -43,7 +55,7 @@ def classify_messages(messages: List[Dict[str, Any]], agent_type: str) -> List[D
       - user + "[背景信息]/[结构化实体]/[角色输入契约]" 前缀 → context（编排器注入的背景）
       - assistant + 纯字符串 → ack（对背景的固定确认语）；若是最后一条则视为 final
       - user + 纯字符串（非前导） → query（用户真实问题）
-      - assistant + 含 tool_use 块 → tool_call（模型决定调用工具）
+      - assistant + 含 tool_use 块 → tool_call（模型决定调用工具；dict/对象两种形态都认）
       - user + 列表 → tool_result（工具执行结果回填）
       - assistant + 纯文本块 → final（最终回答）
     """
@@ -55,7 +67,7 @@ def classify_messages(messages: List[Dict[str, Any]], agent_type: str) -> List[D
         if role == "assistant":
             if isinstance(content, str):
                 entry["kind"] = "final" if index == len(messages) - 1 else "ack"
-            elif any(isinstance(block, dict) and block.get("type") == "tool_use" for block in content):
+            elif any(_block_type(block) == "tool_use" for block in content):
                 entry["kind"] = "tool_call"
             else:
                 entry["kind"] = "final"
@@ -105,13 +117,18 @@ class TrajectoryLogger:
             logger.warning("轨迹队列已满（%s 条），丢弃当前轨迹", self._QUEUE_MAXSIZE)
 
     def close(self) -> None:
-        """优雅停止：投递哨兵并等待后台线程把队列写空。重复调用安全。"""
+        """优雅停止：投递哨兵并等待后台线程把队列写空。重复调用安全。
+
+        队列满时改为阻塞 put：close 是关停路径，宁可等待也不丢哨兵——
+        哨兵丢了写线程永不退出，未落盘轨迹反而全部丢失。
+        """
         if self._thread is None:
             return
         try:
             self._queue.put_nowait(self._SENTINEL)
         except queue.Full:
-            logger.warning("轨迹队列已满，close 时丢弃未落盘轨迹")
+            logger.warning("轨迹队列已满，等待队列腾出空间再投递关闭哨兵")
+            self._queue.put(self._SENTINEL)
         self._thread.join(timeout=5.0)
         self._thread = None
 

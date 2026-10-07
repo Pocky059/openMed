@@ -90,8 +90,9 @@ class KnowledgeBase:
     """
     基于 ChromaDB + BM25 的医疗 RAG 知识库。
 
-    ChromaDB 内置了 Embedding 模型（all-MiniLM-L6-v2），
-    调用 add() 时自动生成向量，query() 时自动做语义匹配。
+    Embedding 统一走 core/embedding.py 的中文模型 BAAI/bge-small-zh-v1.5
+    （collection 创建时必须传 embedding_function，见 __init__；默认英文模型
+    all-MiniLM-L6-v2 对中文近乎随机投影，曾导致金文档掉出候选，勿回退）。
     BM25 索引在内存中基于 Chroma 已有文档懒构建，随文档增删失效重建。
     """
 

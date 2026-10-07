@@ -7,8 +7,9 @@
   3. 用户画像（ChromaDB）—— 从对话中提炼的长期偏好和实体
 
 关键设计：
-  - 上下文构建时三级记忆融合，按重要性 + 时效性排序
-  - 工作记忆超过阈值时自动压缩（LLM 摘要），防止 context 爆炸
+  - 上下文构建时三级记忆按固定顺序拼接（to_prompt_text）：会话摘要 →
+    相关历史（ChromaDB 相似度序，取前 3）→ 用户画像 → 最近消息（时间序，取后 8）
+  - 工作记忆达到 COMPRESS_AT 条数时自动压缩（LLM 摘要），防止 context 爆炸
   - 情景记忆/用户画像的 Embedding 由 collection 配置的中文模型
     （bge-small-zh-v1.5，core/embedding.py）生成：服务端模式下模型加载在
     ChromaDB 服务侧（HF 缓存挂载卷），客户端零模型开销
@@ -81,8 +82,8 @@ class MemoryManager:
     工作记忆存 Redis（TTL 24h），情景记忆和用户画像存 ChromaDB（持久化）。
     """
 
-    WORKING_MAX   = 20    # 工作记忆最大条数，超过则触发压缩
-    COMPRESS_AT   = 15    # 达到此条数时压缩，保留摘要 + 最近 5 条
+    WORKING_MAX   = 20    # 工作记忆读取上限（_get_working_memory 取最近 N 条）
+    COMPRESS_AT   = 15    # 达到此条数时触发压缩（add_message 检查），保留摘要 + 最近 5 条
     HISTORY_TOP_K = 5     # 情景记忆检索返回条数
     SUMMARY_MAX_CHARS = 800
     PROFILE_DOC_PREFIX = "user_profile:"
@@ -300,8 +301,8 @@ class MemoryManager:
         new_summary = await self._merge_summary(old_summary, summary)
         await self._redis.setex(skey, 86400, new_summary)
 
-        # 旧消息存入情景记忆
-        await self._store_episodic(user_id, conv_id, text, summary)
+        # 旧消息摘要存入情景记忆
+        await self._store_episodic(user_id, conv_id, summary)
 
         # 重置工作记忆为最近 5 条
         key = self._wm_key(user_id, conv_id)
@@ -331,7 +332,12 @@ class MemoryManager:
         return msgs
 
     async def _search_episodic(self, user_id: str, conv_id: str, query: str) -> List[str]:
-        """语义检索情景记忆。Embedding 由 collection 配置的中文模型生成，不依赖外部 API。"""
+        """语义检索情景记忆。Embedding 由 collection 配置的中文模型生成，不依赖外部 API。
+
+        两段式设计：先按 conv_id 检索本会话的历史（情景记忆只在压缩时写入，
+        新会话下主查询恒为空），条数不足 TOP_K 时再去掉 conv_id 条件做真正的
+        跨会话检索兜底——"跨会话"能力由 fallback 达成，主查询优先同会话上下文。
+        """
         query_text = self._safe_text(query).strip()
         if not query_text:
             return []
@@ -359,21 +365,20 @@ class MemoryManager:
             logger.warning(f"情景记忆检索失败: {ex}")
             return []
 
-    async def _store_episodic(self, user_id: str, conv_id: str, text: str, summary: str) -> None:
-        """将压缩后的对话片段存入情景记忆。Embedding 由 collection 配置的中文模型生成。"""
+    async def _store_episodic(self, user_id: str, conv_id: str, summary: str) -> None:
+        """将压缩后的对话摘要存入情景记忆。Embedding 由 collection 配置的中文模型生成。"""
         try:
             user_id = self._safe_text(user_id)
             conv_id = self._safe_text(conv_id)
-            text = self._safe_text(text)
             summary = self._safe_text(summary)
             doc_id = hashlib.md5(f"{user_id}{conv_id}{time.time()}".encode()).hexdigest()
-            # 直接传 documents，ChromaDB 内置模型自动生成 embedding
+            # 直接传 documents，embedding 由 collection 配置的中文模型生成
             await asyncio.to_thread(
                 self._episodic.add,
                 ids=[doc_id],
                 documents=[summary],
                 metadatas=[{"user_id": user_id, "conv_id": conv_id,
-                            "ts": datetime.now().isoformat(), "full_text": self._safe_text(text[:500])}],
+                            "ts": datetime.now().isoformat()}],
             )
         except Exception as ex:
             logger.warning(f"存储情景记忆失败: {ex}")

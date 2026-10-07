@@ -14,6 +14,7 @@ from agents.agent_orchestrator import (
     SymptomTriageAgent,
     build_shared_rag_tools,
 )
+from agents.tools import AgentToolSpec
 from core.intent_recognizer import IntentCategory, UrgencyLevel
 
 
@@ -135,7 +136,9 @@ def test_agent_tool_scopes_are_real_and_isolated():
     assert symptom_tools == {"inspect_request_context", "suggest_required_fields"}
     assert medication_tools == {"build_medication_plan"}
     assert appointment_tools == {"check_appointment_fields", "compare_registration_fees"}
-    assert emergency_tools == {"create_handoff_summary"}
+    # 急症响应是硬编码文本（不走 LLM/工具，保证确定性与零延迟），
+    # 白名单必须如实为空——避免"声称可用、实际永不执行"的死工具
+    assert emergency_tools == set()
     assert not symptom_tools & medication_tools
     assert not medication_tools & appointment_tools
 
@@ -216,3 +219,50 @@ def test_tool_use_round_trip_executes_only_whitelisted_tool():
         "build_medication_plan",
     }
     assert "tool_result" in str(client.calls[1]["messages"])
+
+
+def test_success_path_keeps_final_answer_and_tool_traces():
+    """回归（审查 H1/H3）：正常结束的请求，消息流必须以最终回答结尾、
+    tool_traces 必须保留。此前提前 return 分支漏设 _last_tool_traces（/trace 接口
+    恒为空）且不 append 最终回答（轨迹 SFT 模具缺 final）。"""
+
+    class ToolUseBlock:
+        type = "tool_use"
+        id = "toolu_1"
+        name = "build_medication_plan"
+        input = {"current_medications": "华法林", "has_allergy": False}
+
+    class TextBlock:
+        type = "text"
+        text = "已根据现用药清单生成用药核查步骤。"
+
+    class ToolClient:
+        def __init__(self):
+            self.calls = []
+            self.responses = [
+                type("Response", (), {"content": [ToolUseBlock()]})(),
+                type("Response", (), {"content": [TextBlock()]})(),
+            ]
+
+        class Messages:
+            def __init__(self, owner):
+                self.owner = owner
+
+            async def create(self, **kwargs):
+                self.owner.calls.append(kwargs)
+                return self.owner.responses.pop(0)
+
+        @property
+        def messages(self):
+            return self.Messages(self)
+
+    client = ToolClient()
+    agent = MedicationAgent(client, "test-model")
+    response = asyncio.run(agent.handle(make_request()))
+
+    # H3：正常结束（含工具调用轮）的请求 tool_traces 不能被 handle 开头的 reset 清空
+    assert response.tool_traces, "正常结束的请求 tool_traces 不应为空"
+    assert response.tool_traces[0]["tool_name"] == "build_medication_plan"
+    # H1：消息流以最终回答（assistant 纯文本）结尾，SFT 模具才完整
+    assert response.messages[-1]["role"] == "assistant"
+    assert response.messages[-1]["content"] == "已根据现用药清单生成用药核查步骤。"

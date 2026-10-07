@@ -10,9 +10,12 @@ __pycache__/
 venv/
 .DS_Store
 
-# 内部学习/梳理文档（不进公开仓库）
+# 本地文档
 docs/
 CLAUDE.md
 
-# 语料生成中间产物归档（分药原料/种子/校验报告/审核留档，留档但不上传）
+# 语料生成中间产物
 data/knowledge/_archive/
+
+# 评测基线是运行时产物，由 /eval/run 生成
+data/eval/baseline.json

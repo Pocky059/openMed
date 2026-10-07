@@ -8,7 +8,9 @@ Cross-Encoder 把 query 和文档拼在一起送入模型联合编码，能建�
 因此只在混合召回已经把候选集缩小到几十条之后使用，兼顾效果和延迟。
 
 模型不可用（未安装 sentence-transformers 或模型下载失败）时，
-优雅降级为基于 jieba 分词的词重叠打分，保证检索链路不因为精排模块故障而中断。
+优雅降级为词重叠打分，保证检索链路不因为精排模块故障而中断。
+词重叠打分基于 jieba 分词（_tokenize）；若 jieba 也未安装，进一步退化为逐字符切分——
+两级降级都不会让检索链路中断。
 """
 import logging
 import os
@@ -50,6 +52,7 @@ class CrossEncoderReranker:
         self._model: Any = None
         self._load_failed = False
         self._bg_box: List[Any] = []   # 后台加载线程完成后把模型放进这里，等待接管
+        self._bg_error: Any = None     # 后台线程快速失败的异常（区分"超时"与"真失败"，日志用）
 
     def _ensure_model(self) -> bool:
         """
@@ -79,6 +82,9 @@ class CrossEncoderReranker:
                 try:
                     self._bg_box.append(CrossEncoder(self._model_name))
                 except Exception as ex:
+                    # 记录到 _bg_error：线程快速失败时日志应如实说"加载失败、不会恢复"，
+                    # 而不是谎报"超过 120s、后台继续下载"
+                    self._bg_error = ex
                     logger.warning(f"Cross-Encoder 后台加载失败，持续使用词重叠精排: {ex}")
 
             thread = threading.Thread(target=_load, daemon=True, name="reranker-model-loader")
@@ -86,12 +92,15 @@ class CrossEncoderReranker:
             thread.join(timeout=_LOAD_TIMEOUT_S)
 
             if not self._bg_box:
-                # 超时或加载失败：本次降级。下载若仍在后台进行，完成后会被上面的分支接管
+                # 超时或加载失败：本次降级
                 self._load_failed = True
-                logger.warning(
-                    f"Cross-Encoder 模型加载超过 {_LOAD_TIMEOUT_S:.0f}s，本次降级为词重叠精排；"
-                    f"模型将在后台继续下载，完成后自动恢复精排"
-                )
+                if self._bg_error is not None:
+                    logger.warning("Cross-Encoder 模型加载失败（不再重试），降级为词重叠精排")
+                else:
+                    logger.warning(
+                        f"Cross-Encoder 模型加载超过 {_LOAD_TIMEOUT_S:.0f}s，本次降级为词重叠精排；"
+                        f"模型将在后台继续下载，完成后自动恢复精排"
+                    )
                 return False
             self._model = self._bg_box[0]
             self._bg_box = []

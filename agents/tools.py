@@ -141,18 +141,6 @@ def compare_registration_fees(req: Request, args: Dict[str, Any]) -> Dict[str, A
     }
 
 
-def create_handoff_summary(req: Request, args: Dict[str, Any]) -> Dict[str, Any]:
-    """急症/升级工具：生成可交给人工或急诊的结构化摘要。"""
-    return {
-        "request_id": req.request_id,
-        "reason": str(args.get("reason", "需要人工或急诊进一步处理"))[:120],
-        "intent": req.intent.value if req.intent else "unknown",
-        "urgency": req.urgency.name if req.urgency else "UNKNOWN",
-        "entities": req.entities or {},
-        "sensitive_data_required": False,
-    }
-
-
 def build_shared_rag_tools(tool_manager: Any) -> Dict[str, AgentToolSpec]:
     """构建所有 Agent 可共享的 RAG 工具。"""
 
@@ -175,7 +163,11 @@ def build_shared_rag_tools(tool_manager: Any) -> Dict[str, AgentToolSpec]:
                 "query": query,
                 "error": getattr(result, "error", "知识库检索失败"),
                 "results": [],
+                # 失败时没有发生召回/精排，三个状态键如实置 False（与成功分支键集合一致，
+                # 编排器按固定键集合从 tool_traces 拷贝进 step，缺键会靠 .get 兜底）
+                "cached": False,
                 "reranked": False,
+                "rerank_degraded": False,
             }
 
         return {
@@ -257,16 +249,5 @@ def appointment_tools() -> Dict[str, AgentToolSpec]:
             },
             compare_registration_fees,
             required=["fee_a", "fee_b"],
-        ),
-    }
-
-
-def emergency_tools() -> Dict[str, AgentToolSpec]:
-    return {
-        "create_handoff_summary": make_tool(
-            "create_handoff_summary",
-            "生成交给人工/急诊的结构化交接摘要，可用于对接医院工单系统；不会创建真实工单。",
-            {"reason": {"type": "string", "description": "需要升级的原因"}},
-            create_handoff_summary,
         ),
     }

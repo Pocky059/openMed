@@ -379,15 +379,6 @@ class MCPToolManager:
                             f"工具 {tool.name} 参数 {key} 类型错误: 期望 {expected_type}，实际 {type(value).__name__}"
                         )
 
-    @staticmethod
-    def _clean_text(value: Any) -> str:
-        """移除 Unicode 代理字符，避免 LLM 请求编码失败。"""
-        if value is None:
-            return ""
-        if not isinstance(value, str):
-            value = str(value)
-        return value.encode("utf-8", errors="ignore").decode("utf-8")
-
     # ── 统计 ──────────────────────────────────────────────────────────────────
 
     def get_stats(self) -> Dict[str, Any]:

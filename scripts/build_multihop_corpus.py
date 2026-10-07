@@ -265,8 +265,10 @@ def write_report(entries: list, herbs: list, rules: list, problems: list) -> Non
     for e in entries:
         types[e.get("doc_type", "?")] = types.get(e.get("doc_type", "?"), 0) + 1
     lines.append("文档类型分布: " + ", ".join(f"{k}={v}" for k, v in sorted(types.items())))
+    # B 类（无规则库依据）经第二轮审核已回填 rule_id，所以不再按 A/B 类分列，
+    # 只统计"带 rule_id 的相互作用篇"（审核后应为全部 interaction 篇）
     a_ints = [e for e in entries if e.get("doc_type") == "interaction" and e.get("rule_id")]
-    lines.append(f"带 rule_id 的相互作用篇（A 类）: {len(a_ints)}")
+    lines.append(f"带 rule_id 的相互作用篇: {len(a_ints)}")
     lines.append("")
     if problems:
         lines.append(f"发现问题 {len(problems)} 个:")
@@ -289,7 +291,7 @@ async def run(args, client, model):
     seed_text = load_seed_text()
     CORPUS_DIR.mkdir(exist_ok=True)
 
-    # 并发 4 味：串行 97 味要 1 小时+，4 并发约 15-20 分钟（DeepSeek 单 key 限速内）
+    # 并发 4 味：串行 100 味要 1 小时+，4 并发约 15-20 分钟（DeepSeek 单 key 限速内）
     sem = asyncio.Semaphore(4)
 
     async def _one(herb):

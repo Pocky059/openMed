@@ -38,7 +38,6 @@ logger = logging.getLogger(__name__)
 class IntentTestCase:
     message:          str
     expected_intent:  str
-    context:          Optional[Dict[str, Any]] = None
 
 
 @dataclass
@@ -127,16 +126,8 @@ Agent 响应: {response}
             resp = await self._client.messages.create(
                 model=self._model, max_tokens=1024, temperature=0.0,
                 messages=[{"role": "user", "content": prompt}],
-                
             )
-            logger.warning(
-                "JUDGE_DEBUG type=%s stop_reason=%r content=%r response=%r",
-                type(resp).__name__,
-                getattr(resp, "stop_reason", None),
-                getattr(resp, "content", None),
-                resp.model_dump() if hasattr(resp, "model_dump") else repr(resp),
-            )
-            #------------------------------------------修改
+            # 解析 LLM 返回：剥掉可能的 ```json 围栏，再取第一个 JSON 对象
             import re
             raw = extract_text_content(resp.content).strip()
 
@@ -149,8 +140,7 @@ Agent 响应: {response}
                 raise ValueError(f"LLM Judge 未返回 JSON: {raw[:300]!r}")
 
             data = json.loads(match.group(0))
-            logger.warning("LLM Judge 原始输出: %r", raw[:1000])
-            #--------------------------------------------修改
+            logger.debug("LLM Judge 原始输出: %r", raw[:1000])
             return QualityScores(
                 relevance=float(data.get("relevance", 0.5)),
                 accuracy=float(data.get("accuracy", 0.5)),
@@ -322,7 +312,7 @@ class EndToEndEvaluator:
         regressions = self._detect_regressions(avg_scores)
 
         # 5. 优化建议
-        recommendations = self._recommendations(avg_scores, intent_metrics)
+        recommendations = self._recommendations(avg_scores)
 
         report = EvalReport(
             timestamp=datetime.now().isoformat(),
@@ -426,11 +416,10 @@ class EndToEndEvaluator:
                     )
         return regressions
 
-    def _recommendations(
-        self,
-        scores: Dict[str, float],
-        intent_metrics: Dict[str, Any],
-    ) -> List[str]:
+    def _recommendations(self, scores: Dict[str, float]) -> List[str]:
+        # scores 就是 run() 里的 avg_scores：intent_accuracy 已由调用方并入
+        # （见 run() 第 3 步汇总），所以这里只需要一个参数。
+        # 曾有一个 intent_metrics 参数但函数体从未使用，是死参数，已删除（审查 C-4）。
         recs = []
         if scores.get("intent_accuracy", 1.0) < 0.90:
             recs.append("意图识别准确率 < 90%：增加 Few-shot 示例，或对低 F1 的意图类别补充训练数据")

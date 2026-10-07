@@ -7,7 +7,8 @@
   collection 创建时固化，改代码传新函数对已存在的 collection 无效。
 
   现在 memory/conversation_memory.py 创建时已传 make_embedding_function()，
-  本脚本只负责把线上残留的旧 collection 换掉（幂等：重建后重复执行无副作用）。
+  本脚本只负责把线上残留的旧 collection 换掉。注意：重复执行会清空并重建
+  这两个 collection（丢数据），不是"重复执行无副作用"的幂等——只该跑一次。
 
 损失说明：删除会清空开发期积累的情景记忆与用户画像（目前基本是冒烟测试
 数据，损失≈0）。生产环境执行前务必先备份。

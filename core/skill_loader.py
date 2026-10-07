@@ -34,7 +34,9 @@ class Skill:
         if not self.enabled:
             return False
 
-        if self.agents and agent_type and agent_type.lower() not in self.agents:
+        # agents 非空时：调用方不知道 agent_type（None）也按不匹配处理——
+        # 受限 Skill 只应注入明确匹配的 Agent，未知场景下不注入（保守）
+        if self.agents and (not agent_type or agent_type.lower() not in self.agents):
             return False
 
         if not self.keywords:
