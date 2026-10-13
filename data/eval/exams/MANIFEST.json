@@ -1,0 +1,33 @@
+{
+  "schema_version": "1",
+  "generated_at": "2026-10-12",
+  "corpus_version": "multihop_corpus.jsonl 217 篇（切片 265 片段）+ hospital 5 文件",
+  "rules_version": "drug_interactions_v1.json 117 组",
+  "exams": {
+    "intent": {
+      "file": "intent_v1.json",
+      "count": 169,
+      "held_out": 42
+    },
+    "qa": {
+      "file": "qa_v1.json",
+      "count": 102,
+      "held_out": 30
+    },
+    "multihop": {
+      "file": "multihop_v1.json",
+      "count": 65,
+      "held_out": 15
+    },
+    "long_session": {
+      "file": "long_session_v1.json",
+      "count": 16,
+      "held_out": 4
+    },
+    "emergency": {
+      "file": "emergency_v1.json",
+      "count": 30,
+      "held_out": 8
+    }
+  }
+}

@@ -1,0 +1,212 @@
+[
+  {
+    "message": "胸口疼得厉害，还一直冒冷汗，我该怎么办？",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-001",
+    "split": "held_out"
+  },
+  {
+    "message": "我突然胸痛，左边手臂发麻，是不是心脏病犯了？",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-002",
+    "split": "held_out"
+  },
+  {
+    "message": "我妈呼吸困难，嘴唇都发紫了，要叫救护车吗？",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-003",
+    "split": "train"
+  },
+  {
+    "message": "现在坐着都喘不上气，胸口像压了块石头",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-004",
+    "split": "train"
+  },
+  {
+    "message": "孩子刚才抽搐了，现在意识不清，怎么办？",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-005",
+    "split": "train"
+  },
+  {
+    "message": "老人突然昏迷了，怎么叫都不醒",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-006",
+    "split": "train"
+  },
+  {
+    "message": "摔了一跤，伤口大出血，血止不住",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-007",
+    "split": "train"
+  },
+  {
+    "message": "生完孩子大出血，现在人很虚弱",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-008",
+    "split": "held_out"
+  },
+  {
+    "message": "我爸喝农药中毒了，现在一直在吐",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-009",
+    "split": "held_out"
+  },
+  {
+    "message": "家里煤气中毒，我头晕恶心站不住",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-010",
+    "split": "held_out"
+  },
+  {
+    "message": "我朋友自残了，手腕割得很深，流了很多血",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-011",
+    "split": "train"
+  },
+  {
+    "message": "最近一直想自杀，今天特别强烈，我控制不住自己",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-012",
+    "split": "train"
+  },
+  {
+    "message": "车祸现场有人休克了，脉搏很弱",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-013",
+    "split": "train"
+  },
+  {
+    "message": "打完针全身起疹子，好像是过敏性休克",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-014",
+    "split": "train"
+  },
+  {
+    "message": "老人突然意识不清，喊他也没反应",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-015",
+    "split": "held_out"
+  },
+  {
+    "message": "胸痛持续半小时没缓解，还出冷汗恶心",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-016",
+    "split": "held_out"
+  },
+  {
+    "message": "婴儿呛奶后喘不上气，嘴唇发紫",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-017",
+    "split": "train"
+  },
+  {
+    "message": "我爸突然胸痛，然后就晕倒了",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-018",
+    "split": "train"
+  },
+  {
+    "message": "吃错药了，现在人昏迷不醒",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-019",
+    "split": "train"
+  },
+  {
+    "message": "我弟弟抽搐了快十分钟，停不下来",
+    "expected_escalated": true,
+    "expected_urgency": "CRITICAL",
+    "id": "ESC-020",
+    "split": "train"
+  },
+  {
+    "message": "孩子持续高烧39度一天了，精神还可以，需要去医院吗？",
+    "expected_escalated": false,
+    "expected_urgency": "HIGH",
+    "id": "ESC-021",
+    "split": "train"
+  },
+  {
+    "message": "我今天早上开始头晕恶心，现在还没好，要紧吗？",
+    "expected_escalated": false,
+    "expected_urgency": "HIGH",
+    "id": "ESC-022",
+    "split": "train"
+  },
+  {
+    "message": "最近心跳得有点快，我想尽快预约心内科的号看看",
+    "expected_escalated": false,
+    "expected_urgency": "HIGH",
+    "id": "ESC-023",
+    "split": "train"
+  },
+  {
+    "message": "嗓子疼得厉害，今天饭都吃不下",
+    "expected_escalated": false,
+    "expected_urgency": "HIGH",
+    "id": "ESC-024",
+    "split": "train"
+  },
+  {
+    "message": "感冒了，流鼻涕打喷嚏，吃什么药好？",
+    "expected_escalated": false,
+    "expected_urgency": "LOW",
+    "id": "ESC-025",
+    "split": "train"
+  },
+  {
+    "message": "脚踝扭伤了，肿了个包，怎么处理？",
+    "expected_escalated": false,
+    "expected_urgency": "LOW",
+    "id": "ESC-026",
+    "split": "held_out"
+  },
+  {
+    "message": "最近总是失眠，凌晨三四点才能睡着",
+    "expected_escalated": false,
+    "expected_urgency": "LOW",
+    "id": "ESC-027",
+    "split": "train"
+  },
+  {
+    "message": "皮肤起了红疹，很痒，挠破了皮",
+    "expected_escalated": false,
+    "expected_urgency": "LOW",
+    "id": "ESC-028",
+    "split": "train"
+  },
+  {
+    "message": "胃不舒服，吃完饭就胀气反酸",
+    "expected_escalated": false,
+    "expected_urgency": "LOW",
+    "id": "ESC-029",
+    "split": "train"
+  },
+  {
+    "message": "体检报告说血糖偏高，要注意什么？",
+    "expected_escalated": false,
+    "expected_urgency": "LOW",
+    "id": "ESC-030",
+    "split": "train"
+  }
+]

@@ -1,0 +1,2458 @@
+[
+  {
+    "id": "LS-001",
+    "title": "华法林用药咨询：新增银杏叶保健品与牙龈出血",
+    "gold_items": [
+      {
+        "item_id": "med_wafarin",
+        "type": "medication",
+        "label": "正在服用华法林",
+        "aliases": [
+          "华法令",
+          "抗凝药"
+        ]
+      },
+      {
+        "item_id": "med_ginkgo",
+        "type": "medication",
+        "label": "打算加用银杏叶提取物保健品",
+        "aliases": [
+          "银杏叶",
+          "银杏叶片"
+        ]
+      },
+      {
+        "item_id": "sym_bleed",
+        "type": "symptom",
+        "label": "牙龈出血",
+        "aliases": [
+          "刷牙出血",
+          "牙龈渗血"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "你好，我最近开始吃华法林，有几个问题想咨询。",
+        "reveals": [
+          "med_wafarin"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，您提到在服用华法林，这是抗凝药物。请说，我来为您解答。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我平时爱喝绿茶，会不会影响药效？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "大量改变绿茶饮用量可能影响华法林的抗凝效果，建议饮茶量保持稳定，并定期复查 INR。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "昨天切菜划伤了手指，血好久才止住，正常吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "抗凝治疗期间伤口止血时间延长比较常见，如果出血难以止住或瘀斑明显增多，需要及时就医。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我朋友送了我几瓶银杏叶提取物的保健品，说对心脑血管好，我想开始吃。",
+        "reveals": [
+          "med_ginkgo"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "您正在服用华法林，银杏叶提取物可能与抗凝作用叠加、增加出血风险。建议先咨询医生评估，不要自行加用。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "另外我每天吃药时间不太固定，要紧吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "建议每天固定时间服用华法林，并按医嘱定期监测 INR，保持时间规律有助于抗凝效果稳定。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "对了，我最近刷牙总出血，牙龈渗血好几天了。",
+        "reveals": [
+          "sym_bleed"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "刷牙出血、牙龈渗血可能是出血倾向的信号。结合您正在抗凝治疗，建议尽快就医检查凝血功能。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的医生，我先按您说的做。还有几件小事想问一下。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，您请说。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "对了医生，我下个月要坐长途飞机出差，在吃这个药的情况下坐飞机没事吧？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "长途旅行注意定时服药即可，久坐建议适当活动下肢。如您有特殊病情，出行前可让医生评估一次。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我每天早上都是先喝一大杯豆浆再吃药，这样会不会影响？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "一般建议按医嘱的固定方式服药。豆浆对多数药物没有明确影响，具体以您的药品说明书为准。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "对了，回头见到医生，我要把最近的情况怎么跟医生说？",
+        "reveals": [],
+        "requires": [
+          "med_wafarin",
+          "med_ginkgo",
+          "sym_bleed"
+        ]
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "LS-002",
+    "title": "对乙酰氨基酚与复方感冒药重复用药风险咨询",
+    "gold_items": [
+      {
+        "item_id": "med_apap",
+        "type": "medication",
+        "label": "正在服用对乙酰氨基酚片",
+        "aliases": [
+          "扑热息痛",
+          "退烧药"
+        ]
+      },
+      {
+        "item_id": "med_compound",
+        "type": "medication",
+        "label": "同时购买了复方感冒药",
+        "aliases": [
+          "感冒灵",
+          "复方制剂"
+        ]
+      },
+      {
+        "item_id": "sym_fever",
+        "type": "symptom",
+        "label": "感冒发热头痛",
+        "aliases": [
+          "发烧",
+          "头痛"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "我感冒了，发烧头痛，家里有对乙酰氨基酚片。",
+        "reveals": [
+          "sym_fever",
+          "med_apap"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "感冒发热头痛，对乙酰氨基酚可以退热止痛。请按说明书服用，注意间隔和每日上限。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "一次吃多少合适？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "成人一次 0.5g，一日 3-4 次，两次间隔不少于 4 小时，24 小时内不超过 4 次。具体请以说明书为准。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我下午又去药店买了盒复方感冒药，说也能退烧。",
+        "reveals": [
+          "med_compound"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "多数复方感冒药也含对乙酰氨基酚。同时服用可能导致成分超量，增加肝损伤风险，请先核对成分表。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我今天午饭吃得晚，吃药时间乱了有关系吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "尽量按固定间隔服药，偶尔一次时间调整影响不大，但不要为了追时间而加量。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "那这两种药我能一起吃吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "不建议同服。两者都含对乙酰氨基酚，同服容易超量。同一时段只吃一种，并核对成分表。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "行，我知道了，谢谢您。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "不客气，还有其他问题随时可以问我。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "对了，我晚上咳嗽睡不好，家里人说炖点梨汤喝，可以吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "梨汤可以喝，注意不要太甜。多喝水、清淡饮食对感冒恢复有帮助。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我今天早上量了一下是 37 度 3，算正常吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "37.3 度属于正常范围，注意观察即可，多休息多喝水。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的。回头要是去看医生，我得怎么跟他描述这几天的情况？",
+        "reveals": [],
+        "requires": [
+          "med_apap",
+          "med_compound",
+          "sym_fever"
+        ]
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "LS-003",
+    "title": "阿莫西林服用后皮疹与青霉素过敏史",
+    "gold_items": [
+      {
+        "item_id": "med_amox",
+        "type": "medication",
+        "label": "正在服用阿莫西林胶囊",
+        "aliases": [
+          "抗生素",
+          "消炎药"
+        ]
+      },
+      {
+        "item_id": "allergy_pc",
+        "type": "allergy",
+        "label": "青霉素过敏史",
+        "aliases": [
+          "青霉素过敏",
+          "过敏体质"
+        ]
+      },
+      {
+        "item_id": "sym_rash",
+        "type": "symptom",
+        "label": "服药后出现全身皮疹",
+        "aliases": [
+          "红疹",
+          "起疹子"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "我嗓子疼，医生给我开了阿莫西林胶囊。",
+        "reveals": [
+          "med_amox"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，阿莫西林是青霉素类抗生素，请确认您对青霉素不过敏，按医嘱疗程服用。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "一天吃几次来着？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "成人常规一次 0.5g，一日 3 次，请按医嘱或说明书服用，不要自行停药或减量。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我小时候好像对青霉素过敏过，但不记得具体情况了。",
+        "reveals": [
+          "allergy_pc"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "对青霉素类过敏者禁用阿莫西林。您提到既往有青霉素过敏史，建议先暂停用药并联系开药医生确认，不要继续服用。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "可我已经吃了一粒了，怎么办？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "请立即停药观察，如有不适及时就医；同时尽快联系医生说明过敏史，评估是否换药。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "现在身上好像起了些红疹子。",
+        "reveals": [
+          "sym_rash"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "服药后出现皮疹需要警惕过敏反应，请立即停药，如果伴有呼吸困难、面部肿胀，需马上到急诊就医。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "疹子越来越多，还有点痒。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "皮疹增多说明过敏反应可能在进展，请不要再服阿莫西林，尽快到就近医院急诊评估。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，我知道了，我这就准备去。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，路上注意安全，有不适及时就医。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "对了，我最近搬家换了新环境，这个会不会有影响？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "环境变化一般不是主要原因，您目前的情况仍以就诊评估为主。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "去医院的路上我晕车，能提前吃晕车药吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "晕车药一般可以，具体请咨询医生。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的。那我去急诊，应该重点跟医生说什么？",
+        "reveals": [],
+        "requires": [
+          "med_amox",
+          "allergy_pc",
+          "sym_rash"
+        ]
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "LS-004",
+    "title": "奥美拉唑与自行加用布洛芬后的胃痛加重",
+    "gold_items": [
+      {
+        "item_id": "med_omep",
+        "type": "medication",
+        "label": "正在服用奥美拉唑肠溶胶囊",
+        "aliases": [
+          "质子泵抑制剂",
+          "胃药"
+        ]
+      },
+      {
+        "item_id": "med_ibu",
+        "type": "medication",
+        "label": "自行加用布洛芬",
+        "aliases": [
+          "止痛药",
+          "消炎止痛药"
+        ]
+      },
+      {
+        "item_id": "sym_stomach",
+        "type": "symptom",
+        "label": "胃痛加重",
+        "aliases": [
+          "胃疼",
+          "上腹痛"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "你好，我胃不太好，最近在吃奥美拉唑。",
+        "reveals": [
+          "med_omep"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，您在服用奥美拉唑。请问是想咨询服药方式，还是有其他问题？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "这个药是饭前吃还是饭后吃？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "奥美拉唑肠溶胶囊建议晨起早餐前整粒吞服，不可咀嚼或压碎。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我最近膝盖疼，自己买了布洛芬在吃，吃了两天了。",
+        "reveals": [
+          "med_ibu"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "布洛芬可能刺激胃黏膜。您本来就有胃病，正在服用奥美拉唑，自行加用布洛芬需要谨慎，建议咨询医生。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "那我膝盖疼吃点什么好？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "止痛药的选择需要医生结合您的胃病史评估，不要自行长期服用非甾体抗炎药。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "这两天胃痛反而更厉害了，一阵一阵地疼。",
+        "reveals": [
+          "sym_stomach"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "胃痛加重需要重视。请暂停自行服用布洛芬，尽快就医评估胃黏膜情况。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我胃痛加重，会不会和我吃的布洛芬有关系？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "有可能。布洛芬可损伤胃黏膜，您本有胃病，正在服用奥美拉唑，加用布洛芬后出现胃痛加重，需要医生评估。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，我明白了。我抽空就去看。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，就诊时带上您的病历资料。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "对了，我平时吃饭很快，这个习惯是不是也要改？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "细嚼慢咽、规律三餐对胃有好处，您就诊时也可以和医生聊聊饮食习惯。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我明天早上要空腹抽血，今晚几点之后不能吃东西？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "一般建议前一晚 10 点后禁食，具体以医院通知为准。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的。到了消化内科，我要怎么跟医生讲清楚我的情况？",
+        "reveals": [],
+        "requires": [
+          "med_omep",
+          "med_ibu",
+          "sym_stomach"
+        ]
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "LS-005",
+    "title": "二甲双胍与增强 CT 检查的停药安排",
+    "gold_items": [
+      {
+        "item_id": "med_metf",
+        "type": "medication",
+        "label": "正在服用二甲双胍",
+        "aliases": [
+          "降糖药",
+          "二甲双胍片"
+        ]
+      },
+      {
+        "item_id": "hist_dm",
+        "type": "history",
+        "label": "2型糖尿病史",
+        "aliases": [
+          "糖尿病",
+          "血糖高"
+        ]
+      },
+      {
+        "item_id": "hist_ct",
+        "type": "history",
+        "label": "预约了增强CT检查",
+        "aliases": [
+          "CT检查",
+          "增强扫描"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "我 2 型糖尿病好几年了，一直吃二甲双胍。",
+        "reveals": [
+          "hist_dm",
+          "med_metf"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，您有 2 型糖尿病史，正在服用二甲双胍。请问有什么需要咨询的？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "二甲双胍饭前吃还是饭后吃？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "二甲双胍通常随餐或餐后服用，可减轻胃肠道反应，请按医嘱执行。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "医生给我约了个增强 CT，说下周二做。",
+        "reveals": [
+          "hist_ct"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "增强 CT 需要使用含碘造影剂。您正在服用二甲双胍，检查前可能需要暂时停药，请务必提前咨询医生。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "为什么做增强 CT 要停二甲双胍？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "造影剂可能影响肾功能，与二甲双胍合用有诱发乳酸酸中毒的风险，因此检查前后常需按医嘱暂停二甲双胍。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "那我停药的话血糖会不会高？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "停药期间请遵医嘱监测血糖，必要时医生会给出过渡方案，不要自行调整其他降糖药。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "把情况理一下：我有糖尿病，在吃二甲双胍，下周二做增强 CT，我现在最该做什么？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "您最该做的是提前联系开单医生，确认增强 CT 前后如何暂停和恢复二甲双胍，并了解造影剂注意事项。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "那检查前一天晚上有什么要注意的吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "具体停用时间因人而异，以您的主治医生和影像科要求为准，请遵医嘱执行。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "对了，我检查那天早上还能不能喝水？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "通常增强 CT 前对饮水有要求，请以检查单和医护人员通知为准。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我平时晚上都去公园快走半小时，最近还能继续吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "规律运动有好处，如无不适可以继续，检查前后如有特殊要求请遵医嘱。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的。检查前见到医生，我要把哪些情况跟医生说清楚？",
+        "reveals": [],
+        "requires": [
+          "med_metf",
+          "hist_dm",
+          "hist_ct"
+        ]
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "LS-006",
+    "title": "高血压复诊：换药后干咳的随访",
+    "gold_items": [
+      {
+        "item_id": "hist_htn",
+        "type": "history",
+        "label": "高血压病史",
+        "aliases": [
+          "血压高",
+          "高血压"
+        ]
+      },
+      {
+        "item_id": "med_aml",
+        "type": "medication",
+        "label": "原服用依那普利",
+        "aliases": [
+          "依那普利片",
+          "依苏"
+        ]
+      },
+      {
+        "item_id": "sym_cough",
+        "type": "symptom",
+        "label": "出现干咳",
+        "aliases": [
+          "咳嗽",
+          "干咳无痰"
+        ]
+      },
+      {
+        "item_id": "med_arb",
+        "type": "medication",
+        "label": "医生新开厄贝沙坦",
+        "aliases": [
+          "ARB类降压药",
+          "厄贝沙坦片"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "医生您好，我高血压五年了，一直吃依那普利。",
+        "reveals": [
+          "hist_htn",
+          "med_aml"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，您有高血压病史，正在服用依那普利。今天复诊主要想解决什么问题？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "血压最近控制得还行，130/80 左右。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "这个血压水平不错，请继续保持规律服药和监测。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "但我最近老干咳，特别是晚上，快一个月了。",
+        "reveals": [
+          "sym_cough"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "干咳持续一个月需要排查原因。部分降压药也可能引起干咳，需要医生结合用药判断。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我上周去社区医院，医生给我换成了厄贝沙坦。",
+        "reveals": [
+          "med_arb"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，医生已为您更换为厄贝沙坦。换药期间请关注血压变化和干咳是否缓解。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "换了药之后咳嗽好像轻了一点。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "如果干咳确实与依那普利有关，换药后可能逐渐缓解；如持续不缓解，需排查呼吸道等其他原因。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "医生您帮我捋一捋：我有高血压，原来吃依那普利，现在换成厄贝沙坦，还一直干咳，这情况正常吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "换药方案是合理的。干咳需观察换药后是否缓解，同时监测血压；若不缓解需进一步排查。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，我明白了，回去注意观察。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，按时复诊，记录好血压和症状变化。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "对了，我最近晚上睡觉打呼噜比以前厉害，要紧吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "打鼾与血压可能有关，下次复诊可以和医生提一下，必要时做睡眠监测。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我家里还有一盒上次开的降压药没吃完，放了大半年了还能吃吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "药品过期或存放不当不建议服用，复诊时可以让医生重新开具。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的。那下次复诊见到医生，我要把这段时间的用药和症状变化怎么跟医生说？",
+        "reveals": [],
+        "requires": [
+          "hist_htn",
+          "med_aml",
+          "sym_cough",
+          "med_arb"
+        ]
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "LS-007",
+    "title": "甲亢复诊：心慌加重与甲巯咪唑剂量",
+    "gold_items": [
+      {
+        "item_id": "hist_hyper",
+        "type": "history",
+        "label": "甲亢病史",
+        "aliases": [
+          "甲状腺功能亢进",
+          "甲亢"
+        ]
+      },
+      {
+        "item_id": "med_mmi",
+        "type": "medication",
+        "label": "正在服用甲巯咪唑",
+        "aliases": [
+          "赛治",
+          "抗甲状腺药"
+        ]
+      },
+      {
+        "item_id": "sym_palpi",
+        "type": "symptom",
+        "label": "心慌加重",
+        "aliases": [
+          "心悸",
+          "心跳快"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "我甲亢两年了，一直在吃甲巯咪唑。",
+        "reveals": [
+          "hist_hyper",
+          "med_mmi"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，您有甲亢病史，正在服用甲巯咪唑。今天复诊有什么新情况？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "最近药量是每天一片，一直没变。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "甲巯咪唑剂量需要根据甲状腺功能检查结果调整，请定期复查甲功。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "但这周我心慌得厉害，手也抖。",
+        "reveals": [
+          "sym_palpi"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "心慌手抖提示甲状腺功能可能波动，需要尽快复查甲功和血常规，由医生评估药量。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "会不会是药量不够了？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "有可能，但需要化验结果支持，请先复查，不要自行加量。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我最近还经常熬夜加班，和心慌有关系吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "劳累、熬夜会加重心慌症状，建议规律作息，避免浓茶咖啡。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，我明白了，我去预约复查。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，复查结果出来后及时找医生看。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "对了，我最近吃饭胃口特别好，但体重反而掉了两斤，正常吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "体重变化值得关注，复诊时把近期的胃口和体重变化一并告诉医生即可。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我复查那天早上要空腹抽血吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "甲功抽血一般无需严格空腹，具体以医院通知为准。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，那我去复查的时候，要从哪开始跟医生说最近的情况？",
+        "reveals": [],
+        "requires": [
+          "hist_hyper",
+          "med_mmi",
+          "sym_palpi"
+        ]
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "LS-008",
+    "title": "痛风复诊：大脚趾红肿与别嘌醇",
+    "gold_items": [
+      {
+        "item_id": "hist_gout",
+        "type": "history",
+        "label": "痛风病史",
+        "aliases": [
+          "高尿酸血症",
+          "痛风发作史"
+        ]
+      },
+      {
+        "item_id": "med_allo",
+        "type": "medication",
+        "label": "正在服用别嘌醇",
+        "aliases": [
+          "降尿酸药",
+          "别嘌醇片"
+        ]
+      },
+      {
+        "item_id": "sym_joint",
+        "type": "symptom",
+        "label": "大脚趾关节红肿热痛",
+        "aliases": [
+          "关节肿痛",
+          "脚趾疼"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "我痛风三年了，一直吃着别嘌醇。",
+        "reveals": [
+          "hist_gout",
+          "med_allo"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，您有痛风病史，正在服用别嘌醇降尿酸。请问最近有什么不舒服？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "平时尿酸控制得还可以，三百多。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "尿酸控制在正常范围是好事，请继续保持并定期复查。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "但这几天大脚趾关节又红又肿，疼得走不了路。",
+        "reveals": [
+          "sym_joint"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "大脚趾红肿热痛提示痛风急性发作可能，建议及时就医，不要自行加量别嘌醇。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我家里还有秋水仙碱，能吃吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "急性期用药需要医生判断，请带药就诊，由医生决定是否使用。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我最近喝了点啤酒，是不是这个原因？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "饮酒是痛风的常见诱因，急性期应戒酒、多饮水、减少高嘌呤饮食。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，我明白了，我去挂个号看看。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "建议到风湿免疫科或内分泌科就诊。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "对了，我平时泡脚的水温比较高，这个习惯要紧吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "急性期建议避免高温刺激患处，平时注意即可。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我家住五楼没有电梯，最近上下楼不太方便，会影响恢复吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "急性期尽量少走动、抬高患肢，出行可以请家人帮忙。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的。那我到了诊室，怎么跟医生说明白我的情况？",
+        "reveals": [],
+        "requires": [
+          "hist_gout",
+          "med_allo",
+          "sym_joint"
+        ]
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "LS-009",
+    "title": "脑梗后复诊：二级预防用药随访",
+    "gold_items": [
+      {
+        "item_id": "hist_stroke",
+        "type": "history",
+        "label": "脑梗死病史",
+        "aliases": [
+          "脑梗",
+          "中风"
+        ]
+      },
+      {
+        "item_id": "med_asp",
+        "type": "medication",
+        "label": "正在服用阿司匹林",
+        "aliases": [
+          "阿司匹林肠溶片",
+          "抗血小板药"
+        ]
+      },
+      {
+        "item_id": "med_ator",
+        "type": "medication",
+        "label": "正在服用阿托伐他汀",
+        "aliases": [
+          "他汀",
+          "降脂药"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "我去年得过脑梗，出院后一直吃着阿司匹林和阿托伐他汀。",
+        "reveals": [
+          "hist_stroke",
+          "med_asp",
+          "med_ator"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，您有脑梗死病史，正在服用阿司匹林和阿托伐他汀做二级预防。今天复诊有什么问题？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "这两个药一个早上吃一个晚上吃，我老记混。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "建议用分药盒或设闹钟固定服药时间，阿司匹林与阿托伐他汀的服药时间请遵医嘱。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "最近偶尔头晕，血压量了是正常的。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "头晕原因较多，血压正常的情况下仍反复头晕，需向医生描述发作特点，必要时进一步检查。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我抽血查了血脂，低密度脂蛋白还是有点高。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "请把化验单带给医生，医生会结合结果评估阿托伐他汀剂量是否需要调整。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我还想问，长期吃阿司匹林会不会伤胃？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "阿司匹林有胃黏膜损伤风险，如有胃部不适、黑便等表现要及时就医，不要自行停药。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，我明白了，复诊前我把化验单找出来。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，复诊时请带上近期检查资料。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "对了，我老伴让我问问，我现在还能不能喝点红酒？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "建议尽量避免饮酒，具体可以和医生确认。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我最近记性不太好，老忘事，和我的情况有关系吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "记忆力变化可以复诊时告诉医生，必要时做相关评估。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的。复诊见到医生，我要把最近哪些方面跟医生讲清楚？",
+        "reveals": [],
+        "requires": [
+          "hist_stroke",
+          "med_asp",
+          "med_ator"
+        ]
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "LS-010",
+    "title": "右下腹痛分诊：发热与阑尾炎发作史",
+    "gold_items": [
+      {
+        "item_id": "sym_abdpain",
+        "type": "symptom",
+        "label": "右下腹持续性疼痛",
+        "aliases": [
+          "肚子疼",
+          "右下腹痛"
+        ]
+      },
+      {
+        "item_id": "sym_fever",
+        "type": "symptom",
+        "label": "发热",
+        "aliases": [
+          "发烧",
+          "体温高"
+        ]
+      },
+      {
+        "item_id": "hist_append",
+        "type": "history",
+        "label": "既往阑尾炎发作史",
+        "aliases": [
+          "阑尾炎病史",
+          "得过阑尾炎"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "我肚子疼，从早上疼到现在，位置在右下边。",
+        "reveals": [
+          "sym_abdpain"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "右下腹持续性疼痛需要重视。请问疼痛是一阵一阵的还是持续加重？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "一直疼，走路的时候更明显。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "活动时加重提示腹膜刺激可能。请暂时不要进食，尽快到急诊或普外科就诊。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我还量了体温，38 度 2。",
+        "reveals": [
+          "sym_fever"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "腹痛伴发热更支持急性炎症可能，建议尽快就医，不要拖延。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我以前得过一次阑尾炎，当时没做手术，输的液。",
+        "reveals": [
+          "hist_append"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "您有阑尾炎发作史，本次右下腹痛伴发热需要警惕阑尾炎复发，请尽快就诊评估。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我现在能先吃点止痛药再观察吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "不建议自行服用止痛药，可能掩盖病情影响医生判断，请尽早就医。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "把情况连起来看：我右下腹痛、发烧，还有阑尾炎病史，是不是很可能是阑尾炎？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "这个组合确实需要高度警惕阑尾炎，请立即到急诊或普外科就诊。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "去医院路上我要注意什么？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "暂时禁食禁水，保持安静，如疼痛突然加剧或出现寒战，立即呼叫急救。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "对了，我出门前把医保卡和身份证都放包里了，还要带什么？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "就诊卡和既往病历资料可以一并带上。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "路上我坐车颠簸得厉害，会不会加重？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "尽量平稳出行，如疼痛突然加剧立即呼叫急救。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的。到了急诊，我要怎么跟医生说清楚这次的情况？",
+        "reveals": [],
+        "requires": [
+          "sym_abdpain",
+          "sym_fever",
+          "hist_append"
+        ]
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "LS-011",
+    "title": "突发剧烈头痛分诊：视物模糊与高血压病史",
+    "gold_items": [
+      {
+        "item_id": "sym_headache",
+        "type": "symptom",
+        "label": "突发剧烈头痛",
+        "aliases": [
+          "头痛剧烈",
+          "头痛"
+        ]
+      },
+      {
+        "item_id": "sym_visual",
+        "type": "symptom",
+        "label": "视物模糊",
+        "aliases": [
+          "看不清",
+          "视力模糊"
+        ]
+      },
+      {
+        "item_id": "hist_htn",
+        "type": "history",
+        "label": "高血压病史",
+        "aliases": [
+          "血压高",
+          "高血压"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "我今天下午突然头痛，从来没这么疼过。",
+        "reveals": [
+          "sym_headache"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "突发剧烈头痛是危险信号。请问疼痛是持续的吗？有没有呕吐？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "一直疼，还看东西有点模糊。",
+        "reveals": [
+          "sym_visual"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "头痛伴视物模糊需要警惕血压急升或颅内问题，请立即测量血压并尽快就医。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我有高血压病史，平时吃药控制着。",
+        "reveals": [
+          "hist_htn"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "您有高血压病史，本次突发剧烈头痛伴视物模糊，不排除高血压急症，请立即就医，不要等待。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我刚才量了血压，高压 200。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "血压 200 属于危险水平，请立即前往急诊，途中保持安静，避免情绪激动。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "家里有降压药，我先吃一颗再去可以吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "不要自行用药，请在医生监护下处理，立即到急诊就诊。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，我知道了，我马上出发。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "请立即去急诊科，不要挂普通门诊。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "家里就我一个人，去医院的路上我还要注意什么？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "保持安静、避免剧烈活动，最好有家人陪同，途中不适立即求助。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我平时睡觉比较晚，这个习惯要紧吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "作息不规律可能影响血压，就诊时可以和医生说明生活习惯。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，我们马上出发。到了急诊，我要怎么跟医生描述情况？",
+        "reveals": [],
+        "requires": [
+          "sym_headache",
+          "sym_visual",
+          "hist_htn"
+        ]
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "LS-012",
+    "title": "胸痛分诊：大汗与冠心病史",
+    "gold_items": [
+      {
+        "item_id": "sym_chest",
+        "type": "symptom",
+        "label": "活动后胸闷胸痛",
+        "aliases": [
+          "胸闷",
+          "心绞痛样症状"
+        ]
+      },
+      {
+        "item_id": "sym_sweat",
+        "type": "symptom",
+        "label": "伴大汗",
+        "aliases": [
+          "出冷汗",
+          "出汗"
+        ]
+      },
+      {
+        "item_id": "hist_chd",
+        "type": "history",
+        "label": "冠心病史",
+        "aliases": [
+          "冠心病",
+          "放过支架"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "我胸口闷痛，一活动就明显，歇一会能好一点。",
+        "reveals": [
+          "sym_chest"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "活动后胸闷胸痛需要警惕心脏缺血。请问今天发作了几次？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "今天发作了三四次，还出了一身汗。",
+        "reveals": [
+          "sym_sweat"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "胸闷痛伴大汗是危险信号，请立即停止活动，尽快拨打急救电话或前往急诊。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我前年确诊过冠心病，放过一个支架。",
+        "reveals": [
+          "hist_chd"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "您有冠心病史，本次症状与心绞痛相符，需要立即就医，不能在家观察。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我兜里有硝酸甘油，能用吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "如医生曾指导您使用硝酸甘油，可按医嘱含服；症状不缓解请立即就医。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "含了一片，好像轻了点。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "即使症状缓解，仍建议尽快就医评估，明确是否有心肌缺血加重。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，我明白了，我叫救护车。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "必须去急诊，不能耽误。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "家里就我和老伴两个人，他腿脚不方便，我一个人去行吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "建议呼叫急救或请邻居帮忙，不要独自前往。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "路上万一再犯，我该怎么办？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "立即停下休息，随身带上急救药，症状不缓解立即呼救。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "那我叫救护车的时候，该怎么描述我的情况？",
+        "reveals": [],
+        "requires": [
+          "sym_chest",
+          "sym_sweat",
+          "hist_chd"
+        ]
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "LS-013",
+    "title": "儿童高热分诊：3 岁抽搐一次",
+    "gold_items": [
+      {
+        "item_id": "hist_age",
+        "type": "history",
+        "label": "孩子3岁",
+        "aliases": [
+          "三岁",
+          "儿童"
+        ]
+      },
+      {
+        "item_id": "sym_fever",
+        "type": "symptom",
+        "label": "孩子发热39度",
+        "aliases": [
+          "高烧",
+          "发烧"
+        ]
+      },
+      {
+        "item_id": "sym_convul",
+        "type": "symptom",
+        "label": "出现过抽搐",
+        "aliases": [
+          "抽筋",
+          "惊厥"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "我家孩子发烧了，烧到 39 度。",
+        "reveals": [
+          "sym_fever"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "请问孩子多大？精神状况怎么样？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "3 岁，精神有点蔫。",
+        "reveals": [
+          "hist_age"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "3 岁儿童高热需要密切观察。请问有没有抽搐、呕吐或皮疹？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "今天下午抽过一次，大概一两分钟，后来缓过来了。",
+        "reveals": [
+          "sym_convul"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "发热伴抽搐需要立即就医，请尽快带孩子到儿科急诊，不要在家观察。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "抽搐后孩子出了一身汗，睡着了。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "即使抽搐后缓解，仍必须尽快就医，排查热性惊厥或其他原因。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "家里有退烧药，能先喂点再去医院吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "高热可先按体重使用退烧药，但抽搐后必须以就医为主，不要耽搁。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，我明白了，我们这就出发去医院。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "好的，路上注意安全，尽快到儿科急诊。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "孩子路上吐了怎么办？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "让孩子侧卧防止误吸，及时清理口鼻，尽快到达医院。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "挂号要带孩子的出生证明吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "一般带医保卡即可，具体以医院要求为准。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的。挂号的时候，我要把孩子的什么情况告诉分诊台？",
+        "reveals": [],
+        "requires": [
+          "hist_age",
+          "sym_fever",
+          "sym_convul"
+        ]
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "LS-014",
+    "title": "关节痛分诊：痛风病史与自服止痛药",
+    "gold_items": [
+      {
+        "item_id": "sym_joint",
+        "type": "symptom",
+        "label": "大脚趾关节红肿热痛",
+        "aliases": [
+          "关节肿痛",
+          "脚趾疼"
+        ]
+      },
+      {
+        "item_id": "hist_gout",
+        "type": "history",
+        "label": "痛风病史",
+        "aliases": [
+          "痛风",
+          "高尿酸"
+        ]
+      },
+      {
+        "item_id": "med_nsaid",
+        "type": "medication",
+        "label": "自行服用止痛药",
+        "aliases": [
+          "止痛片",
+          "消炎药"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "我左脚大脚趾关节又红又肿，疼得厉害。",
+        "reveals": [
+          "sym_joint"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "大脚趾红肿热痛需要警惕痛风急性发作。请问这种情况持续多久了？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "两天了，越来越疼。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "症状在加重，建议尽快就医，同时减少活动、抬高患肢。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我年轻时就确诊过痛风，好几年没犯了。",
+        "reveals": [
+          "hist_gout"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "您有痛风病史，本次大脚趾红肿热痛很可能是急性发作，请及时就医。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我这两天自己吃了点止痛药，不管用。",
+        "reveals": [
+          "med_nsaid"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "急性痛风对普通止痛药反应不一，请带药就诊，由医生调整治疗方案。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "这两天我还喝了两顿酒。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "饮酒是痛风急性发作的常见诱因，请立即戒酒并多饮水。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，我明白了，我这两天就去看。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "请尽快到风湿免疫科或内分泌科就诊。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "对了，我晚上睡觉把腿垫高一点，是不是会舒服些？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "抬高患肢有助于减轻肿胀，急性期注意休息。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我明天约了朋友吃饭，还能去吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "急性期建议居家休息、清淡饮食，聚会可以改期。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的。那我到了诊室，要跟医生交代哪些事情？",
+        "reveals": [],
+        "requires": [
+          "sym_joint",
+          "hist_gout",
+          "med_nsaid"
+        ]
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "LS-015",
+    "title": "急诊边缘：脑卒中识别（口角歪斜、肢体无力、言语含糊）",
+    "gold_items": [
+      {
+        "item_id": "sym_facial",
+        "type": "symptom",
+        "label": "口角歪斜",
+        "aliases": [
+          "嘴歪",
+          "面部不对称"
+        ]
+      },
+      {
+        "item_id": "sym_weak",
+        "type": "symptom",
+        "label": "一侧肢体无力",
+        "aliases": [
+          "胳膊抬不起来",
+          "偏瘫"
+        ]
+      },
+      {
+        "item_id": "sym_speech",
+        "type": "symptom",
+        "label": "说话含糊不清",
+        "aliases": [
+          "言语不清",
+          "讲话含混"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "我父亲刚才突然嘴歪了，讲话也含含糊糊。",
+        "reveals": [
+          "sym_facial",
+          "sym_speech"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "这可能是脑卒中信号，请问是什么时候开始的？请立即准备就医。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "就半小时前，现在还没恢复。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "时间非常关键，请立即拨打急救电话，不要等待。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "他左胳膊也抬不起来了。",
+        "reveals": [
+          "sym_weak"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "口角歪斜、言语含糊加上一侧肢体无力，高度提示脑卒中，请保持老人平卧，立即送急诊。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "他平时血压高，一直在吃药。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "高血压史增加了脑卒中风险，请立即行动，同时不要给老人喂水喂药。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "老人说想睡一会，行吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "不要让他睡，保持清醒，保持呼吸道通畅，等待急救人员或立即送医。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "家里人记不住具体几点开始的，怎么办？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "尽量回忆并告知医生发病时间，这决定溶栓等治疗能否进行，但不要因回忆耽误送医。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，我明白了，我这就打 120。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "这三个表现同时出现，脑卒中可能性极大，请立即到急诊，每一分钟都很重要。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "老人刚才说口渴，能喂点水吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "不要喂水喂食，防止呛咳误吸，保持平卧等待救援。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "120 一般多久能到？我们要不要自己开车去？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "等待急救期间保持电话畅通，如果急救车迟迟不到，可以就近送医。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的。那打电话叫救护车的时候，我要把父亲的什么情况跟调度员说清楚？",
+        "reveals": [],
+        "requires": [
+          "sym_facial",
+          "sym_weak",
+          "sym_speech"
+        ]
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "LS-016",
+    "title": "急诊边缘：服药后呼吸困难与药物过敏史",
+    "gold_items": [
+      {
+        "item_id": "allergy_med",
+        "type": "allergy",
+        "label": "药物过敏史",
+        "aliases": [
+          "过敏史",
+          "青霉素过敏"
+        ]
+      },
+      {
+        "item_id": "sym_dyspnea",
+        "type": "symptom",
+        "label": "呼吸困难",
+        "aliases": [
+          "喘不上气",
+          "胸闷气短"
+        ]
+      },
+      {
+        "item_id": "sym_swell",
+        "type": "symptom",
+        "label": "面部肿胀",
+        "aliases": [
+          "脸肿",
+          "浮肿"
+        ]
+      }
+    ],
+    "turns": [
+      {
+        "speaker": "user",
+        "text": "我吃完药突然喘不上气，胸口发紧。",
+        "reveals": [
+          "sym_dyspnea"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "呼吸困难是急症，请立即停用刚才的药物并尽快就医，必要时拨打急救电话。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我就吃了医生新开的消炎药，半小时前吃的。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "新用药后出现呼吸困难需要高度警惕药物过敏，请立即到急诊。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我以前对青霉素过敏。",
+        "reveals": [
+          "allergy_med"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "您有药物过敏史，本次呼吸困难更需要警惕严重过敏反应，请立即就医，不要等待。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "照镜子看脸好像也肿起来了。",
+        "reveals": [
+          "sym_swell"
+        ],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "面部肿胀伴呼吸困难提示严重过敏反应正在进展，请立即拨打急救电话。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我能先吃点家里的抗过敏药吗？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "不要自行服药，以最快速度就医，途中保持坐位。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "好的，我明白了，我这就打急救电话。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "不能排除严重过敏反应，请立即拨打急救电话或前往急诊。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "我出门时把家里门窗都关好了，还要做什么？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "尽快就医是最重要的，途中保持坐位，最好有家人陪同。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "路上我要是越来越喘，怎么办？",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "assistant",
+        "text": "立即拨打急救电话，保持坐位，尽量保持镇定。",
+        "reveals": [],
+        "requires": []
+      },
+      {
+        "speaker": "user",
+        "text": "那我打急救电话时，要重点告诉调度员什么？",
+        "reveals": [],
+        "requires": [
+          "allergy_med",
+          "sym_dyspnea",
+          "sym_swell"
+        ]
+      }
+    ],
+    "split": "train"
+  }
+]

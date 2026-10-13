@@ -1,0 +1,1388 @@
+[
+  {
+    "id": "QA-001",
+    "kind": "single",
+    "question": "发烧咳嗽这种不需要手术的毛病，一般挂内科还是外科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "96faa711f32cb133f9833a632ef6eba8"
+    ],
+    "gold_answer": "挂内科。内科诊治不需手术的内部器官疾病（如发热、咳嗽）。",
+    "split": "train"
+  },
+  {
+    "id": "QA-002",
+    "kind": "single",
+    "question": "摔倒后怀疑骨折了，是挂内科还是外科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "96faa711f32cb133f9833a632ef6eba8"
+    ],
+    "gold_answer": "挂外科。骨折属于需要手术或创伤处理的疾病，不属于内科范畴。",
+    "split": "train"
+  },
+  {
+    "id": "QA-003",
+    "kind": "multi",
+    "turns": [
+      "用户：我最近总觉得没精神，还咳嗽，不知道该挂哪个科？",
+      "助手：可以先说说咳嗽之外还有没有其他症状，比如发热、胸闷？",
+      "用户：就是咳嗽，没别的。这种不看手术的情况挂内科还是外科？"
+    ],
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "挂内科。咳嗽等不需手术的内部器官疾病由内科诊治。",
+    "split": "train"
+  },
+  {
+    "id": "QA-004",
+    "kind": "multi",
+    "turns": [
+      "用户：我家孩子咳嗽发热好几天了，该挂什么科？",
+      "助手：请问孩子多大？不同年龄段挂号科室不同。",
+      "用户：5 岁。这个年龄的孩子应该挂哪个科？"
+    ],
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "0-14 岁儿童看病挂儿科。",
+    "split": "train"
+  },
+  {
+    "id": "QA-005",
+    "kind": "single",
+    "question": "孕期产检应该挂妇科还是产科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "5dba18b746a21aafb73fc93d6692eae9"
+    ],
+    "gold_answer": "挂产科。孕期产检由产科负责，妇科不负责产检。",
+    "split": "train"
+  },
+  {
+    "id": "QA-006",
+    "kind": "single",
+    "question": "急诊科是 24 小时开放吗？哪些情况应该去急诊？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "5dba18b746a21aafb73fc93d6692eae9"
+    ],
+    "gold_answer": "是 24 小时开放。胸痛、呼吸困难、意识不清、大出血、严重外伤等危及生命的情况应去急诊。",
+    "split": "train"
+  },
+  {
+    "id": "QA-007",
+    "kind": "multi",
+    "turns": [
+      "用户：我最近月经总是不规律，有时候两个月才来一次，该挂哪个科？",
+      "助手：请问您是否在孕期？之前做过相关检查吗？",
+      "用户：没怀孕。这种情况应该挂妇科还是其他科？"
+    ],
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "挂妇科。",
+    "split": "train"
+  },
+  {
+    "id": "QA-008",
+    "kind": "single",
+    "question": "儿童常见病（如发热、咳嗽）应该挂哪个科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "49c2ec7766ab182258841befce9d6b38"
+    ],
+    "gold_answer": "挂儿科。",
+    "split": "train"
+  },
+  {
+    "id": "QA-009",
+    "kind": "multi",
+    "turns": [
+      "用户：我突然胸痛，一阵一阵的，不知道该挂哪个科？",
+      "助手：请问胸痛持续多久了？有没有大汗、气短的情况？",
+      "用户：几分钟了，还出了不少汗。我该挂普通门诊还是去急诊？"
+    ],
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "危及生命的胸痛应直接去急诊科，不要等普通门诊。",
+    "split": "train"
+  },
+  {
+    "id": "QA-010",
+    "kind": "single",
+    "question": "高血压患者平时建议定期随访哪些指标？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "f3e4c0bdc187009c1d9d0cefc85bd118"
+    ],
+    "gold_answer": "建议定期随访血压和血脂。",
+    "split": "train"
+  },
+  {
+    "id": "QA-011",
+    "kind": "single",
+    "question": "心律失常患者常见的表现是什么？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "f3e4c0bdc187009c1d9d0cefc85bd118"
+    ],
+    "gold_answer": "常见表现是心慌、心悸。",
+    "split": "train"
+  },
+  {
+    "id": "QA-012",
+    "kind": "multi",
+    "turns": [
+      "用户：我最近一爬楼梯就胸闷胸痛，休息几分钟能缓过来，挂哪个科？",
+      "助手：这种情况需要警惕心脏问题。发作时有没有出汗、气短？",
+      "用户：出过汗。持续不缓解的话我该怎么办？"
+    ],
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "活动后胸闷胸痛警惕冠心病，挂心血管内科；持续不缓解伴大汗应立即去急诊科。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-013",
+    "kind": "single",
+    "question": "普通感冒需要吃抗生素吗？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "4fb551cdf382311824fbddce2aaaab20"
+    ],
+    "gold_answer": "不需要。普通感冒多由病毒引起，以休息和对症处理为主，不要滥用抗生素。",
+    "split": "train"
+  },
+  {
+    "id": "QA-014",
+    "kind": "single",
+    "question": "肺炎的典型表现有哪些？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "4fb551cdf382311824fbddce2aaaab20"
+    ],
+    "gold_answer": "发热、咳嗽、咳痰、胸痛等表现。",
+    "split": "train"
+  },
+  {
+    "id": "QA-015",
+    "kind": "multi",
+    "turns": [
+      "用户：我咳嗽两个多星期了，一直没好转，该挂哪个科？",
+      "助手：请问咳痰是什么颜色？痰里有没有血丝？",
+      "用户：这几天痰里有点血丝，还有点发热。"
+    ],
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "咳嗽超过两周未愈、痰中带血伴发热，应到呼吸内科就诊排查。",
+    "split": "train"
+  },
+  {
+    "id": "QA-016",
+    "kind": "single",
+    "question": "反酸、烧心应该挂哪个科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "198f512b6127b0067c864428d1c7d7d4"
+    ],
+    "gold_answer": "挂消化内科。",
+    "split": "train"
+  },
+  {
+    "id": "QA-017",
+    "kind": "single",
+    "question": "胃镜、肠镜检查是由哪个科安排的？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "198f512b6127b0067c864428d1c7d7d4"
+    ],
+    "gold_answer": "由消化内科安排。",
+    "split": "train"
+  },
+  {
+    "id": "QA-018",
+    "kind": "multi",
+    "turns": [
+      "用户：我最近胃痛、反酸，大便颜色也有点发黑，挂哪个科？",
+      "助手：黑便持续多久了？有没有头晕、乏力？",
+      "用户：有三四天了。黑便加上胃痛，需要马上去医院吗？"
+    ],
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "黑便提示消化道出血可能，应及时就医，必要时去急诊科。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-019",
+    "kind": "single",
+    "question": "多饮、多尿、体重下降，血糖也偏高，应该挂哪个科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "72276f85a13e1152a65be2192c0a61a8"
+    ],
+    "gold_answer": "挂内分泌科，警惕糖尿病。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-020",
+    "kind": "single",
+    "question": "甲亢患者有哪些常见表现？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "72276f85a13e1152a65be2192c0a61a8"
+    ],
+    "gold_answer": "心慌、手抖、消瘦等表现。",
+    "split": "train"
+  },
+  {
+    "id": "QA-021",
+    "kind": "single",
+    "question": "糖尿病患者需要定期复查哪些项目？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "72276f85a13e1152a65be2192c0a61a8"
+    ],
+    "gold_answer": "定期复查血糖和糖化血红蛋白。",
+    "split": "train"
+  },
+  {
+    "id": "QA-022",
+    "kind": "multi",
+    "turns": [
+      "用户：我最近喝水特别多，小便也多，体重还掉了好几斤，挂哪个科？",
+      "助手：请问有没有查过血糖？家族里有人得糖尿病吗？",
+      "用户：没查过。我这种情况应该先挂哪个科检查？"
+    ],
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "挂内分泌科，排查糖尿病。",
+    "split": "train"
+  },
+  {
+    "id": "QA-023",
+    "kind": "single",
+    "question": "面瘫（口眼歪斜）应该挂哪个科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "f5bac881328c27a8bfc333a6d4833003"
+    ],
+    "gold_answer": "挂神经内科。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-024",
+    "kind": "single",
+    "question": "帕金森病的典型表现是什么？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "f5bac881328c27a8bfc333a6d4833003"
+    ],
+    "gold_answer": "手抖、动作迟缓等表现。",
+    "split": "train"
+  },
+  {
+    "id": "QA-025",
+    "kind": "single",
+    "question": "经常头晕、头痛、记忆力下降，应该挂哪个科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "f5bac881328c27a8bfc333a6d4833003"
+    ],
+    "gold_answer": "挂神经内科。",
+    "split": "train"
+  },
+  {
+    "id": "QA-026",
+    "kind": "multi",
+    "turns": [
+      "用户：我父亲突然口角歪斜，左边手脚没力气，该怎么办？",
+      "助手：这种情况发生了多久？有没有说话不清楚、头晕？",
+      "用户：就刚才突然这样。这是脑卒中吗？该怎么处理？"
+    ],
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "突然口角歪斜、一侧肢体无力提示脑卒中可能，应立即去急诊科或拨打急救电话。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-027",
+    "kind": "single",
+    "question": "外伤后怀疑骨折，现场应该怎么处理？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "fa4f0419161370b43c5087030e763d74"
+    ],
+    "gold_answer": "固定患肢、避免自行复位，尽快到骨科就诊拍片。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-028",
+    "kind": "single",
+    "question": "颈肩腰腿痛大多由什么引起？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "fa4f0419161370b43c5087030e763d74"
+    ],
+    "gold_answer": "多为肌肉劳损，常见于久坐、姿势不良，建议定时起身活动。",
+    "split": "train"
+  },
+  {
+    "id": "QA-029",
+    "kind": "multi",
+    "turns": [
+      "用户：我脚踝扭伤后肿得很厉害，走路都疼，该怎么处理？",
+      "助手：请问脚踝能不能承重？有没有明显变形？",
+      "用户：不太敢踩地。我需要去医院吗，挂哪个科？"
+    ],
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "固定患肢、避免自行复位，尽快到骨科就诊。",
+    "split": "train"
+  },
+  {
+    "id": "QA-030",
+    "kind": "single",
+    "question": "牙痛、龋齿应该挂哪个科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "c39ac7e8b5177a2690300138753aa3ce"
+    ],
+    "gold_answer": "挂口腔科。",
+    "split": "train"
+  },
+  {
+    "id": "QA-031",
+    "kind": "single",
+    "question": "突发视力丧失或眼外伤，应该怎么办？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "c39ac7e8b5177a2690300138753aa3ce"
+    ],
+    "gold_answer": "应立即就诊，不要拖延。",
+    "split": "train"
+  },
+  {
+    "id": "QA-032",
+    "kind": "single",
+    "question": "耳鸣、耳痛、听力下降应该挂哪个科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "c39ac7e8b5177a2690300138753aa3ce"
+    ],
+    "gold_answer": "挂耳鼻喉科。",
+    "split": "train"
+  },
+  {
+    "id": "QA-033",
+    "kind": "multi",
+    "turns": [
+      "用户：我吃鱼的时候鱼刺卡在喉咙里了，吞了几口饭团没下去，怎么办？",
+      "助手：请不要再吞饭团了，有没有喝醋？",
+      "用户：还没喝醋。那我该怎么处理？"
+    ],
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "不要吞饭团或喝醋，应及时就医取出。",
+    "split": "train"
+  },
+  {
+    "id": "QA-034",
+    "kind": "single",
+    "question": "带状疱疹有什么特点？应该挂哪个科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "f4f63b978f3e88727472d29fbe42c835"
+    ],
+    "gold_answer": "皮肤疼痛伴成簇水疱；挂皮肤科。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-035",
+    "kind": "single",
+    "question": "荨麻疹（风团、瘙痒）应该挂哪个科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "f4f63b978f3e88727472d29fbe42c835"
+    ],
+    "gold_answer": "挂皮肤科。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-036",
+    "kind": "single",
+    "question": "足癣、体癣这类病是什么原因引起的？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "f4f63b978f3e88727472d29fbe42c835"
+    ],
+    "gold_answer": "由真菌感染引起。",
+    "split": "train"
+  },
+  {
+    "id": "QA-037",
+    "kind": "multi",
+    "turns": [
+      "用户：我身上起了红疹，这两天扩散得很快，还有点发热，挂哪个科？",
+      "助手：请问疹子有没有伴随面部肿胀或呼吸不畅？",
+      "用户：没有。但扩散这么快，要不要紧？"
+    ],
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "皮疹快速扩散伴发热，应及时就医（皮肤科）；伴面部肿胀或呼吸困难需立即就医。",
+    "split": "train"
+  },
+  {
+    "id": "QA-038",
+    "kind": "single",
+    "question": "腰痛伴血尿，应该挂哪个科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "f77819ad9f3a5190f0d37f29cb100117"
+    ],
+    "gold_answer": "挂泌尿外科，警惕肾结石。",
+    "split": "train"
+  },
+  {
+    "id": "QA-039",
+    "kind": "single",
+    "question": "脑卒中后需要康复训练，应该挂哪个科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "f77819ad9f3a5190f0d37f29cb100117"
+    ],
+    "gold_answer": "挂康复科。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-040",
+    "kind": "single",
+    "question": "不明原因的长期发热，应该挂哪个科？",
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [
+      "f77819ad9f3a5190f0d37f29cb100117"
+    ],
+    "gold_answer": "挂感染科。",
+    "split": "train"
+  },
+  {
+    "id": "QA-041",
+    "kind": "multi",
+    "turns": [
+      "用户：我最近总是焦虑，晚上也睡不着，该挂哪个科？",
+      "助手：请问这种情况持续多久了？有没有看过其他科室？",
+      "用户：快一个月了。焦虑、失眠这类问题应该找什么科室？"
+    ],
+    "source_docs": [
+      "departments.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "挂精神心理科。焦虑、抑郁、失眠由精神心理科诊治。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-042",
+    "kind": "single",
+    "question": "布洛芬缓释胶囊成人一次吃多少？一天几次？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "1c5eabaf4abde2c399b78ab900499f2f"
+    ],
+    "gold_answer": "成人一次 1 粒（0.3g），早晚各一次。",
+    "split": "train"
+  },
+  {
+    "id": "QA-043",
+    "kind": "single",
+    "question": "布洛芬能和阿司匹林一起吃吗？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "1c5eabaf4abde2c399b78ab900499f2f"
+    ],
+    "gold_answer": "不建议联用，会增加不良反应风险。",
+    "split": "train"
+  },
+  {
+    "id": "QA-044",
+    "kind": "single",
+    "question": "哪些人不能用布洛芬？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "1c5eabaf4abde2c399b78ab900499f2f"
+    ],
+    "gold_answer": "对布洛芬过敏者、活动性消化性溃疡、严重肝肾功能不全、妊娠晚期者禁用。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-045",
+    "kind": "multi",
+    "turns": [
+      "用户：我痛经特别厉害，想问布洛芬能不能吃？",
+      "助手：请问您目前是否处于孕期？有没有胃溃疡病史？",
+      "用户：没有怀孕，也没有胃病。那布洛芬对痛经有效吗？"
+    ],
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "布洛芬可缓解痛经；但妊娠晚期禁用，活动性消化性溃疡者禁用。",
+    "split": "train"
+  },
+  {
+    "id": "QA-046",
+    "kind": "single",
+    "question": "对乙酰氨基酚成人一次吃多少？一天吃几次？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "2ad18f9386c8a082aaead4b443d2b615"
+    ],
+    "gold_answer": "成人一次 0.5g，一日 3-4 次。",
+    "split": "train"
+  },
+  {
+    "id": "QA-047",
+    "kind": "single",
+    "question": "对乙酰氨基酚两次用药要间隔多久？24 小时最多吃几次？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "2ad18f9386c8a082aaead4b443d2b615"
+    ],
+    "gold_answer": "两次间隔不少于 4 小时；24 小时内不超过 4 次。",
+    "split": "train"
+  },
+  {
+    "id": "QA-048",
+    "kind": "single",
+    "question": "对乙酰氨基酚过量有什么风险？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "2ad18f9386c8a082aaead4b443d2b615"
+    ],
+    "gold_answer": "过量可引起肝损害。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-049",
+    "kind": "multi",
+    "turns": [
+      "用户：我感冒发烧了，家里有对乙酰氨基酚片，一次该吃多少？",
+      "助手：请问您多大年龄？有没有肝病史或长期饮酒？",
+      "用户：30 岁，没有肝病。成人一次吃多少合适？"
+    ],
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "成人一次 0.5g，一日 3-4 次，两次间隔不少于 4 小时，24 小时内不超过 4 次。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-050",
+    "kind": "single",
+    "question": "阿莫西林成人常规一次吃多少？一天几次？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "ce3c8f74c0817e2b04ccb5e0d8c228cc"
+    ],
+    "gold_answer": "成人一次 0.5g，一日 3 次，遵医嘱按疗程服用。",
+    "split": "train"
+  },
+  {
+    "id": "QA-051",
+    "kind": "single",
+    "question": "对青霉素过敏的人能吃阿莫西林吗？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "ce3c8f74c0817e2b04ccb5e0d8c228cc"
+    ],
+    "gold_answer": "不能，青霉素过敏者禁用阿莫西林。",
+    "split": "train"
+  },
+  {
+    "id": "QA-052",
+    "kind": "single",
+    "question": "吃阿莫西林后出现呼吸困难、全身皮疹，该怎么办？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "ce3c8f74c0817e2b04ccb5e0d8c228cc"
+    ],
+    "gold_answer": "立即停药并就医。",
+    "split": "train"
+  },
+  {
+    "id": "QA-053",
+    "kind": "multi",
+    "turns": [
+      "用户：我嗓子疼，医生开了阿莫西林，这个药一天吃几次？",
+      "助手：请问医生开的剂量是多少？您有没有药物过敏史？",
+      "用户：剂量不记得了，我没有过敏史。常规怎么吃？"
+    ],
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "成人常规一次 0.5g，一日 3 次，请遵医嘱按疗程服用，不要自行停药。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-054",
+    "kind": "single",
+    "question": "为什么不能同时吃多种感冒药？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "ad533ab5690d76ce4b00bfdc19bf3c77"
+    ],
+    "gold_answer": "多种感冒药多含对乙酰氨基酚，同服易超量，增加肝损伤风险。",
+    "split": "train"
+  },
+  {
+    "id": "QA-055",
+    "kind": "single",
+    "question": "吃了含氯苯那敏成分的感冒药，能开车吗？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "ad533ab5690d76ce4b00bfdc19bf3c77"
+    ],
+    "gold_answer": "不能，氯苯那敏可能引起嗜睡。",
+    "split": "train"
+  },
+  {
+    "id": "QA-056",
+    "kind": "single",
+    "question": "感冒药用于退热一般连续吃几天？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "ad533ab5690d76ce4b00bfdc19bf3c77"
+    ],
+    "gold_answer": "一般不超过 3 天，症状未缓解应就医。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-057",
+    "kind": "multi",
+    "turns": [
+      "用户：我同时买了两种感冒药，还有一盒退烧药，能一起吃吗？",
+      "助手：请问两种感冒药的成分表您核对过吗？",
+      "用户：还没看。我应该先做什么？"
+    ],
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "先核对成分表，同一时段只吃一种，避免对乙酰氨基酚超量导致肝损伤。",
+    "split": "train"
+  },
+  {
+    "id": "QA-058",
+    "kind": "single",
+    "question": "奥美拉唑肠溶胶囊应该怎么服用？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "0260418d5afb51f5e7e687a307529766"
+    ],
+    "gold_answer": "晨起早餐前整粒吞服，不可咀嚼或压碎。",
+    "split": "train"
+  },
+  {
+    "id": "QA-059",
+    "kind": "single",
+    "question": "奥美拉唑的常规剂量是多少？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "0260418d5afb51f5e7e687a307529766"
+    ],
+    "gold_answer": "一次 20mg，一日 1-2 次。",
+    "split": "train"
+  },
+  {
+    "id": "QA-060",
+    "kind": "single",
+    "question": "奥美拉唑的疗程一般多长？",
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [
+      "0260418d5afb51f5e7e687a307529766"
+    ],
+    "gold_answer": "一般 2-8 周，请遵医嘱。",
+    "split": "train"
+  },
+  {
+    "id": "QA-061",
+    "kind": "multi",
+    "turns": [
+      "用户：我吃奥美拉唑一个多月了，今天大便发黑，还有点恶心，要紧吗？",
+      "助手：请问有没有呕血、头晕乏力？大便黑是持续的还是偶尔？",
+      "用户：黑的，从昨天开始。这需要看医生吗？"
+    ],
+    "source_docs": [
+      "medication_leaflets.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "黑便提示消化道出血可能，应及时就医排查。",
+    "split": "train"
+  },
+  {
+    "id": "QA-062",
+    "kind": "single",
+    "question": "专家号需要提前多久预约？",
+    "source_docs": [
+      "registration.json"
+    ],
+    "gold_chunks": [
+      "33f91af39e9eef50263d6b5fffa0b23c"
+    ],
+    "gold_answer": "提前 3-7 天预约。",
+    "split": "train"
+  },
+  {
+    "id": "QA-063",
+    "kind": "single",
+    "question": "改期或取消预约，最晚要在什么时候操作？",
+    "source_docs": [
+      "registration.json"
+    ],
+    "gold_chunks": [
+      "33f91af39e9eef50263d6b5fffa0b23c"
+    ],
+    "gold_answer": "最晚在就诊前一天 18:00 前操作。",
+    "split": "train"
+  },
+  {
+    "id": "QA-064",
+    "kind": "single",
+    "question": "普通号和专家号的挂号费大概各是多少？",
+    "source_docs": [
+      "registration.json"
+    ],
+    "gold_chunks": [
+      "33f91af39e9eef50263d6b5fffa0b23c"
+    ],
+    "gold_answer": "普通号约 10-50 元，专家号约 50-300 元。",
+    "split": "train"
+  },
+  {
+    "id": "QA-065",
+    "kind": "single",
+    "question": "就诊当日需要提前多久到院取号？",
+    "source_docs": [
+      "registration.json"
+    ],
+    "gold_chunks": [
+      "33f91af39e9eef50263d6b5fffa0b23c"
+    ],
+    "gold_answer": "提前 15-30 分钟到院取号。",
+    "split": "train"
+  },
+  {
+    "id": "QA-066",
+    "kind": "multi",
+    "turns": [
+      "用户：我想挂心血管内科的专家号，要提前多久约？",
+      "助手：请问您是想通过线上平台预约吗？",
+      "用户：对，线上约。专家号需要提前几天？"
+    ],
+    "source_docs": [
+      "registration.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "专家号建议提前 3-7 天预约。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-067",
+    "kind": "single",
+    "question": "线上挂号重复扣费了，该怎么办？",
+    "source_docs": [
+      "registration.json"
+    ],
+    "gold_chunks": [
+      "48a1a32f16db51a87e23f9c93a7f8d3f"
+    ],
+    "gold_answer": "保留支付凭证，不要重复提交；系统 1-3 个工作日内核实处理。",
+    "split": "train"
+  },
+  {
+    "id": "QA-068",
+    "kind": "single",
+    "question": "节假日想挂专家号，容易约上吗？",
+    "source_docs": [
+      "registration.json"
+    ],
+    "gold_chunks": [
+      "48a1a32f16db51a87e23f9c93a7f8d3f"
+    ],
+    "gold_answer": "节假日号源紧张，建议尽早预约。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-069",
+    "kind": "multi",
+    "turns": [
+      "用户：我约了后天的号，想改到下周，怎么操作？",
+      "助手：请问原预约的号源类型是普通号还是专家号？",
+      "用户：普通号。改期最晚什么时间之前要办好？"
+    ],
+    "source_docs": [
+      "registration.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "最晚在就诊前一天 18:00 前办理改期，逾期可能影响信用记录。",
+    "split": "train"
+  },
+  {
+    "id": "QA-070",
+    "kind": "single",
+    "question": "就诊前需要带哪些证件和资料？",
+    "source_docs": [
+      "registration.json"
+    ],
+    "gold_chunks": [
+      "5a1a21d8d6884808df80e9bb769dce40"
+    ],
+    "gold_answer": "带身份证、医保卡或医保电子凭证，以及既往病历、检查报告、影像片子、出院小结等。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-071",
+    "kind": "single",
+    "question": "正在吃的药需要带给医生看吗？",
+    "source_docs": [
+      "registration.json"
+    ],
+    "gold_chunks": [
+      "5a1a21d8d6884808df80e9bb769dce40"
+    ],
+    "gold_answer": "需要。带药盒或说明书（或拍照），方便医生核查药物相互作用。",
+    "split": "train"
+  },
+  {
+    "id": "QA-072",
+    "kind": "single",
+    "question": "哪些检查项目通常要求空腹？",
+    "source_docs": [
+      "registration.json"
+    ],
+    "gold_chunks": [
+      "5a1a21d8d6884808df80e9bb769dce40"
+    ],
+    "gold_answer": "空腹血糖、血脂等检查通常要求空腹。",
+    "split": "train"
+  },
+  {
+    "id": "QA-073",
+    "kind": "multi",
+    "turns": [
+      "用户：我明天去复诊高血压，除了医保卡还要带什么？",
+      "助手：请问上次就诊的病历和检查报告还在吗？",
+      "用户：都在。复诊时这些资料都要带上吗？"
+    ],
+    "source_docs": [
+      "registration.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "要带上既往病历、检查报告和就诊记录，方便医生对比评估。",
+    "split": "train"
+  },
+  {
+    "id": "QA-074",
+    "kind": "multi",
+    "turns": [
+      "用户：我感觉身上发烫，量了腋下体温 37 度 5，算不算发烧？",
+      "助手：请问测量前有没有剧烈活动？用的什么体温计？",
+      "用户：静坐半小时后测的电子体温计。腋温超过多少度算发热？"
+    ],
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "腋温超过 37.3℃ 算发热。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-075",
+    "kind": "single",
+    "question": "体温 38.5℃ 以上建议怎么做？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "784ad5ccfad069e47bdd9e5e9f116aaf"
+    ],
+    "gold_answer": "38.5℃ 以上建议服用退烧药并观察。",
+    "split": "train"
+  },
+  {
+    "id": "QA-076",
+    "kind": "single",
+    "question": "孩子发烧能用酒精擦浴降温吗？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "784ad5ccfad069e47bdd9e5e9f116aaf"
+    ],
+    "gold_answer": "不建议。可用温水擦拭四肢物理降温。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-077",
+    "kind": "single",
+    "question": "咳嗽持续超过多久需要就医？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "784ad5ccfad069e47bdd9e5e9f116aaf"
+    ],
+    "gold_answer": "持续超过两周需要就医。",
+    "split": "train"
+  },
+  {
+    "id": "QA-078",
+    "kind": "multi",
+    "turns": [
+      "用户：孩子发烧到 39 度了，老人说用酒精擦身降温，可以吗？",
+      "助手：请问孩子多大？精神状态怎么样？",
+      "用户：3 岁，精神还行。酒精擦浴到底行不行？"
+    ],
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "不建议酒精擦浴，可用温水擦拭四肢；体温 38.5℃ 以上可服退烧药并观察。",
+    "split": "train"
+  },
+  {
+    "id": "QA-079",
+    "kind": "single",
+    "question": "肚子疼一定是肠胃炎吗？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "9801e3d813da377a04e50e76e8f009c2"
+    ],
+    "gold_answer": "不一定，也可能是阑尾炎、胆囊炎等疾病。",
+    "split": "train"
+  },
+  {
+    "id": "QA-080",
+    "kind": "single",
+    "question": "腹泻期间的饮食应该注意什么？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "9801e3d813da377a04e50e76e8f009c2"
+    ],
+    "gold_answer": "清淡饮食、少食多餐，避免油腻生冷，注意补充水分和电解质。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-081",
+    "kind": "single",
+    "question": "腹泻超过几天建议就医？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "9801e3d813da377a04e50e76e8f009c2"
+    ],
+    "gold_answer": "超过 3 天建议就医。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-082",
+    "kind": "single",
+    "question": "身上起红疹，同时出现呼吸困难或面部肿胀，该怎么办？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "9801e3d813da377a04e50e76e8f009c2"
+    ],
+    "gold_answer": "可能是严重过敏反应，立即就医或拨打急救电话。",
+    "split": "train"
+  },
+  {
+    "id": "QA-083",
+    "kind": "multi",
+    "turns": [
+      "用户：我拉肚子三天了，还有点低烧，需要去医院吗？",
+      "助手：请问大便有没有带血或黏液？有没有明显口渴、尿少？",
+      "用户：没有血，就是次数多。腹泻超过几天必须就医？"
+    ],
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "腹泻超过 3 天建议就医；期间清淡饮食、补充水分电解质。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-084",
+    "kind": "single",
+    "question": "哪些情况应该立即拨打急救电话？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "882a230663706e50d8a9862f60a165fe"
+    ],
+    "gold_answer": "胸痛胸闷、呼吸困难、大出血、抽搐意识不清、疑似中毒、严重外伤骨折等情况。",
+    "split": "train"
+  },
+  {
+    "id": "QA-085",
+    "kind": "single",
+    "question": "服药后出现轻微恶心，应该怎么办？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "882a230663706e50d8a9862f60a165fe"
+    ],
+    "gold_answer": "可先观察，并按说明书调整服药方式。",
+    "split": "train"
+  },
+  {
+    "id": "QA-086",
+    "kind": "single",
+    "question": "服药后出现呼吸困难、面部或喉头肿胀，该怎么办？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "882a230663706e50d8a9862f60a165fe"
+    ],
+    "gold_answer": "立即停药并前往急诊。",
+    "split": "train"
+  },
+  {
+    "id": "QA-087",
+    "kind": "single",
+    "question": "布洛芬和阿司匹林这类非甾体抗炎药能同类联用吗？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "882a230663706e50d8a9862f60a165fe"
+    ],
+    "gold_answer": "不建议同类联用，会增加胃肠道出血风险。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-088",
+    "kind": "multi",
+    "turns": [
+      "用户：我胸口一阵阵疼，还喘不上气，要不要打急救电话？",
+      "助手：请问胸痛是持续的还是间歇的？有没有大汗？",
+      "用户：持续几分钟了，汗很多。这种情况该不该叫救护车？"
+    ],
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "胸痛胸闷伴大汗属于危险信号，应立即拨打急救电话。",
+    "split": "train"
+  },
+  {
+    "id": "QA-089",
+    "kind": "single",
+    "question": "什么情况下头痛需要立即就医？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "315cf3ac8a4b9ff78eceac3ad8e98fbf"
+    ],
+    "gold_answer": "突发剧烈头痛、伴发热颈硬呕吐、伴一侧肢体无力口齿不清、外伤后头痛，需立即就医。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-090",
+    "kind": "single",
+    "question": "经常头晕的人日常该注意什么？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "315cf3ac8a4b9ff78eceac3ad8e98fbf"
+    ],
+    "gold_answer": "规律作息，避免久站和突然起身；反复发作建议到神经内科或耳鼻喉科就诊。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-091",
+    "kind": "single",
+    "question": "偏头痛有什么特点？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "315cf3ac8a4b9ff78eceac3ad8e98fbf"
+    ],
+    "gold_answer": "一侧搏动性头痛，可伴恶心、怕光。",
+    "split": "train"
+  },
+  {
+    "id": "QA-092",
+    "kind": "multi",
+    "turns": [
+      "用户：我头痛得厉害，还吐了一次，这种头痛需要马上去医院吗？",
+      "助手：请问头痛是突然发作还是慢慢加重的？有没有发热、脖子发硬？",
+      "用户：突然就痛起来了，脖子也有点硬。这种情况要紧吗？"
+    ],
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "突发剧烈头痛伴呕吐、颈硬需立即就医。",
+    "split": "train"
+  },
+  {
+    "id": "QA-093",
+    "kind": "single",
+    "question": "颈肩腰腿痛持续多久不缓解，建议去骨科？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "9783990215e774217f153abeec781217"
+    ],
+    "gold_answer": "超过 2 周不缓解、影响夜间睡眠，建议去骨科。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-094",
+    "kind": "multi",
+    "turns": [
+      "用户：我大脚趾关节突然又红又肿，还发烫，疼得厉害，这是什么病？",
+      "助手：请问最近有没有吃海鲜、喝酒？以前犯过吗？",
+      "用户：前天喝了酒。大脚趾红肿热痛一般是什么原因？"
+    ],
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "常见于痛风或感染。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-095",
+    "kind": "multi",
+    "turns": [
+      "用户：我两个手腕早上起来又僵又疼，活动半小时才好点，这是什么病？",
+      "助手：请问是双侧都有吗？除了手腕还有没有其他关节疼？",
+      "用户：两边都有，膝盖也疼。多关节对称疼伴晨僵常见于什么病？"
+    ],
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "常见于类风湿性关节炎。",
+    "split": "train"
+  },
+  {
+    "id": "QA-096",
+    "kind": "single",
+    "question": "腰痛伴下肢麻木无力、大小便异常，该怎么办？",
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [
+      "9783990215e774217f153abeec781217"
+    ],
+    "gold_answer": "属于神经受压急症，应尽快到骨科或急诊就诊。",
+    "split": "train"
+  },
+  {
+    "id": "QA-097",
+    "kind": "multi",
+    "turns": [
+      "用户：我腰疼快一个月了，右边腿还发麻，该看哪个科？",
+      "助手：请问腿麻是持续的还是有大小便异常？",
+      "用户：持续麻，没其他异常。我需要尽快去医院吗？"
+    ],
+    "source_docs": [
+      "symptom_guide.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "腰痛超过 2 周伴下肢麻木，提示神经受压可能，建议尽快到骨科就诊；伴大小便异常需立即就医。",
+    "split": "held_out"
+  },
+  {
+    "id": "QA-098",
+    "kind": "single",
+    "question": "OpenMed 系统覆盖哪些服务场景？",
+    "source_docs": [
+      "system_intro.json"
+    ],
+    "gold_chunks": [
+      "e9d34002c0ed82fb192c53f88bc49725"
+    ],
+    "gold_answer": "覆盖症状分诊、预约挂号、用药咨询、急诊四大场景。",
+    "split": "train"
+  },
+  {
+    "id": "QA-099",
+    "kind": "single",
+    "question": "OpenMed 的意图识别采用了什么方法？",
+    "source_docs": [
+      "system_intro.json"
+    ],
+    "gold_chunks": [
+      "e9d34002c0ed82fb192c53f88bc49725"
+    ],
+    "gold_answer": "LLM、Embedding、关键词三路融合。",
+    "split": "train"
+  },
+  {
+    "id": "QA-100",
+    "kind": "single",
+    "question": "OpenMed 的知识库检索链路是怎么设计的？",
+    "source_docs": [
+      "system_intro.json"
+    ],
+    "gold_chunks": [
+      "e9d34002c0ed82fb192c53f88bc49725"
+    ],
+    "gold_answer": "BM25 与向量混合检索、RRF 融合、Cross-Encoder 精排。",
+    "split": "train"
+  },
+  {
+    "id": "QA-101",
+    "kind": "multi",
+    "turns": [
+      "用户：OpenMed 的三级记忆架构具体指什么？",
+      "助手：您是想了解系统内部记忆机制的构成吗？",
+      "用户：那你们具体是怎么记住对话和患者信息的？"
+    ],
+    "source_docs": [
+      "system_intro.json"
+    ],
+    "gold_chunks": [],
+    "gold_answer": "三级记忆指工作记忆、情景记忆、患者画像。",
+    "split": "train"
+  },
+  {
+    "id": "QA-102",
+    "kind": "single",
+    "question": "来医院就诊登记，需要带哪些证件？",
+    "source_docs": [
+      "registration.json"
+    ],
+    "gold_chunks": [
+      "5a1a21d8d6884808df80e9bb769dce40"
+    ],
+    "gold_answer": "使用身份证、医保卡或医保电子凭证登记。",
+    "split": "held_out"
+  }
+]

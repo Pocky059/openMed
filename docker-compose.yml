@@ -34,6 +34,10 @@ services:
       # 中文 embedding 模型（BAAI/bge-small-zh-v1.5）由服务端加载，缓存到
       # 挂载卷，容器重建不重新下载；与 app 容器（reranker）共享同一宿主机目录
       - HF_HOME=/hf-cache
+      # 离线模式：跳过 HF 远程校验。huggingface.co 在国内被墙，联网校验在
+      # VPN 关闭时会导致加载失败；且模型已在缓存里，联网还会带来静默升级漂移
+      # （评测基线不可复现），所以一律只读缓存
+      - HF_HUB_OFFLINE=1
     volumes:
       - chromadb-data:/chroma/chroma
       - ./data/huggingface:/hf-cache
@@ -93,6 +97,9 @@ services:
       - CHROMA_PERSIST_DIRECTORY=/app/data/chroma
       - EVAL_BASELINE_PATH=/app/data/eval/baseline.json
       - OPENMED_SKILLS_DIR=/app/skills
+      # 离线模式：与 chromadb 服务同理（模型已缓存，跳过 HF 远程校验；
+      # 防止 VPN 关闭时启动失败、联网时模型静默升级）
+      - HF_HUB_OFFLINE=1
     volumes:
       - ./data/chroma:/app/data/chroma
       - ./data/eval:/app/data/eval

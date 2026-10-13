@@ -6,6 +6,7 @@ data/trajectories
 logs/
 __pycache__/
 *.pyc
+.pytest_cache/
 .venv/
 venv/
 .DS_Store
@@ -14,8 +15,11 @@ venv/
 docs/
 CLAUDE.md
 
-# 语料生成中间产物
+# 语料生成中间产物（含已退役的一次性脚本，如线索句弱化/规则痕迹抹除/审核修复脚本）
 data/knowledge/_archive/
 
 # 评测基线是运行时产物，由 /eval/run 生成
 data/eval/baseline.json
+
+# 每次基线评测的产物目录（第 7 步 scripts/run_baseline_eval.py 运行时生成）
+data/eval/results/

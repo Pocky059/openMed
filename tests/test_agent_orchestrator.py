@@ -224,7 +224,7 @@ def test_tool_use_round_trip_executes_only_whitelisted_tool():
 def test_success_path_keeps_final_answer_and_tool_traces():
     """回归（审查 H1/H3）：正常结束的请求，消息流必须以最终回答结尾、
     tool_traces 必须保留。此前提前 return 分支漏设 _last_tool_traces（/trace 接口
-    恒为空）且不 append 最终回答（轨迹 SFT 模具缺 final）。"""
+    恒为空）且不 append 最终回答（轨迹 SFT 训练数据模板缺 final）。"""
 
     class ToolUseBlock:
         type = "tool_use"
@@ -263,6 +263,6 @@ def test_success_path_keeps_final_answer_and_tool_traces():
     # H3：正常结束（含工具调用轮）的请求 tool_traces 不能被 handle 开头的 reset 清空
     assert response.tool_traces, "正常结束的请求 tool_traces 不应为空"
     assert response.tool_traces[0]["tool_name"] == "build_medication_plan"
-    # H1：消息流以最终回答（assistant 纯文本）结尾，SFT 模具才完整
+    # H1：消息流以最终回答（assistant 纯文本）结尾，SFT 训练数据模板才完整
     assert response.messages[-1]["role"] == "assistant"
     assert response.messages[-1]["content"] == "已根据现用药清单生成用药核查步骤。"

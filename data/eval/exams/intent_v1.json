@@ -1,0 +1,1354 @@
+[
+  {
+    "id": "INT-001",
+    "message": "我想预约神经内科的号",
+    "expected_intent": "appointment",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-002",
+    "message": "怎么预约骨科的专家号？",
+    "expected_intent": "appointment",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-003",
+    "message": "我想预约妇科的号",
+    "expected_intent": "appointment",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-004",
+    "message": "儿科明天有号吗？",
+    "expected_intent": "appointment",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-005",
+    "message": "外科明天有号吗？",
+    "expected_intent": "appointment",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-006",
+    "message": "我想预约内科的号",
+    "expected_intent": "appointment",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-007",
+    "message": "妇科明天有号吗？",
+    "expected_intent": "appointment",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-008",
+    "message": "怎么预约内科的专家号？",
+    "expected_intent": "appointment",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-009",
+    "message": "外科专家号咋约？",
+    "expected_intent": "appointment",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-010",
+    "message": "帮我挂个明天下午内分泌科的号吧",
+    "expected_intent": "appointment",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-011",
+    "message": "我挂的号不要了能帮我退掉吗",
+    "expected_intent": "appointment_cancel",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-012",
+    "message": "我不去了，把A20260012这个号退了吧",
+    "expected_intent": "appointment_cancel",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-013",
+    "message": "帮我取消预约单号A20260011",
+    "expected_intent": "appointment_cancel",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-014",
+    "message": "我不去了，把A20260004这个号退了吧",
+    "expected_intent": "appointment_cancel",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-015",
+    "message": "我不去了，把A20260011这个号退了吧",
+    "expected_intent": "appointment_cancel",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-016",
+    "message": "麻烦帮我把A20260007这个预约取消了",
+    "expected_intent": "appointment_cancel",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-017",
+    "message": "临时不去了，帮我把A20260003这个号取消掉吧",
+    "expected_intent": "appointment_cancel",
+    "source": "rewritten",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-018",
+    "message": "帮我取消A20260005，不去了",
+    "expected_intent": "appointment_cancel",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-019",
+    "message": "帮我查下我挂的号是明天几点",
+    "expected_intent": "appointment_manage",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-020",
+    "message": "帮我看下A20260014这个预约到哪一步了？",
+    "expected_intent": "appointment_manage",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-021",
+    "message": "帮我查一下预约A20260005的详情",
+    "expected_intent": "appointment_manage",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-022",
+    "message": "我的预约单号A20260013，现在是什么状态？",
+    "expected_intent": "appointment_manage",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-023",
+    "message": "我的预约单号A20260004，现在是什么状态？",
+    "expected_intent": "appointment_manage",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-024",
+    "message": "帮我看看A20260002这个预约现在到哪一步了？",
+    "expected_intent": "appointment_manage",
+    "source": "rewritten",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-025",
+    "message": "A20260011的预约现在到哪一步了？",
+    "expected_intent": "appointment_manage",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-026",
+    "message": "帮我看看A20260010这个预约是啥情况",
+    "expected_intent": "appointment_manage",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-027",
+    "message": "给我查下A20260004这个预约的具体信息",
+    "expected_intent": "appointment_manage",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-028",
+    "message": "预约单A20260004的挂号费好像多扣了",
+    "expected_intent": "appointment_payment_issue",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-029",
+    "message": "预约单A20260008的挂号费好像多扣了",
+    "expected_intent": "appointment_payment_issue",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-030",
+    "message": "A20260006支付页面一直转圈，钱扣了号却没约上",
+    "expected_intent": "appointment_payment_issue",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-031",
+    "message": "A20260005支付页面一直转圈，钱扣了号却没约上",
+    "expected_intent": "appointment_payment_issue",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-032",
+    "message": "A20260008支付页面一直转圈，钱扣了号却没约上",
+    "expected_intent": "appointment_payment_issue",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-033",
+    "message": "我A20260001这个预约的挂号费好像扣多了",
+    "expected_intent": "appointment_payment_issue",
+    "source": "rewritten",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-034",
+    "message": "刚付挂号费提示失败，结果钱扣了，号也没挂上",
+    "expected_intent": "appointment_payment_issue",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-035",
+    "message": "帮我把预约单号A20260001的就诊时间改到下周二上午",
+    "expected_intent": "appointment_reschedule",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-036",
+    "message": "帮我把预约单号A20260004的就诊时间改到下周三",
+    "expected_intent": "appointment_reschedule",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-037",
+    "message": "帮我把A20260003这个预约挪到周六吧",
+    "expected_intent": "appointment_reschedule",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-038",
+    "message": "帮我把预约单号A20260001的就诊时间改到下周一上午",
+    "expected_intent": "appointment_reschedule",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-039",
+    "message": "帮我把预约单号A20260008的就诊时间改到下周二上午",
+    "expected_intent": "appointment_reschedule",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-040",
+    "message": "我想把A20260009这个预约改期到明天上午",
+    "expected_intent": "appointment_reschedule",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-041",
+    "message": "帮我把预约单号A20260006的就诊时间改到本月20号",
+    "expected_intent": "appointment_reschedule",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-042",
+    "message": "A20260005这个预约能改到下月初吗？",
+    "expected_intent": "appointment_reschedule",
+    "source": "rewritten",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-043",
+    "message": "能把我的号换成周五上午吗",
+    "expected_intent": "appointment_reschedule",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-044",
+    "message": "取药窗口排队太久，效率有待改善",
+    "expected_intent": "complaint",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-045",
+    "message": "前台那个护士态度也太差了，问个事爱搭不理的，真上火",
+    "expected_intent": "complaint",
+    "source": "extended",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-046",
+    "message": "排了两个小时队，进去医生两分钟就给我打发了，太敷衍了",
+    "expected_intent": "complaint",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-047",
+    "message": "半天没人搭理，你们这服务太差劲了",
+    "expected_intent": "complaint",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-048",
+    "message": "排队排太久了，效率真不行",
+    "expected_intent": "complaint",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-049",
+    "message": "客服好冷漠，完全没耐心",
+    "expected_intent": "complaint",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-050",
+    "message": "怎么每回咨询都得重新讲一遍病情啊",
+    "expected_intent": "complaint",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-051",
+    "message": "看东西发糊该挂哪一科？",
+    "expected_intent": "department_guide",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-052",
+    "message": "耳朵嗡嗡响该挂哪个科？",
+    "expected_intent": "department_guide",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-053",
+    "message": "我手指发麻，应该挂哪个科？",
+    "expected_intent": "department_guide",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-054",
+    "message": "咳嗽要看什么科室？",
+    "expected_intent": "department_guide",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-055",
+    "message": "我牙疼，应该挂哪个科？",
+    "expected_intent": "department_guide",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-056",
+    "message": "我耳鸣，应该挂哪个科？",
+    "expected_intent": "department_guide",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-057",
+    "message": "最近失眠要看什么科室？",
+    "expected_intent": "department_guide",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-058",
+    "message": "头晕要看什么科室？",
+    "expected_intent": "department_guide",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-059",
+    "message": "我咳嗽，应该挂哪个科？",
+    "expected_intent": "department_guide",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-060",
+    "message": "膝盖老是疼，去医院得挂啥科？",
+    "expected_intent": "department_guide",
+    "source": "extended",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-061",
+    "message": "眼睛看东西有点模糊，得挂什么科室？",
+    "expected_intent": "department_guide",
+    "source": "rewritten",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-062",
+    "message": "头晕得厉害，得挂什么科？",
+    "expected_intent": "department_guide",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-063",
+    "message": "老人突然说不出话，一侧手脚没力气",
+    "expected_intent": "emergency",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-064",
+    "message": "被开水大面积烫伤，皮肤已经起泡",
+    "expected_intent": "emergency",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-065",
+    "message": "突发癫痫发作，全身僵直抽动",
+    "expected_intent": "emergency",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-066",
+    "message": "手指被机器绞伤，断裂出血严重",
+    "expected_intent": "emergency",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-067",
+    "message": "过敏后全身水肿，呼吸越来越费力",
+    "expected_intent": "emergency",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-068",
+    "message": "溺水刚被救上来，没有呼吸了",
+    "expected_intent": "emergency",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-069",
+    "message": "我爸突然晕过去叫不醒了，怎么办",
+    "expected_intent": "emergency",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-070",
+    "message": "胸口剧痛还往左胳膊蹿，一直冒冷汗",
+    "expected_intent": "emergency",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-071",
+    "message": "让一群蜂蜇了以后全身起了大片疹子，嗓子紧得讲不出话",
+    "expected_intent": "emergency",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-072",
+    "message": "这回问诊挺满意，回得也快",
+    "expected_intent": "feedback",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-073",
+    "message": "这次分诊很准确，很快就定位到问题",
+    "expected_intent": "feedback",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-074",
+    "message": "系统界面挺简洁的，用起来很顺手",
+    "expected_intent": "feedback",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-075",
+    "message": "建议增加历史问诊记录查询功能",
+    "expected_intent": "feedback",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-076",
+    "message": "客服挺有耐心的，解释得也细",
+    "expected_intent": "feedback",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-077",
+    "message": "多亏您耐心解释，这下心里踏实多了，辛苦啦！",
+    "expected_intent": "feedback",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-078",
+    "message": "大夫您讲得真明白，态度也特别好，谢谢您！",
+    "expected_intent": "feedback",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-079",
+    "message": "您好，打扰一下",
+    "expected_intent": "greeting",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-080",
+    "message": "您好，可以咨询一下吗",
+    "expected_intent": "greeting",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-081",
+    "message": "早上好",
+    "expected_intent": "greeting",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-082",
+    "message": "在吗",
+    "expected_intent": "greeting",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-083",
+    "message": "嗨，这会儿在吗？",
+    "expected_intent": "greeting",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-084",
+    "message": "晚上好，现在还能问诊不？",
+    "expected_intent": "greeting",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-085",
+    "message": "医生您好，在忙不？",
+    "expected_intent": "greeting",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-086",
+    "message": "这不是我想要的答案，请转真人",
+    "expected_intent": "human_handoff",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-087",
+    "message": "这个事情很紧急，需要人工马上跟进",
+    "expected_intent": "human_handoff",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-088",
+    "message": "帮我转个真人医生呗",
+    "expected_intent": "human_handoff",
+    "source": "rewritten",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-089",
+    "message": "麻烦转接人工，机器人解决不了我的问题",
+    "expected_intent": "human_handoff",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-090",
+    "message": "别让机器人回我了，转个真人医生行不",
+    "expected_intent": "human_handoff",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-091",
+    "message": "我要转诊到上级医院，能帮我弄下吗",
+    "expected_intent": "query",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-092",
+    "message": "能不能安排人工客服打给我？",
+    "expected_intent": "human_handoff",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-093",
+    "message": "预约A20260001对应的就诊证明能补办吗？",
+    "expected_intent": "medical_receipt",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-094",
+    "message": "我想申请一份诊断证明",
+    "expected_intent": "medical_receipt",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-095",
+    "message": "预约A20260004对应的就诊证明能补办吗？",
+    "expected_intent": "medical_receipt",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-096",
+    "message": "昨天的缴费单能帮我补打一张吗",
+    "expected_intent": "medical_receipt",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-097",
+    "message": "A20260005这个预约的就诊证明还能补办不？",
+    "expected_intent": "medical_receipt",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-098",
+    "message": "我要开个就诊证明该找谁",
+    "expected_intent": "medical_receipt",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-099",
+    "message": "罗红霉素有哪些副作用？",
+    "expected_intent": "medication",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-100",
+    "message": "氯雷他定是治什么的？",
+    "expected_intent": "medication",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-101",
+    "message": "怀孕了能不能吃阿莫西林？",
+    "expected_intent": "medication",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-102",
+    "message": "布洛芬是治什么的？",
+    "expected_intent": "medication",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-103",
+    "message": "甲硝唑是治什么的？",
+    "expected_intent": "medication",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-104",
+    "message": "双黄连口服液有哪些副作用？",
+    "expected_intent": "medication",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-105",
+    "message": "奥美拉唑孕妇能吃吗？",
+    "expected_intent": "medication",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-106",
+    "message": "阿司匹林是治什么的？",
+    "expected_intent": "medication",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-107",
+    "message": "板蓝根主要能管哪些毛病？",
+    "expected_intent": "medication",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-108",
+    "message": "地塞米松会有什么不良反应？",
+    "expected_intent": "medication",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-109",
+    "message": "孕妇吃复方感冒灵安全吗？",
+    "expected_intent": "medication",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-110",
+    "message": "复方感冒灵吃了会有啥不良反应？",
+    "expected_intent": "medication",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-111",
+    "message": "奥司他韦这个药是管什么用的？",
+    "expected_intent": "medication",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-112",
+    "message": "罗红霉素一天能吃几次？",
+    "expected_intent": "medication_dosage",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-113",
+    "message": "头孢氨苄一次吃多少合适？",
+    "expected_intent": "medication_dosage",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-114",
+    "message": "氯雷他定一次吃多少合适？",
+    "expected_intent": "medication_dosage",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-115",
+    "message": "昨天忘吃药了今天要补两粒吗",
+    "expected_intent": "medication_dosage",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-116",
+    "message": "复方感冒灵一天能吃几次？",
+    "expected_intent": "medication_dosage",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-117",
+    "message": "罗红霉素一次吃多少合适？",
+    "expected_intent": "medication_dosage",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-118",
+    "message": "氯雷他定小孩用量怎么算？",
+    "expected_intent": "medication_dosage",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-119",
+    "message": "双黄连口服液小孩用量怎么算？",
+    "expected_intent": "medication_dosage",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-120",
+    "message": "奥美拉唑一次吃多少合适？",
+    "expected_intent": "medication_dosage",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-121",
+    "message": "布洛芬一次吃多少合适？",
+    "expected_intent": "medication_dosage",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-122",
+    "message": "地塞米松一天能吃几次？",
+    "expected_intent": "medication_dosage",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-123",
+    "message": "阿司匹林每天最多吃几回？",
+    "expected_intent": "medication_dosage",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-124",
+    "message": "地塞米松一回吃几片比较好？",
+    "expected_intent": "medication_dosage",
+    "source": "rewritten",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-125",
+    "message": "这个降糖药和感冒灵冲剂能一块喝不？",
+    "expected_intent": "medication_interaction",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-126",
+    "message": "同时吃布洛芬和甲硝唑会有相互作用吗？",
+    "expected_intent": "medication_interaction",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-127",
+    "message": "同时吃对乙酰氨基酚和左氧氟沙星会有相互作用吗？",
+    "expected_intent": "medication_interaction",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-128",
+    "message": "奥美拉唑和氯雷他定一起服用会不会有冲突？",
+    "expected_intent": "medication_interaction",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-129",
+    "message": "吃了阿司匹林又吃华法林会不会容易出血？",
+    "expected_intent": "medication_interaction",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-130",
+    "message": "同时吃左氧氟沙星和板蓝根会有相互作用吗？",
+    "expected_intent": "medication_interaction",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-131",
+    "message": "同时吃复方感冒灵和罗红霉素会有相互作用吗？",
+    "expected_intent": "medication_interaction",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-132",
+    "message": "奥美拉唑和双黄连口服液能一起吃吗？",
+    "expected_intent": "medication_interaction",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-133",
+    "message": "对乙酰氨基酚跟头孢氨苄能一块吃吗？",
+    "expected_intent": "medication_interaction",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-134",
+    "message": "阿司匹林才刚吃完，得隔多久才能用地塞米松啊？",
+    "expected_intent": "medication_interaction",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-135",
+    "message": "有没有免费WiFi可以用",
+    "expected_intent": "other",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-136",
+    "message": "周围有地铁可坐吗",
+    "expected_intent": "other",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-137",
+    "message": "你会不会讲笑话给我听",
+    "expected_intent": "other",
+    "source": "extended",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-138",
+    "message": "你们医院附近有停车场吗",
+    "expected_intent": "other",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-139",
+    "message": "帮我查查明天几点天亮",
+    "expected_intent": "other",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-140",
+    "message": "体检报告一般多久能出来？",
+    "expected_intent": "query",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-141",
+    "message": "转院需要带哪些材料？",
+    "expected_intent": "query",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-142",
+    "message": "线上看病的记录会留多长时间？",
+    "expected_intent": "query",
+    "source": "rewritten",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-143",
+    "message": "异地就医怎么办理备案？",
+    "expected_intent": "query",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-144",
+    "message": "急诊和门诊挂号收费有区别不？",
+    "expected_intent": "query",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-145",
+    "message": "高血压是种什么病啊",
+    "expected_intent": "query",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-146",
+    "message": "啥叫糖尿病呢",
+    "expected_intent": "query",
+    "source": "extended",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-147",
+    "message": "近三次的用药情况帮我导出下",
+    "expected_intent": "request",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-148",
+    "message": "可以把我的就诊档案传到医保App上吗",
+    "expected_intent": "request",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-149",
+    "message": "帮我查一下最近的问诊记录",
+    "expected_intent": "request",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-150",
+    "message": "帮我看看上次的化验单呗",
+    "expected_intent": "request",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-151",
+    "message": "给我查下上个月的体检报告",
+    "expected_intent": "request",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-152",
+    "message": "我低烧好几天了，需要吃药吗？",
+    "expected_intent": "symptom_check",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-153",
+    "message": "这两天一直浑身乏力，严重吗？",
+    "expected_intent": "symptom_check",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-154",
+    "message": "我牙疼好几天了，需要吃药吗？",
+    "expected_intent": "symptom_check",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": true
+  },
+  {
+    "id": "INT-155",
+    "message": "我最近皮肤起皮疹，是怎么回事？",
+    "expected_intent": "symptom_check",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-156",
+    "message": "这两天一直关节疼，严重吗？",
+    "expected_intent": "symptom_check",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-157",
+    "message": "这两天一直嗓子痛，严重吗？",
+    "expected_intent": "symptom_check",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-158",
+    "message": "这两天一直腰疼，严重吗？",
+    "expected_intent": "symptom_check",
+    "source": "archive",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-159",
+    "message": "我耳鸣好几天了，需要吃药吗？",
+    "expected_intent": "symptom_check",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-160",
+    "message": "我最近心跳有点快，是怎么回事？",
+    "expected_intent": "symptom_check",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-161",
+    "message": "这两天一直牙疼，严重吗？",
+    "expected_intent": "symptom_check",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-162",
+    "message": "我头痛好几天了，需要吃药吗？",
+    "expected_intent": "symptom_check",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-163",
+    "message": "我最近耳鸣，是怎么回事？",
+    "expected_intent": "symptom_check",
+    "source": "archive",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-164",
+    "message": "胸口闷了好几天，要不要开点药？",
+    "expected_intent": "symptom_check",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-165",
+    "message": "肚子疼两天了，要不要紧啊？",
+    "expected_intent": "symptom_check",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-166",
+    "message": "最近总觉得心慌气短，稍微动一下就喘，这是咋回事",
+    "expected_intent": "symptom_check",
+    "source": "extended",
+    "split": "held_out",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-167",
+    "message": "这两天胃一阵一阵地疼，吃完饭更明显，想问问是什么原因",
+    "expected_intent": "symptom_check",
+    "source": "extended",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-168",
+    "message": "最近心跳老偏快，要不要紧啊？",
+    "expected_intent": "symptom_check",
+    "source": "rewritten",
+    "split": "train",
+    "llm_failure": false
+  },
+  {
+    "id": "INT-169",
+    "message": "最近两天老觉得胸口闷得慌，要紧不？",
+    "expected_intent": "symptom_check",
+    "source": "rewritten",
+    "split": "held_out",
+    "llm_failure": false
+  }
+]

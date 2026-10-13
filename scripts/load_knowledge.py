@@ -6,8 +6,9 @@
 设计要点：
   1. 清空重建（幂等）：先删掉 collection 再重建，重复执行结果一致，
      不会像增量导入那样越跑越多
-  2. 多跳语料的 entities/doc_type/rule_id 等字段经 add_documents 的白名单
-     透传进每个 chunk 的 metadata（评测时验证「搜没搜齐实体」）
+  2. 多跳语料的 entities/doc_type 等字段经 add_documents 的白名单
+     透传进每个 chunk 的 metadata（评测时验证「搜没搜齐实体」；
+     rule_id 已从语料与白名单移除，见 scripts/strip_rule_refs.py）
   3. 连容器 ChromaDB 服务（localhost:8001）；embedding 统一用中文模型
      bge-small-zh-v1.5：服务端模式下由容器按客户端传来的配置加载模型，
      宿主机无需下载；服务不可用时退化到本地持久化模式（./data/chroma）
@@ -79,7 +80,7 @@ def main():
     )
     print(f"collection 已清空重建（模式: {'服务端' if kb._use_server else '本地'}）")
 
-    # 3. 分批导入多跳语料（217 篇，带 entities/rule_id 等 metadata）。
+    # 3. 分批导入多跳语料（217 篇，带 entities/doc_type 等 metadata）。
     #    分批是为了：① 单次请求太大容易触发 HTTP 超时（embedding 在服务端逐片段算，
     #    CPU 容器较慢）② 每批打进度，出问题知道卡在哪批
     corpus_docs = load_multihop_corpus()

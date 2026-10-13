@@ -6,7 +6,7 @@
 
 本模块的答案：
   1. 完整消息流落盘 —— 每条轨迹包含 LLM 侧消息序列（tool_use / tool_result / 最终回答），
-     与阶段 2 的 SFT 数据格式同构（"模具"）
+     与阶段 2 的 SFT 数据格式同构（"训练数据模板"）
   2. 失败轨迹也落盘 —— 工具失败、超轮次的轨迹同样是阶段 2 的负样本来源
   3. 后台异步写 —— 队列 + 单写线程，落盘不阻塞在线请求
   4. 隐私 —— user_id 只存 SHA256 前 16 位；data/trajectories/ 已进 .gitignore
@@ -46,7 +46,7 @@ def hash_user_id(user_id: str) -> str:
 
 def classify_messages(messages: List[Dict[str, Any]], agent_type: str) -> List[Dict[str, Any]]:
     """
-    给一条消息流补 kind 标记，用于轨迹落盘（SFT 模具）。
+    给一条消息流补 kind 标记，用于轨迹落盘（SFT 训练数据模板）。
 
     为什么是纯函数：_call_llm 发给 LLM 的消息不能夹带额外字段（会干扰 API），
     所以只在轨迹副本上做分类，不改动原始消息。

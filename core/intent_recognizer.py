@@ -15,6 +15,7 @@ import asyncio
 import hashlib
 import json
 import logging
+import os
 import re
 import time
 from dataclasses import dataclass, field
@@ -45,7 +46,7 @@ class IntentCategory(Enum):
     APPOINTMENT_PAYMENT_ISSUE = "appointment_payment_issue"  # 挂号费支付异常
     MEDICATION_DOSAGE = "medication_dosage"    # 用法用量咨询
     MEDICATION_INTERACTION = "medication_interaction"  # 药物相互作用/不良反应
-    HUMAN_HANDOFF = "human_handoff"            # 转人工/转诊
+    HUMAN_HANDOFF = "human_handoff"            # 转人工
     OTHER      = "other"
 
 
@@ -70,7 +71,11 @@ class IntentResult:
 
 # ── Few-shot 模板（同时用于 LLM 示例和 Embedding 匹配）────────────────────────
 _TEMPLATES: Dict[IntentCategory, List[str]] = {
-    IntentCategory.QUERY:      ["我最近老是头晕，是怎么回事？", "感冒了要注意什么？", "体检报告要怎么看？"],
+    # 「转诊/转院」话术放尾部：首条（tpls[:1]）进 LLM few-shot，普通咨询示例
+    # 不动；尾部话术只被 embedding 路全量编码，把转诊句向量从 human_handoff
+    # 的「转人工」系模板旁拉回 query（转诊归 query，用户 2026-10-12 指示）
+    IntentCategory.QUERY:      ["我最近老是头晕，是怎么回事？", "感冒了要注意什么？", "体检报告要怎么看？",
+                                "我想转诊到上级医院，需要办什么手续？", "转院需要办哪些手续？"],
     IntentCategory.COMPLAINT:  ["等了三个小时也没人接诊！", "医生态度太差了！", "一直没人处理我的问题！"],
     IntentCategory.REQUEST:    ["帮我取消这次预约", "我需要换个医生", "请帮我安排复诊"],
     IntentCategory.GREETING:   ["你好", "在吗", "早上好"],
@@ -87,6 +92,9 @@ _TEMPLATES: Dict[IntentCategory, List[str]] = {
     IntentCategory.APPOINTMENT_PAYMENT_ISSUE: ["挂号费扣了两次", "支付失败但显示扣款了", "这个月挂号费好像多扣了"],
     IntentCategory.MEDICATION_DOSAGE: ["这个药一天吃几次？", "吃多了会有什么后果？", "空腹能不能吃这个药？"],
     IntentCategory.MEDICATION_INTERACTION: ["这两种药一起吃会有问题吗？", "吃完药后起了皮疹", "感冒药和抗生素能同时吃吗？"],
+    # 首条必须是「转人工」系话术（LLM few-shot 每类只取首条 tpls[:1]），语义最
+    # 明确；「转诊」按用户 2026-10-12 指示归 query（转诊是资讯类问题，不是要求
+    # 人工接手），不在本类
     IntentCategory.HUMAN_HANDOFF: ["转人工客服", "我要找人工", "请帮我转接医生"],
 }
 
@@ -123,8 +131,11 @@ _INTENT_GROUPS: Dict[IntentCategory, IntentCategory] = {
     IntentCategory.HUMAN_HANDOFF: IntentCategory.EMERGENCY,
 }
 
-# 紧急关键词：CRITICAL 覆盖典型急症红旗症状，触发急症前置安全门控
-_URGENCY_KEYWORDS = {
+# 紧急关键词：CRITICAL 覆盖典型急症红旗症状，触发急症前置安全门控。
+# 公开名（无下划线）：急症集考卷的期望值与 scripts/validate_exams.py 的断言
+# 都按这张表做确定性校验（「红旗题必须含 CRITICAL 词」），词表是跨模块契约，
+# 改动必须同步跑考卷校验。
+URGENCY_KEYWORDS = {
     UrgencyLevel.CRITICAL: [
         "紧急", "emergency", "urgent", "asap", "立刻",
         "胸痛", "胸口疼", "呼吸困难", "喘不上气", "休克", "大出血",
@@ -133,6 +144,11 @@ _URGENCY_KEYWORDS = {
     UrgencyLevel.HIGH:     ["今天", "马上", "尽快", "hurry", "now", "持续高烧", "剧烈疼痛"],
     UrgencyLevel.MEDIUM:   ["这周", "soon", "快点"],
 }
+
+# 转人工关键词（2026-10-12 用户指示：只认「转人工」类词，「转诊/转院」归 query）。
+# 公开名：scripts/validate_exams.py 的急症集断言引用（阴性题含转人工词 =
+# intent 路必升级 = 废题），词表是跨模块契约，改动必须同步跑考卷校验。
+HUMAN_HANDOFF_KEYWORDS = ["转人工", "人工客服", "找人工", "转专家", "转医生"]
 
 
 def _cosine(a: List[float], b: List[float]) -> float:
@@ -158,6 +174,7 @@ class IntentRecognizer:
         base_url: Optional[str] = None,
         model: str = "claude-3-5-sonnet-20241022",
         confidence_threshold: float = 0.5,
+        force_llm_failure: Optional[bool] = None,
     ):
         #构造客户端（v2 阶段 0.5 双协议）：按 OPENMED_LLM_PROTOCOL 决定 Anthropic
         #协议还是 OpenAI 协议，两种客户端对外接口一致（messages.create）
@@ -166,6 +183,17 @@ class IntentRecognizer:
         #保存变量
         self.model     = model
         self.threshold = confidence_threshold
+
+        # 评测强制失败开关（v2 阶段 1 第 6 步）：forced-fail 跑法测「LLM 意图识别
+        # 挂掉时降级链路多能扛」。解析优先级：显式构造参数 > env 双门控——
+        # env 必须 OPENMED_EVAL_MODE=1 且 OPENMED_EVAL_FORCE_LLM_INTENT_FAILURE=1
+        # 两个都开才生效（生产环境不设这两个变量，恒 False，零误伤风险）。
+        if force_llm_failure is None:
+            force_llm_failure = (
+                os.environ.get("OPENMED_EVAL_MODE") == "1"
+                and os.environ.get("OPENMED_EVAL_FORCE_LLM_INTENT_FAILURE") == "1"
+            )
+        self.force_llm_failure = bool(force_llm_failure)
 
         # 语义路固定启用（权重 70/20/10，见 _vote）：优先本地中文模型
         # （get_local_embedder 惰性加载），模型不可用（如离线测试环境）时
@@ -239,6 +267,13 @@ class IntentRecognizer:
         history: Optional[List[Dict[str, str]]],
     ) -> Dict[str, Any]:
         """策略 1：LLM 语义理解（Few-shot + 上下文）。"""
+        if self.force_llm_failure:
+            # 评测强制失败：短路返回与真实失败分支（下方 except）同构的降级值
+            # ——键集合/取值语义一致（intent=OTHER、confidence=0、failed=True），
+            # reasoning 标注「评测强制」便于审计时区分人为注入与真实故障。
+            # 短路省掉 LLM 调用：强制 LLM 失败子集测的是降级链路，不测 LLM。
+            return {"intent": IntentCategory.OTHER, "confidence": 0.0,
+                    "reasoning": "LLM 失败（评测强制）", "failed": True}
         message = self._clean_text(message)
         # 构建 Few-shot 示例
         examples = "\n".join(
@@ -258,6 +293,7 @@ class IntentRecognizer:
 如果用户问题能匹配细粒度业务意图，请优先返回细粒度意图，而不是宽泛大类。
 例如取消预约优先返回 appointment_cancel，剂量咨询优先返回 medication_dosage，科室指引优先返回 department_guide。
 出现胸痛、呼吸困难、大出血、抽搐、昏迷等急症红旗症状时，优先返回 emergency。
+只有消息中明确提到转人工、人工客服等要求人工服务的词时，才返回 human_handoff；转诊、转院相关问题返回 query。
 
 示例:
 {examples}
@@ -274,7 +310,10 @@ class IntentRecognizer:
         try:
             resp = await self.client.messages.create(
                 model=self.model,
-                max_tokens=256,
+                # 1024 而非 256：deepseek-v4-pro 对需要推理的句子会返回 thinking 块，
+                # 256 时 thinking 把额度吃光、text 块只剩残片（json.loads 空串失败，
+                # 实测转诊句 7 连败）——额度必须给 thinking 留出空间
+                max_tokens=1024,
                 temperature=0.1,
                 messages=[{"role": "user", "content": prompt}],
             )
@@ -313,7 +352,9 @@ class IntentRecognizer:
 
         # 先匹配细粒度关键词
         specific_patterns = {
-            IntentCategory.HUMAN_HANDOFF: ["转人工", "人工客服", "找人工", "转专家", "转医生"],
+            # 刻意不加「转诊」「转院」（用户 2026-10-12 指示归 query）：它们是资讯类
+            # 问题，而关键词命中细粒度意图会在 _vote 精修里覆盖通用意图，会误伤
+            IntentCategory.HUMAN_HANDOFF: HUMAN_HANDOFF_KEYWORDS,
             IntentCategory.SYMPTOM_CHECK: ["咳嗽", "发烧", "发热", "头晕", "肚子疼", "腹泻", "皮疹", "呕吐", "乏力"],
             IntentCategory.DEPARTMENT_GUIDE: ["挂哪个科", "看什么科", "挂什么科", "应该挂号", "department"],
             IntentCategory.APPOINTMENT_CANCEL: ["取消预约", "取消挂号", "退号", "cancel appointment"],
@@ -474,7 +515,7 @@ class IntentRecognizer:
 
     def _urgency(self, message: str, intent: IntentCategory) -> UrgencyLevel:
         msg = message.lower()
-        for level, kws in _URGENCY_KEYWORDS.items():
+        for level, kws in URGENCY_KEYWORDS.items():
             if any(kw in msg for kw in kws):
                 return level
         if intent in (IntentCategory.EMERGENCY, IntentCategory.HUMAN_HANDOFF):

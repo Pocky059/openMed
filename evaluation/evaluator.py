@@ -122,38 +122,56 @@ Agent 响应: {response}
             context_section=ctx_section,
         )
         prompt = self._clean_text(prompt)
-        try:
-            resp = await self._client.messages.create(
-                model=self._model, max_tokens=1024, temperature=0.0,
-                messages=[{"role": "user", "content": prompt}],
-            )
-            # 解析 LLM 返回：剥掉可能的 ```json 围栏，再取第一个 JSON 对象
-            import re
-            raw = extract_text_content(resp.content).strip()
+        # 重试 2 次（共 3 次）：DeepSeek 偶发网络/格式失败，判卷不该因一次
+        # 抖动就把题判成 0.5 兜底（与其它 judge 模块重试口径一致）
+        last_error: Optional[str] = None
+        current_prompt = prompt  # 重试时可能附加错误反馈，见下
+        for attempt in range(3):
+            try:
+                resp = await self._client.messages.create(
+                    # thinking 关掉（extra_body 透传）：判卷是结构化输出任务，
+                    # DeepSeek 思考块无上限膨胀会吃光输出额度（根因见
+                    # ragas_metrics._judge_json_call 注释，2026-10-13 诊断实测）
+                    model=self._model, max_tokens=4096, temperature=0.0,
+                    extra_body={"thinking": {"type": "disabled"}},
+                    messages=[{"role": "user", "content": current_prompt}],
+                )
+                # 解析 LLM 返回：剥掉可能的 ```json 围栏，再取第一个 JSON 对象
+                import re
+                raw = extract_text_content(resp.content).strip()
 
-            raw = re.sub(r"^```json\s*", "", raw, flags=re.IGNORECASE)
-            raw = re.sub(r"^```\s*", "", raw)
-            raw = re.sub(r"\s*```$", "", raw)
+                raw = re.sub(r"^```json\s*", "", raw, flags=re.IGNORECASE)
+                raw = re.sub(r"^```\s*", "", raw)
+                raw = re.sub(r"\s*```$", "", raw)
 
-            match = re.search(r"\{[\s\S]*\}", raw)
-            if not match:
-                raise ValueError(f"LLM Judge 未返回 JSON: {raw[:300]!r}")
+                match = re.search(r"\{[\s\S]*\}", raw)
+                if not match:
+                    raise ValueError(f"LLM Judge 未返回 JSON: {raw[:300]!r}")
 
-            data = json.loads(match.group(0))
-            logger.debug("LLM Judge 原始输出: %r", raw[:1000])
-            return QualityScores(
-                relevance=float(data.get("relevance", 0.5)),
-                accuracy=float(data.get("accuracy", 0.5)),
-                completeness=float(data.get("completeness", 0.5)),
-                helpfulness=float(data.get("helpfulness", 0.5)),
-            )
-        except Exception as ex:
-            logger.warning(f"LLM Judge 失败: {ex}")
-            return QualityScores(
-                0.5, 0.5, 0.5, 0.5,
-                judge_failed=True,
-                error=str(ex),
-            )
+                data = json.loads(match.group(0))
+                logger.debug("LLM Judge 原始输出: %r", raw[:1000])
+                return QualityScores(
+                    relevance=float(data.get("relevance", 0.5)),
+                    accuracy=float(data.get("accuracy", 0.5)),
+                    completeness=float(data.get("completeness", 0.5)),
+                    helpfulness=float(data.get("helpfulness", 0.5)),
+                )
+            except Exception as ex:
+                last_error = str(ex)
+                logger.warning("LLM Judge 失败（第 %s 次）: %s", attempt + 1, ex)
+                # 2026-10-13 全量基线实测教训（与 ragas_metrics 同根因）：
+                # temperature=0 下原样重发必然得到同样错的输出——格式类错误
+                # 把错误信息反馈给 judge 让它自我纠正；网络类异常重发原 prompt。
+                if isinstance(ex, ValueError):
+                    current_prompt = (
+                        f"{prompt}\n\n【注意：你上一次的输出没有通过校验，错误是："
+                        f"{ex}】\n请修正后只输出 JSON，不要再输出任何其他内容。"
+                    )
+        return QualityScores(
+            0.5, 0.5, 0.5, 0.5,
+            judge_failed=True,
+            error=last_error or "",
+        )
 
     @staticmethod
     def _clean_text(value: Any) -> str:

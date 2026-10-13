@@ -1,8 +1,10 @@
 """
 OpenMed 智能问诊分流系统 — FastAPI 入口
 
-所有核心组件在 lifespan 中初始化，通过环境变量配置。
-负责生命周期管理、核心组件初始化、依赖组装，HTTP API请求记入记忆、意图识别和Agent编排主链路
+HTTP 层只做绑定与序列化（v2 阶段 1 第 1 步重构后）：
+- 组件组装逻辑在 core/app_factory.py（与基线评测 CLI 共用，杜绝双份漂移）
+- /chat 五步主链路在 api/chat_service.py
+- 生命周期管理、全局组件分发、其余各端点仍在本文文件
 """
 import asyncio
 import logging
@@ -24,6 +26,9 @@ from fastapi import FastAPI, HTTPException, Response, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from pydantic import BaseModel, Field
+
+from api.chat_service import ChatResponse, ChatService  #v2 阶段 1 第 1 步：五步链路与响应模型已外移
+from core.app_factory import assemble, build_llm_cfg  #v2 阶段 1 第 1 步：组件组装已外移为工厂（lifespan 调用）
 
 load_dotenv()  #导入env配置到环境变量
 
@@ -47,140 +52,36 @@ _tool_manager = None    #mcp工具管理器
 _monitor      = None    #监测
 _evaluator    = None    #评估
 _skill_manager = None   #skill热加载管理器
+_chat_service = None    #/chat 五步链路服务
 
-def _anthropic_cfg() -> Dict[str, Any]:     #从环境变量中读取大模型配置，返回一个字典。键是字符串，值不限。
-    key = os.getenv("ANTHROPIC_API_KEY", "") #从环境变量中读取key。
-    if not key:
-        raise RuntimeError("未设置 ANTHROPIC_API_KEY")  #没有key则显示未设置
-    cfg: Dict[str, Any] = {
-        "api_key":  key,
-        "model":    os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022").strip(),  #读anthropic model，没有的话默认用claude3.5sonnet
-    }
-    base_url = os.getenv("ANTHROPIC_BASE_URL", "").strip()
-    if base_url:          #读可选代理地址，有的话再放进字典
-        cfg["base_url"] = base_url
-    return cfg
+# LLM 配置读取已外移到 core/app_factory.build_llm_cfg（v2 阶段 1 第 1 步）。
+# 保留别名：旧交互式 CLI（_cli）仍按原名调用，历史代码不动。
+_anthropic_cfg = build_llm_cfg
 
 
 #核心函数（使用装饰器，把lifespan用这个类包一层再赋值回去这个名字） |  先执行yield前面的代码，然后系统初始化完成，yield，fastapi开始接受请求，然后服务器关闭，继续执行yield后面的代码
 @asynccontextmanager
 async def lifespan(app: FastAPI):  #lifespan是一个异步事件循环函数，哪个事件“就绪”了，就执行对应异步await函数
-    global _orchestrator, _memory, _tool_manager, _monitor, _evaluator, _skill_manager #后面要修改这些全局变量，前面初始化为了None
+    global _orchestrator, _memory, _tool_manager, _monitor, _evaluator, _skill_manager, _chat_service #后面要修改这些全局变量，前面初始化为了None
 
     print(BANNER, flush=True)  #打印启动横幅
 
-    from agents.agent_orchestrator import AgentOrchestrator, Request, build_shared_rag_tools  #从编排器库导入编排器，请求体
-    from core.intent_recognizer import IntentRecognizer                                       #从意图识别器库导入意图识别器
-    from evaluation.evaluator import EndToEndEvaluator                                        #从评估库导入端到端评估器
-    from mcp.knowledge_base import KnowledgeBase                                              #从知识库导入知识库类
-    from mcp.tool_manager import MCPToolManager, Tool                                         #从工具管理器库导入mcp管理器类，工具类
-    from memory.conversation_memory import MemoryManager                                      #从记忆管理库导入记忆管理器类
-    from monitor.performance_monitor import PerformanceMonitor                                #从监管器库导入监管器
-    from core.skill_loader import SkillManager                                                #从skill加载器库导入skill管理器
+    # 全套组件由组装工厂统一构建（v2 阶段 1 第 1 步）：生产与基线评测 CLI
+    # 共用同一份组装逻辑（core/app_factory.assemble），杜绝双份组装漂移。
+    # 工厂内部已按生产顺序完成：意图识别器 → skills → 编排器 → 记忆 →
+    # 工具管理器 → 知识库 → 工具注册 → 共享工具注入 → 监控启动 → 评测器
+    # ——顺序有讲究，勿在生产与 CLI 两边各写一份。
+    ctx = await assemble()
 
-    cfg = _anthropic_cfg()  #导入并在日志输出前面配置
-    logger.info(f"模型: {cfg['model']}  base_url: {cfg.get('base_url', '(官方)')}")
-
-    # 意图识别器（这里是单独给 Evaluator用的，Orchestrator 内部还会创建一个）
-    recognizer = IntentRecognizer(
-        api_key=cfg["api_key"],            #意图识别器接收三个输入：api key, base_url, model
-        base_url=cfg.get("base_url"),
-        model=cfg["model"],
-    )
-
-    # Skills：启动时从环境变量（没有的话，默认值用skills目录下的）加载skills（主要是业务能力说明），并在 Agent 调用 LLM 时动态注入。
-    skills_dir = os.getenv("OPENMED_SKILLS_DIR", str(pathlib.Path(_ROOT) / "skills"))
-    _skill_manager = SkillManager(
-        root_dir=skills_dir,      #skill管理器接收两个参数，skill_dir目录和最大prompt字符数，后者没有的话，默认值5000
-        max_prompt_chars=int(os.getenv("OPENMED_SKILLS_MAX_PROMPT_CHARS", "5000")), #防止注入的prompt长度太长
-    )
-    _skill_manager.load()
-
-    # Agent 编排器(orchestrator)，多Agent编排的核心
-    _orchestrator = AgentOrchestrator(
-        api_key=cfg["api_key"],             #agent编排器接收四个参数，api，baseurl，model，skill管理器
-        base_url=cfg.get("base_url"),
-        model=cfg["model"],
-        skill_manager=_skill_manager,
-    )
-
-    # 记忆管理器（Redis 工作记忆 + ChromaDB 情景记忆/用户画像）
-    _memory = MemoryManager(                #记忆管理器接收七个参数,a+b+m, 三个chromaDB配置，一个redis配置
-        redis_url=os.getenv("REDIS_URL", "redis://redis:6379/0"),
-        chroma_host=os.getenv("CHROMA_HOST", "chromadb"),
-        chroma_port=int(os.getenv("CHROMA_PORT", "8000")),
-        chroma_path=os.getenv("CHROMA_PERSIST_DIRECTORY", "/app/data/chroma"),  #本地持久化目录
-        api_key=cfg["api_key"],
-        base_url=cfg.get("base_url"),
-        model=cfg["model"],
-    )
-
-    # MCP 工具管理器 + RAG 知识库（基于 ChromaDB 的真实检索）
-    _tool_manager = MCPToolManager(
-        api_key=cfg["api_key"],             #mcp工具管理器接收三个参数,abm。为什么工具管理器也需要llm？要决定调用哪个工具
-        base_url=cfg.get("base_url"),       #见tool_manager.py
-        model=cfg["model"],
-        # v2 评测模式（OPENMED_EVAL_MODE=1）：禁用工具缓存，保证轨迹记录真实检索行为。
-        # 默认关闭——线上开启会显著增加检索延迟（每次查询都真实检索+精排）
-        eval_mode=os.getenv("OPENMED_EVAL_MODE", "0").strip().lower() in ("1", "true", "on", "yes"),
-    )
-    kb = KnowledgeBase(                     #知识库类，参数和chromaDB记忆管理器配置的一致，后称为kb
-        chroma_host=os.getenv("CHROMA_HOST", "chromadb"),
-        chroma_port=int(os.getenv("CHROMA_PORT", "8000")),
-        chroma_path=os.getenv("CHROMA_PERSIST_DIRECTORY", "/app/data/chroma"),
-    )
-    logger.info(f"知识库已加载: {await kb.doc_count_async()} 个文档片段")  #异步拿到从知识库加载返回的文档数，打印到日志
-
-
-    #知识库降级函数，防止一次查询失败拖垮整个流程. | params:工具调用参数，如query:.....， topk: 5....  | context：可选上下文 | error: 错误信息字符串
-    def knowledge_fallback(params: Dict[str, Any], context: Optional[Dict[str, Any]], error: str):
-        query = params.get("query", "")     #拿到query，没有就赋值为空
-        return [{                           #此处返回的结果和正常结果一致，所以上层不用改代码
-            "title": "知识库降级结果",
-            "content": f"知识库暂时不可用，未能完成对“{query}”的检索。请稍后重试，或转人工/急诊确认。",
-            "score": 0.0,
-            "fallback": True,
-            "error": error,
-        }]
-
-    _tool_manager.register(Tool(         #把知识库注册成工具,本体是knowledge base
-        name="knowledge_search",
-        description="搜索医疗知识库（BM25 + 向量混合召回，RRF 融合排序）",
-        handler=kb.search_handler,       #这个是工具被agent调用后，实际的调用对象。这里调用之前创建的知识库类实例kb
-        schema={                         #这个是JSON Schema，用来定义工具参数，约束模型输出不乱编（参数不对直接拦下）。
-            "type": "object",            #object是JSON的数据类型之一（键值对集合，有序列表，字符串，数字，布尔，空）
-            "properties": {
-                "query": {"type": "string"},    #用户搜了什么
-                "top_k": {"type": "integer"},   #返回的前k条结果
-            },
-            "required": ["query"],        #必填字段：query。不填会校验失败。
-        },
-        cache_ttl=300.0,                  #结果缓存，同样的搜索在5分钟内重读调用直接返回。
-        fallback=knowledge_fallback,      #fallback使用上面定义的fallback函数
-    ))
-    if _orchestrator is not None:         #兜底写法：lifespan 里是同步直接构造（失败会抛异常终止启动，不会得到 None），
-        _orchestrator.set_shared_tools(build_shared_rag_tools(_tool_manager))   #此检查只防"未来初始化改为可失败/延迟创建"。功能：从工具管理器类中，构建agent编排器可用的rag工具集。意思是多个agent可以用同一套rag工具
-
-    # 性能监控（可选启动 Prometheus，默认为0，即不启动）
-    prom_port = int(os.getenv("PROMETHEUS_PORT", "0")) or None
-    _monitor = PerformanceMonitor(
-        orchestrator=_orchestrator,   #要监控的对象有两个：编排器和工具管理器（看重延迟，资源占用，系统稳定性，调用成功率等等）
-        tool_manager=_tool_manager,   #工具模块是很容易报错的，如超时，返回异常，缓存命中率低等
-        interval_s=float(os.getenv("MONITOR_INTERVAL", "10")),      #采集间隔，默认10秒
-        webhook_url=os.getenv("ALERT_WEBHOOK_URL") or None,         #告警地址，默认none。用于模型数据表现异常时发送信息。一般放到环境变量里，且不提交到仓库
-        prometheus_port=prom_port,
-    )
-    await _monitor.start()  #异步启动
-
-    # 评测器
-    _evaluator = EndToEndEvaluator(
-        orchestrator=_orchestrator,   #要评测的对象有两个：编排器和意图识别器。使用llm端到端、四维度评测（看重回答质量，意图生成质量等）
-        recognizer=recognizer,
-        api_key=cfg["api_key"],
-        base_url=cfg.get("base_url"),
-        model=cfg["model"],
-        baseline_path=os.getenv("EVAL_BASELINE_PATH", "/app/data/eval/baseline.json"),  #基线文件路径，默认后者
-    )
+    # 分发给既有全局变量。其余端点（/health /skills /monitor /trace /search
+    # /knowledge/* /eval/run）引用这些变量，全部保持不动。
+    _skill_manager = ctx.skill_manager
+    _orchestrator  = ctx.orchestrator
+    _memory        = ctx.memory
+    _tool_manager  = ctx.tool_manager
+    _monitor       = ctx.monitor
+    _evaluator     = ctx.evaluator
+    _chat_service  = ChatService(ctx.orchestrator, ctx.memory)
 
     logger.info("OpenMed 已就绪")
     yield   #启动前会先执行yield前的所有代码，因此打印完日志文件才会启动服务。关闭后执行之后的代码。
@@ -216,25 +117,7 @@ class ChatRequest(BaseModel):          #BaseModel类来自于Pydantic。是FASTA
     conv_id:     Optional[str] = None  #可选字段：对话id。同上。
                                        #后续api调用时(如/chat），FASTapi会自动把请求解析成ChatRequest对象（转JSON）
 
-class ChatResponse(BaseModel):         #这里就是回答体了。他会自动把回答转成JSON输出。
-    conv_id:     str                   #必填字段：对话id
-    request_id:  str = ""
-    response:    str                   #必填字段：模型回答
-    intent:      str                   #必填字段：识别出的意图
-    intent_group: str = "other"
-    agent_type:  str                   #必填字段：处理该请求的agent类型
-    agent_types: List[str] = Field(default_factory=list)         #使用可变默认值写法
-    primary_agent: str = ""
-    supporting_agents: List[str] = Field(default_factory=list)
-    tools_used: List[str] = Field(default_factory=list)
-    routing_reason: str = ""
-    routing_confidence: float = 0.0
-    escalated:   bool                  #必填字段：是否转人工
-    latency_ms:  float                 #必填字段：处理耗时（毫秒）
-    knowledge_used: bool = False
-    entities: Dict[str, List[str]] = Field(default_factory=dict)
-    intent_confidence: float = 0.0
-    intent_source_scores: Dict[str, float] = Field(default_factory=dict)
+# ChatResponse 已外移到 api/chat_service.py（v2 阶段 1 第 1 步：服务层自洽，HTTP 层反向 import）
 
 
 class ToolTraceResponse(BaseModel):    #工具追踪的响应体/结果体
@@ -279,72 +162,14 @@ async def chat(req: ChatRequest):                        #需要一个输入，�
     """
     主对话接口。完整流程：
       记忆读取 → 意图识别 → Agent 路由 → 执行 → 记忆写入
+    （五步实现已外移到 api/chat_service.ChatService，本端点只做 HTTP 绑定）
     """
-    if _orchestrator is None or _memory is None:
-        # 兜底写法：lifespan 同步构造这两个对象，失败会终止启动，正常运行时到不了这里；
+    if _chat_service is None:
+        # 兜底写法：lifespan 同步构造服务，失败会终止启动，正常运行时到不了这里；
         # 只防"未来初始化改为可失败/延迟创建"时，把未就绪状态如实报 503 而不是 500
         raise HTTPException(503, "服务未就绪")
 
-    from agents.agent_orchestrator import Request as OrcReq
-    from memory.conversation_memory import MsgRole
-
-    conv_id = req.conv_id or str(uuid.uuid4())            #uuid：python库，用于生成唯一标识符，基于随机数
-
-    # 1. 读取记忆上下文（工作记忆+情景记忆+用户画像一起保存成的上下文；异步执行。注意这里的mem_ctx和后面的full_context都不是ui上显示的文本）
-    mem_ctx = await _memory.get_context(req.user_id, conv_id, query=req.message)
-
-    # 2. 构建编排请求（含对话历史，用于意图识别上下文）
-    history = [
-        {"role": m.role.value, "content": m.content} #从mem_ctx中抽取每个m形成字典列表，即格式化上下文
-        for m in mem_ctx.recent_messages[-5:]        #只取最近的五条消息，因此主要是redis工作记忆
-    ] if mem_ctx.recent_messages else None
-
-    intent_result = await _orchestrator.recognize_intent(req.message, history=history)   #把请求体里的message（当前信息）和工作记忆作为输入发送到意图识别模块，得到返回
-    full_context = mem_ctx.to_prompt_text()   #将整个mem_ctx记忆上下文格式化为大模型可用的prompt，起整体参考作用
-
-    orch_req = OrcReq( #把结果先包装成一个请求体，再喂给编排器。这里的请求体OrcReq是Request类，它是在orchestrator里被定义的。
-        message=req.message,
-        user_id=req.user_id,
-        conv_id=conv_id,           #这两个记忆现在都被送到Request中，计算agent路由了：
-        context=full_context,      #并入历史（格式化综合上下文记忆）
-        history=history,           #工作记忆（结构化）
-        entities=intent_result.entities,       
-        intent=intent_result.intent,
-        intent_group=intent_result.intent_group,
-        urgency=intent_result.urgency,
-        intent_confidence=intent_result.confidence,
-    )
-
-    # 3. 送入编排器，决定接下来交给哪个agent，用什么工具，要不要多agent等
-    result = await _orchestrator.run(orch_req)
-
-    # 4. 写入记忆（写入redis，工作记忆）
-    await _memory.add_message(req.user_id, conv_id, MsgRole.USER, req.message)   #写入用户提问
-    await _memory.add_message(req.user_id, conv_id, MsgRole.ASSISTANT, result.response)    #写入模型回答
-
-    # 5. 异步更新用户画像（不阻塞响应）
-    asyncio.create_task(_memory.update_profile(req.user_id, conv_id))
-
-    return ChatResponse(    #前面定义的返回体，包含若干参数。
-        conv_id=conv_id,
-        request_id=result.request_id,
-        response=result.response,
-        intent=result.intent.value if result.intent else "other",
-        intent_group=intent_result.intent_group,
-        agent_type=result.agent_type.value,
-        agent_types=[agent_type.value for agent_type in result.agent_types],    #result里有两个字段，一个agent_type, 一个agent_types
-        primary_agent=result.primary_agent.value if result.primary_agent else result.agent_type.value,  #此外还有一个primary_agent字段。没有primary就用agent_type
-        supporting_agents=[agent_type.value for agent_type in result.supporting_agents],     #还有一个supporting_agents字段
-        tools_used=result.tools_used,
-        routing_reason=result.routing_reason,
-        routing_confidence=result.routing_confidence,
-        escalated=result.escalated,
-        latency_ms=round(result.latency_ms, 1),
-        knowledge_used="search_knowledge_base" in result.tools_used,
-        entities=intent_result.entities,
-        intent_confidence=round(intent_result.confidence, 4),
-        intent_source_scores=intent_result.source_scores,
-    )
+    return await _chat_service.handle_chat_turn(req.message, req.user_id, req.conv_id)
 
 @app.get("/monitor")
 async def monitor_summary():

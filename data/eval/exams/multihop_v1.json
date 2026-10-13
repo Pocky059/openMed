@@ -1,0 +1,1728 @@
+[
+  {
+    "id": "MH-001",
+    "question": "我因为房颤一直在吃华法林，最近情绪低落，朋友推荐我吃圣约翰草胶囊，这两种能一起吃吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-014",
+        "title": "圣约翰草×华法林",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-075",
+    "safety": {
+      "drug_a": "圣约翰草",
+      "drug_b": "华法林",
+      "expected_direction": "caution",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-002",
+    "question": "吃圣约翰草提取物会不会影响华法林的抗凝效果？如果实在必须一起用，要注意什么？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-014",
+        "title": "贯叶金丝桃素药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-014",
+        "title": "圣约翰草×华法林",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-075",
+    "safety": {
+      "drug_a": "圣约翰草提取物",
+      "drug_b": "华法林",
+      "expected_direction": "caution",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-003",
+    "question": "医生给我开的华法令我一直在吃，现在想吃点贯叶连翘调节心情，可以吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-014",
+        "title": "圣约翰草×华法林",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-075",
+    "safety": {
+      "drug_a": "贯叶连翘",
+      "drug_b": "华法令",
+      "expected_direction": "caution",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-004",
+    "question": "我正在服用舍曲林治疗抑郁症，能不能同时吃圣约翰草保健品？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-015",
+        "title": "圣约翰草×SSRI 类抗抑郁药",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-076",
+    "safety": {
+      "drug_a": "圣约翰草",
+      "drug_b": "舍曲林",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "held_out"
+  },
+  {
+    "id": "MH-005",
+    "question": "圣约翰草和氟西汀放在一起吃，身体会出什么问题？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-014",
+        "title": "贯叶金丝桃素药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-015",
+        "title": "圣约翰草×SSRI 类抗抑郁药",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-076",
+    "safety": {
+      "drug_a": "圣约翰草",
+      "drug_b": "氟西汀",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-006",
+    "question": "我吃帕罗西汀已经快半年了，最近想加服圣约翰草改善情绪，会有风险吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-015",
+        "title": "圣约翰草×SSRI 类抗抑郁药",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-076",
+    "safety": {
+      "drug_a": "圣约翰草",
+      "drug_b": "帕罗西汀",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-007",
+    "question": "我在吃优思明避孕，最近想用圣约翰草调理情绪，会影响避孕效果吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-016",
+        "title": "圣约翰草×口服避孕药",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-077",
+    "safety": {
+      "drug_a": "圣约翰草",
+      "drug_b": "优思明",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "held_out"
+  },
+  {
+    "id": "MH-008",
+    "question": "我情绪不好打算吃圣约翰草，同时还在规律服用口服避孕药，这两个药能一起用吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-014",
+        "title": "贯叶金丝桃素药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-016",
+        "title": "圣约翰草×口服避孕药",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-077",
+    "safety": {
+      "drug_a": "圣约翰草",
+      "drug_b": "口服避孕药",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-009",
+    "question": "我做过肾移植，一直在吃环孢素抗排异，最近睡眠不好想喝圣约翰草茶，能喝吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-014",
+        "title": "贯叶金丝桃素药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-017",
+        "title": "圣约翰草×环孢素",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-078",
+    "safety": {
+      "drug_a": "圣约翰草",
+      "drug_b": "环孢素",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-010",
+    "question": "服用环孢素期间能不能碰圣约翰草制品？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-017",
+        "title": "圣约翰草×环孢素",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-078",
+    "safety": {
+      "drug_a": "圣约翰草",
+      "drug_b": "环孢素",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-011",
+    "question": "我最近开始吃圣约翰草，同时医生给我开了地高辛治疗心衰，这两个能一起吃吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-014",
+        "title": "贯叶金丝桃素药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-018",
+        "title": "圣约翰草×地高辛",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-079",
+    "safety": {
+      "drug_a": "圣约翰草",
+      "drug_b": "地高辛",
+      "expected_direction": "caution",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-012",
+    "question": "在吃地高辛的人还能吃圣约翰草吗？如果必须同用要注意什么？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-018",
+        "title": "圣约翰草×地高辛",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-079",
+    "safety": {
+      "drug_a": "圣约翰草",
+      "drug_b": "地高辛",
+      "expected_direction": "caution",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-013",
+    "question": "我做过肝移植，每天吃他克莫司，最近想用圣约翰草调理情绪，可以吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-019",
+        "title": "圣约翰草×他克莫司",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-080",
+    "safety": {
+      "drug_a": "圣约翰草",
+      "drug_b": "他克莫司",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-014",
+    "question": "肝移植术后吃他克莫司的人，朋友送的圣约翰草茶能不能喝？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-014",
+        "title": "贯叶金丝桃素药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-019",
+        "title": "圣约翰草×他克莫司",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-080",
+    "safety": {
+      "drug_a": "圣约翰草",
+      "drug_b": "他克莫司",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-015",
+    "question": "我在接受抗 HIV 治疗，每天吃沙奎那韦，能同时吃大蒜素保健品吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-017",
+        "title": "大蒜概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-022",
+        "title": "大蒜提取物×沙奎那韦",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-086",
+    "safety": {
+      "drug_a": "大蒜素",
+      "drug_b": "沙奎那韦",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "clinical_trial"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-016",
+    "question": "吃大蒜提取物保健品会不会影响我的抗 HIV 药物沙奎那韦的效果？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-017",
+        "title": "大蒜概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-015",
+        "title": "大蒜素药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-022",
+        "title": "大蒜提取物×沙奎那韦",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-086",
+    "safety": {
+      "drug_a": "大蒜提取物",
+      "drug_b": "沙奎那韦",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "clinical_trial"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-017",
+    "question": "我感染了 HIV，在用沙奎那韦，最近开始每天吃大蒜素胶囊，要紧吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-017",
+        "title": "大蒜概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-022",
+        "title": "大蒜提取物×沙奎那韦",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-086",
+    "safety": {
+      "drug_a": "大蒜",
+      "drug_b": "沙奎那韦",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "clinical_trial"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-018",
+    "question": "我因为房颤在吃地高辛，平时咳嗽喜欢嚼几片复方甘草片，能一起吃吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-043",
+        "title": "甘草概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-030",
+        "title": "甘草×地高辛",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-092",
+    "safety": {
+      "drug_a": "甘草片",
+      "drug_b": "地高辛",
+      "expected_direction": "caution",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-019",
+    "question": "长期吃甘草制品的人能用西药地高辛吗？必须同用时要盯住哪些指标？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-043",
+        "title": "甘草概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-028",
+        "title": "甘草酸药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-030",
+        "title": "甘草×地高辛",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-092",
+    "safety": {
+      "drug_a": "甘草",
+      "drug_b": "地高辛",
+      "expected_direction": "caution",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-020",
+    "question": "我因为血栓在吃华法林，还能额外吃维生素 K 补充剂吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-057",
+        "title": "维生素K概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-039",
+        "title": "维生素K×华法林",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-100",
+    "safety": {
+      "drug_a": "维生素K",
+      "drug_b": "华法林",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-021",
+    "question": "服用华法林期间吃维生素 K1 保健品，抗凝效果会受什么影响？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-057",
+        "title": "维生素K概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-036",
+        "title": "维生素K1药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-039",
+        "title": "维生素K×华法林",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-100",
+    "safety": {
+      "drug_a": "维生素K1",
+      "drug_b": "华法林",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "held_out"
+  },
+  {
+    "id": "MH-022",
+    "question": "我吃华法林两年多了，家人给我买了一瓶含维生素 K 的复合维生素，能吃吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-057",
+        "title": "维生素K概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-039",
+        "title": "维生素K×华法林",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-100",
+    "safety": {
+      "drug_a": "维生素K",
+      "drug_b": "华法林",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-023",
+    "question": "我有高血压，正在吃氨氯地平控制血压，最近感冒了想煮点麻黄汤发汗，行吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-094",
+        "title": "麻黄概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-057",
+        "title": "麻黄×降压药",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-105",
+    "safety": {
+      "drug_a": "麻黄",
+      "drug_b": "氨氯地平",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-024",
+    "question": "正在吃降压药的人能不能喝含麻黄的感冒冲剂？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-094",
+        "title": "麻黄概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-057",
+        "title": "麻黄碱药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-057",
+        "title": "麻黄×降压药",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-105",
+    "safety": {
+      "drug_a": "麻黄",
+      "drug_b": "降压药",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-025",
+    "question": "我的血压一直靠美托洛尔压着，朋友送的麻黄减肥茶能喝吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-094",
+        "title": "麻黄概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-057",
+        "title": "麻黄×降压药",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-105",
+    "safety": {
+      "drug_a": "麻黄",
+      "drug_b": "美托洛尔",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-026",
+    "question": "我正在服用苯乙肼治疗抑郁，感冒了能吃含麻黄的感冒药吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-094",
+        "title": "麻黄概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-058",
+        "title": "麻黄×MAOI 类抗抑郁药",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-106",
+    "safety": {
+      "drug_a": "麻黄",
+      "drug_b": "苯乙肼",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "held_out"
+  },
+  {
+    "id": "MH-027",
+    "question": "吗氯贝胺和麻黄一起吃，身体会出现什么危险？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-094",
+        "title": "麻黄概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-057",
+        "title": "麻黄碱药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-058",
+        "title": "麻黄×MAOI 类抗抑郁药",
+        "role": "interaction"
+      }
+    ],
+    "rule_ref": "DDI-106",
+    "safety": {
+      "drug_a": "麻黄",
+      "drug_b": "吗氯贝胺",
+      "expected_direction": "avoid",
+      "severity": "major",
+      "evidence_level": "guideline_label"
+    },
+    "split": "train"
+  },
+  {
+    "id": "MH-028",
+    "question": "我有哮喘，医生给开了氨茶碱，我平时特别爱吃黑巧克力，要紧吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-013",
+        "title": "可可概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-012",
+        "title": "可可碱药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-011",
+        "title": "可可×茶碱类药物",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-029",
+    "question": "我在吃呋塞米利尿消肿，最近便秘想用大黄泡水喝，会有什么问题？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-019",
+        "title": "大黄概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-017",
+        "title": "大黄素与番泻苷药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-024",
+        "title": "大黄×排钾利尿剂",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-030",
+    "question": "长期喝番泻叶茶通便的人，同时在吃地高辛，有什么需要警惕的？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-044",
+        "title": "番泻叶概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-029",
+        "title": "番泻苷药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-034",
+        "title": "番泻叶×地高辛",
+        "role": "interaction"
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "MH-031",
+    "question": "我失眠在吃艾司唑仑，还能再喝缬草根茶帮助入睡吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-059",
+        "title": "缬草根概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-038",
+        "title": "缬草酸药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-041",
+        "title": "缬草根×苯二氮卓类药物",
+        "role": "interaction"
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "MH-032",
+    "question": "我 2 型糖尿病在打胰岛素，听说葫芦巴能降糖，能自己加着吃吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-069",
+        "title": "葫芦巴概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-044",
+        "title": "薯蓣皂苷元药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-045",
+        "title": "葫芦巴×降糖药",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-033",
+    "question": "我关节炎发作长期吃布洛芬，偏头痛想试试野甘菊保健品，能一起吃吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-084",
+        "title": "野甘菊概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-053",
+        "title": "小白菊内酯药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-050",
+        "title": "野甘菊×NSAIDs",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-034",
+    "question": "我在吃舍曲林治抑郁，最近睡不好想加 5-羟色氨酸，可以吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-001",
+        "title": "5-羟色氨酸（5-HTP）概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-001",
+        "title": "5-羟色氨酸药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-001",
+        "title": "5-羟色氨酸×SSRI类抗抑郁药",
+        "role": "interaction"
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "MH-035",
+    "question": "吃地高辛期间能同时用刺五加保健品吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-011",
+        "title": "刺五加概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-010",
+        "title": "刺五加×地高辛",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-036",
+    "question": "我每天吃华法林，还长期吃高剂量的姜黄素补充剂，会有问题吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-023",
+        "title": "姜黄概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-019",
+        "title": "姜黄素药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-026",
+        "title": "姜黄素×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-037",
+    "question": "喜欢用当归炖汤的人同时在吃华法林，需要担心吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-028",
+        "title": "当归概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-021",
+        "title": "香豆素类成分药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-027",
+        "title": "当归×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "MH-038",
+    "question": "我肾移植术后在吃环孢素，血脂高，还能吃红曲米胶囊降脂吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-053",
+        "title": "红曲米概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-034",
+        "title": "莫纳可林K药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-037",
+        "title": "红曲米×环孢素",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-039",
+    "question": "吃华法林的同时加用葡萄糖胺保健品治关节痛，会影响抗凝吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-068",
+        "title": "葡萄糖胺概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-043",
+        "title": "氨基葡萄糖药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-044",
+        "title": "葡萄糖胺×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-040",
+    "question": "我每天冲三七粉喝保养血管，同时在吃华法林，会有什么影响？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-002",
+        "title": "三七概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-002",
+        "title": "三七总皂苷药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-002",
+        "title": "三七×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-041",
+    "question": "吃人参进补的人还在用华法林，有什么需要特别注意的？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-006",
+        "title": "人参（亚洲种）概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-006",
+        "title": "人参皂苷药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-007",
+        "title": "人参×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-042",
+    "question": "服用华法林期间每天大量吃大蒜补充剂，要注意什么？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-017",
+        "title": "大蒜概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-015",
+        "title": "大蒜素药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-021",
+        "title": "大蒜提取物×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-043",
+    "question": "我吃华法林，平时特别爱吃姜，姜茶姜糖每天都吃不少，要紧吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-022",
+        "title": "姜概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-018",
+        "title": "姜辣素与姜烯酚药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-025",
+        "title": "姜×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-044",
+    "question": "华法林和辅酶 Q10 一起吃，抗凝效果会变吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-080",
+        "title": "辅酶Q10概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-048",
+        "title": "辅酶Q10×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "MH-045",
+    "question": "吃华法林的人能同时吃银杏叶提取物吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-087",
+        "title": "银杏叶草药概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-054",
+        "title": "银杏内酯与血小板抑制药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-051",
+        "title": "银杏叶提取物×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-046",
+    "question": "我每天喝很多咖啡，最近医生开了环丙沙星抗感染，会有影响吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-014",
+        "title": "咖啡因概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-013",
+        "title": "咖啡因药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-013",
+        "title": "咖啡因×氟喹诺酮类",
+        "role": "interaction"
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "MH-047",
+    "question": "吃辛伐他汀降血脂期间，还能喝圣约翰草茶吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-014",
+        "title": "贯叶金丝桃素药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-020",
+        "title": "圣约翰草×辛伐他汀",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-048",
+    "question": "我在吃氢氯噻嗪降压，天天喝甘草茶，身体会怎样？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-043",
+        "title": "甘草概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-028",
+        "title": "甘草酸药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-031",
+        "title": "甘草×排钾利尿剂",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-049",
+    "question": "吃华法林的人长期大剂量补维生素 E，有什么风险？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-056",
+        "title": "维生素E概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-035",
+        "title": "α-生育酚药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-038",
+        "title": "维生素E×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-050",
+    "question": "我用茶碱控制哮喘，每天还要喝好几杯咖啡，要紧吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-014",
+        "title": "咖啡因概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-013",
+        "title": "咖啡因药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-012",
+        "title": "咖啡因×茶碱",
+        "role": "interaction"
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "MH-051",
+    "question": "我肾病综合征在吃泼尼松，平时常喝甘草泡水，能一起用吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-043",
+        "title": "甘草概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-028",
+        "title": "甘草酸药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-033",
+        "title": "甘草×糖皮质激素",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-052",
+    "question": "我吃华法林，最近开始喝西洋参茶提神，对抗凝有影响吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-077",
+        "title": "西洋参概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-049",
+        "title": "人参皂苷药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-047",
+        "title": "西洋参×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-053",
+    "question": "吃丹参片的人同时在用华法林，有什么风险？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-003",
+        "title": "丹参概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-005",
+        "title": "丹参×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-054",
+    "question": "我心脏不好在吃华法林，医生又给我开了复方丹参滴丸，能一起吃吗？",
+    "expected_retrieval_steps": 3,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-003",
+        "title": "丹参概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-003",
+        "title": "丹酚酸与丹参酮药理作用",
+        "role": "component"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-005",
+        "title": "丹参×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-055",
+    "question": "服用华法令抗凝期间，还能喝丹参泡的茶吗？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-003",
+        "title": "丹参概述",
+        "role": "herb"
+      },
+      {
+        "node": "interaction-1",
+        "doc_id": "INTERACTION-005",
+        "title": "丹参×华法林",
+        "role": "interaction"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-056",
+    "question": "三七里的主要活性成分是什么？它在止血和凝血方面有什么药理特点？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-002",
+        "title": "三七概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-002",
+        "title": "三七总皂苷药理作用",
+        "role": "component"
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "MH-057",
+    "question": "丹参的核心活性成分有哪两大类？其中和凝血功能相关的是哪一类？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-003",
+        "title": "丹参概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-003",
+        "title": "丹酚酸与丹参酮药理作用",
+        "role": "component"
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "MH-058",
+    "question": "人参里的核心有效成分是什么？它主要有哪些药理作用？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-006",
+        "title": "人参（亚洲种）概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-006",
+        "title": "人参皂苷药理作用",
+        "role": "component"
+      }
+    ],
+    "split": "held_out"
+  },
+  {
+    "id": "MH-059",
+    "question": "圣约翰草是哪种成分在引起药物相互作用？它会干扰哪些代谢途径？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-015",
+        "title": "圣约翰草概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-014",
+        "title": "贯叶金丝桃素药理作用",
+        "role": "component"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-060",
+    "question": "大蒜被切开压碎后产生的活性成分是什么？它为什么会影响一些药物的效果？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-017",
+        "title": "大蒜概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-015",
+        "title": "大蒜素药理作用",
+        "role": "component"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-061",
+    "question": "姜黄里的核心活性成分是什么？它和出血风险之间有什么关系？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-023",
+        "title": "姜黄概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-019",
+        "title": "姜黄素药理作用",
+        "role": "component"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-062",
+    "question": "甘草的特征性成分是什么？长期大量吃甘草为什么会引起低血钾？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-043",
+        "title": "甘草概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-028",
+        "title": "甘草酸药理作用",
+        "role": "component"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-063",
+    "question": "红曲米里起降脂作用的成分是什么？它和哪种处方药是同一个东西？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-053",
+        "title": "红曲米概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-034",
+        "title": "莫纳可林K药理作用",
+        "role": "component"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-064",
+    "question": "银杏叶提取物里影响凝血功能的成分是什么？它的作用机制是怎样的？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-087",
+        "title": "银杏叶草药概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-054",
+        "title": "银杏内酯与血小板抑制药理作用",
+        "role": "component"
+      }
+    ],
+    "split": "train"
+  },
+  {
+    "id": "MH-065",
+    "question": "鱼油里的主要活性成分是什么？它们对血小板功能有什么影响？",
+    "expected_retrieval_steps": 2,
+    "entity_chain": [
+      {
+        "node": "herb-1",
+        "doc_id": "HERB-092",
+        "title": "鱼油概述",
+        "role": "herb"
+      },
+      {
+        "node": "component-1",
+        "doc_id": "COMPONENT-056",
+        "title": "EPA与DHA药理作用",
+        "role": "component"
+      }
+    ],
+    "split": "held_out"
+  }
+]

@@ -154,17 +154,23 @@ class KnowledgeBase:
         documents 格式: [{"title": "...", "content": "...", ...}, ...]
         长文档会自动切片（每片 500 字）。支持 md/txt/json 来源在上层预处理成该结构后统一导入。
 
-        除 title/content 外，可选字段（entities/doc_id/doc_type/source/rule_id/
+        除 title/content 外，可选字段（entities/doc_id/doc_type/source/
         severity/evidence_level/direction）会原样写入每个 chunk 的 metadata——
         评测时靠它验证「模型有没有搜齐实体、搜对文档类型」；这些字段只进 metadata
         不进正文，不污染检索内容。可选字段缺省时行为与旧版完全一致（只写
         title/chunk_index/total_chunks），对既有调用方向后兼容。
+
+        注意：rule_id 已从白名单移除（2026-10-10）——语料与规则库的对应关系
+        痕迹在数据层已抹除（正文编号 + JSONL 字段都删了），metadata 也不该再
+        保留这条显式关联；判分直接对照规则库答案册，不需要语料侧编号。
         """
         ids, docs, metas = [], [], []
-        # 允许透传进 metadata 的字段白名单（白名单防止脏字段混入）
+        # 允许透传进 metadata 的字段白名单（白名单防止脏字段混入；
+        # rule_id 有意缺席——语料与规则库应是「同一上游、独立提炼」，
+        # 不保留「本段对应规则库哪一条」的显式痕迹）
         passthrough_fields = (
             "entities", "doc_id", "doc_type", "source",
-            "rule_id", "severity", "evidence_level", "direction",
+            "severity", "evidence_level", "direction",
         )
 
         for doc in documents:

@@ -32,6 +32,75 @@ from core.llm_utils import create_llm_client, extract_text_content
 logger = logging.getLogger(__name__)
 
 
+# ── 四字段结构化摘要（2026-10-12 用户拍板落地）────────────────────────────────
+# 压缩摘要从「2-3 句话自由文本」改为固定四字段 JSON：自由文本下 LLM 会自行
+# 「精简」，过敏史/用药史等安全关键信息被省略——长会话评测要测的正是病史丢失。
+# 字段与长会话考卷 gold_items.type 一一对应（allergy→allergies /
+# medication→medications / symptom→symptoms / history→history），判分时
+# 直接读 summary key 的 JSON 逐字段查关键节点是否还在。
+SUMMARY_FIELDS = ("allergies", "medications", "symptoms", "history")
+
+# 压缩摘要生成 prompt（四字段铁律）
+_SUMMARY_PROMPT_TEMPLATE = """把以下对话中已出现的医疗信息逐条提炼成 JSON，字段固定四个：
+- allergies: 过敏史（药物/食物过敏及过敏表现）
+- medications: 用药史（正在服用的药及剂量；已停用的药注明已停）
+- symptoms: 症状（当前症状、持续时间、诱因）
+- history: 就诊史（既往疾病、手术、检查结果、家族史）
+
+铁律：
+1. 对话中已出现的每一条医疗信息都必须逐条保留——病史是安全关键信息，宁可多列、不可遗漏；
+2. 没提到的字段返回空数组；
+3. 只输出 JSON，不要任何其他文字。
+
+对话:
+{text}"""
+
+
+def parse_summary(text: str) -> Optional[Dict[str, List[str]]]:
+    """把摘要文本解析成四字段 dict；不是合法四字段 JSON 时返回 None。
+
+    返回 None 的两种用途：旧版自由文本摘要的识别（合并时回退 LLM 路径），
+    以及合并纯函数的参数校验。字段必须齐全且都是字符串列表，缺字段/类型
+    不符都算非法（宁可走回退路径，不吞半个 JSON）。
+    """
+    try:
+        data = json.loads(text)
+    except Exception:
+        return None
+    if not isinstance(data, dict):
+        return None
+    parsed: Dict[str, List[str]] = {}
+    for field in SUMMARY_FIELDS:
+        value = data.get(field)
+        if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+            return None
+        parsed[field] = value
+    return parsed
+
+
+def merge_field_summaries(old_text: str, new_text: str) -> Optional[str]:
+    """确定性合并两段四字段摘要：按字段拼接去重（保序，旧段在前）。
+
+    任一段不是合法四字段 JSON 时返回 None——调用方回退 LLM 合并（兼容
+    旧版自由文本摘要）。用确定性合并而非 LLM 合并的理由：合并是纯拼装
+    不是语义加工，LLM 合并会二次「精简」导致病史丢失，且白花一次调用。
+    """
+    old = parse_summary(old_text)
+    new = parse_summary(new_text)
+    if old is None or new is None:
+        return None
+    merged: Dict[str, List[str]] = {}
+    for field in SUMMARY_FIELDS:
+        items: List[str] = []
+        seen = set()
+        for item in old[field] + new[field]:
+            if item not in seen:
+                seen.add(item)
+                items.append(item)
+        merged[field] = items
+    return json.dumps(merged, ensure_ascii=False)
+
+
 class MsgRole(Enum):
     USER      = "user"
     ASSISTANT = "assistant"
@@ -85,7 +154,9 @@ class MemoryManager:
     WORKING_MAX   = 20    # 工作记忆读取上限（_get_working_memory 取最近 N 条）
     COMPRESS_AT   = 15    # 达到此条数时触发压缩（add_message 检查），保留摘要 + 最近 5 条
     HISTORY_TOP_K = 5     # 情景记忆检索返回条数
-    SUMMARY_MAX_CHARS = 800
+    # 四字段 JSON 摘要的长度上限（2026-10-12 从 800 提到 1600：800 截断 JSON 会破坏
+    # 可解析性，病史多的长会话需要更多空间——长会话考卷每场 3-5 项病史实测够用）
+    SUMMARY_MAX_CHARS = 1600
     PROFILE_DOC_PREFIX = "user_profile:"
 
     def __init__(
@@ -193,7 +264,11 @@ class MemoryManager:
 
         try:
             resp = await self._client.messages.create(
-                model=self._model, max_tokens=512, temperature=0.0,
+                # thinking 关掉（extra_body 透传）：2026-10-13 pilot 实测长对话下
+                # 思考块吃光 4096 输出额度、text 只剩半截 JSON（画像整轮跳过更新）；
+                # 提炼是结构化输出任务，关思考后输出完整且只花几十 token
+                model=self._model, max_tokens=4096, temperature=0.0,
+                extra_body={"thinking": {"type": "disabled"}},
                 messages=[{"role": "user", "content": prompt}],
             )
             raw = (extract_text_content(resp.content) or "").strip()
@@ -266,6 +341,18 @@ class MemoryManager:
             summary=summary,
         )
 
+    async def get_summary(self, user_id: str, conv_id: str) -> str:
+        """读当前会话的四字段摘要原文（v2 阶段 1 第 7 步：基线 CLI 长会话判分用）。
+
+        判分纪律（v2-plan 1.0.9）：长会话考卷判分只认 Redis summary key 里
+        的关键节点（回答里提到不算）——所以 CLI 需要一个公开的读取入口，
+        之前只有 get_context 内部顺手读过一次，外部拿不到。
+        没压缩过（摘要不存在）返回空串。
+        """
+        user_id = self._safe_text(user_id)
+        conv_id = self._safe_text(conv_id)
+        return await self._redis.get(self._summary_key(user_id, conv_id)) or ""
+
     # ── 压缩（防止 context 爆炸）─────────────────────────────────────────────
 
     async def _compress(self, user_id: str, conv_id: str) -> None:
@@ -283,12 +370,16 @@ class MemoryManager:
         to_compress = messages[:-5]   # 保留最近 5 条
         keep        = messages[-5:]
 
-        # LLM 摘要
+        # LLM 摘要（四字段结构化：见模块顶部 _SUMMARY_PROMPT_TEMPLATE）
         text = self._safe_text("\n".join(f"{m.role.value}: {m.content}" for m in to_compress))
-        prompt = self._safe_text(f"用 2-3 句话总结以下对话的关键信息：\n{text}")
+        prompt = self._safe_text(_SUMMARY_PROMPT_TEMPLATE.format(text=text))
         try:
             resp = await self._client.messages.create(
-                model=self._model, max_tokens=256, temperature=0.0,
+                # thinking 关掉（extra_body 透传）：2026-10-13 pilot 实测长对话
+                # 压缩摘要时思考块吃光 4096、text 块为空 → 「摘要 0 字」、
+                # summary key 写入空串（长会话丢失率 1.0 的根因）
+                model=self._model, max_tokens=4096, temperature=0.0,
+                extra_body={"thinking": {"type": "disabled"}},
                 messages=[{"role": "user", "content": prompt}],
             )
             summary = self._safe_text(extract_text_content(resp.content)).strip()
@@ -474,6 +565,12 @@ class MemoryManager:
         if not new_summary:
             return old_summary[: self.SUMMARY_MAX_CHARS]
 
+        # 两段都是四字段 JSON → 确定性字段级合并（保序去重，零 LLM 成本、
+        # 零遗漏风险）；任一段是旧版自由文本 → 回退 LLM 合并（兼容旧数据）
+        merged = merge_field_summaries(old_summary, new_summary)
+        if merged is not None:
+            return merged[: self.SUMMARY_MAX_CHARS]
+
         prompt = self._safe_text(
             f"""你是对话摘要器。请把下面两段摘要合并为一段不超过 {self.SUMMARY_MAX_CHARS} 个中文字符的摘要。
 保留：用户偏好、关键实体、待办事项、约束条件、未解决问题。
@@ -489,8 +586,10 @@ class MemoryManager:
         try:
             resp = await self._client.messages.create(
                 model=self._model,
-                max_tokens=256,
+                # thinking 关掉（extra_body 透传）：同 _compress 的思考块吃光坑
+                max_tokens=4096,
                 temperature=0.0,
+                extra_body={"thinking": {"type": "disabled"}},
                 messages=[{"role": "user", "content": prompt}],
             )
             merged = self._safe_text(extract_text_content(resp.content)).strip()

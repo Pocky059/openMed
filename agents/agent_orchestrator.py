@@ -121,7 +121,7 @@ class AgentResponse:
     escalate:    bool  = False   # 是否需要升级
     tools_used:  List[str] = field(default_factory=list)
     tool_traces: List[Dict[str, Any]] = field(default_factory=list)
-    messages:    List[Dict[str, Any]] = field(default_factory=list)  # 完整 LLM 消息流（SFT 模具）
+    messages:    List[Dict[str, Any]] = field(default_factory=list)  # 完整 LLM 消息流（SFT 训练数据模板）
     steps:       List[Dict[str, Any]] = field(default_factory=list)  # 每轮工具调用统计（评测视图）
 
 
@@ -305,7 +305,7 @@ class BaseAgent:
             llm_latency_ms = (time.monotonic() - llm_t0) * 1000
             tool_uses = [block for block in (resp.content or []) if self._block_type(block) == "tool_use"]
             if not tool_uses:  #如果输出中不包含任何工具调用
-                # 最终回答也要 append 进消息流：轨迹/SFT 模具需要完整的问答对，
+                # 最终回答也要 append 进消息流：轨迹/SFT 训练数据模板需要完整的问答对，
                 # 且纯文本的 assistant 消息在 classify_messages 里按"最后一条"被标为 final
                 final_text = extract_text_content(resp.content)
                 messages.append({"role": "assistant", "content": final_text})
@@ -838,7 +838,7 @@ class AgentOrchestrator:
 
     @staticmethod
     def _build_trajectory_messages(responses: List[AgentResponse]) -> List[Dict[str, Any]]:
-        """把各 Agent 的消息流打上 kind 标记，拼成轨迹的 messages 视图（SFT 模具）。
+        """把各 Agent 的消息流打上 kind 标记，拼成轨迹的 messages 视图（SFT 训练数据模板）。
 
         并行请求时多个 Agent 各有一段消息流，按执行顺序拼接；每条消息都带
         agent_type 标签，阶段 2 构造训练数据时可按 Agent 过滤。
