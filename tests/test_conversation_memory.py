@@ -108,3 +108,54 @@ class TestGetSummary:
         """没压缩过（key 不存在）返回空串——判分器据此全 miss 走 judge 复核。"""
         import asyncio
         assert asyncio.run(make_memory(FakeRedis()).get_summary("u1", "c1")) == ""
+
+
+class FakeDeletableRedis:
+    """记录 delete 收到哪些 key 的假 Redis。"""
+
+    def __init__(self):
+        self.deleted = []
+
+    async def delete(self, *keys):
+        self.deleted.extend(keys)
+
+
+class FakeCollection:
+    """记录 delete 过滤条件的假 ChromaDB collection。"""
+
+    def __init__(self):
+        self.deletes = []
+
+    def delete(self, **kwargs):
+        self.deletes.append(kwargs)
+
+
+class TestForgetUser:
+    def test_clears_all_three_levels(self):
+        """三级记忆都清：Redis 工作记忆+摘要按 (user, conv) 删，情景记忆+画像按 user_id 删。"""
+        import asyncio
+        from memory.conversation_memory import MemoryManager
+        mgr = MemoryManager.__new__(MemoryManager)
+        mgr._redis = FakeDeletableRedis()
+        mgr._episodic = FakeCollection()
+        mgr._profile = FakeCollection()
+        asyncio.run(mgr.forget_user("eval-LS-001", "eval-LS-001"))
+        assert mgr._redis.deleted == ["wm:eval-LS-001:eval-LS-001", "summary:eval-LS-001:eval-LS-001"]
+        assert mgr._episodic.deletes == [{"where": {"user_id": "eval-LS-001"}}]
+        assert mgr._profile.deletes == [{"where": {"user_id": "eval-LS-001"}}]
+
+    def test_failure_is_not_swallowed(self):
+        """删除失败直接抛（评测要确知记忆已清干净，静默失败等于带着脏记忆继续跑）。"""
+        import asyncio
+        from memory.conversation_memory import MemoryManager
+
+        class BrokenCollection:
+            def delete(self, **kwargs):
+                raise RuntimeError("chromadb down")
+
+        mgr = MemoryManager.__new__(MemoryManager)
+        mgr._redis = FakeDeletableRedis()
+        mgr._episodic = BrokenCollection()
+        mgr._profile = FakeCollection()
+        with pytest.raises(RuntimeError, match="chromadb down"):
+            asyncio.run(mgr.forget_user("eval-LS-001", "eval-LS-001"))

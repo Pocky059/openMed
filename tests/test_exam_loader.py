@@ -266,6 +266,31 @@ def test_qa_single_missing_gold_chunks_raises(tmp_path):
         load_qa_exam(path)
 
 
+def test_qa_single_alt_gold_chunks_parsed(tmp_path):
+    """补标的其他含答案片段（rev3）读进 alt_gold_chunks；不写该字段的老题默认空列表。"""
+    good = dict(VALID_QA_SINGLE, alt_gold_chunks=["chunk-faq001"])
+    path = _write(tmp_path, "qa_v1.json", [good, dict(VALID_QA_SINGLE, id="qa-003")])
+    with_alt, without_alt = load_qa_exam(path)
+    assert with_alt.alt_gold_chunks == ["chunk-faq001"]
+    assert without_alt.alt_gold_chunks == []
+
+
+def test_qa_single_alt_overlapping_gold_raises(tmp_path):
+    """补标片段与出题依据重复 = 手改考卷写错了。"""
+    bad = dict(VALID_QA_SINGLE, alt_gold_chunks=["chunk-abc123"])
+    path = _write(tmp_path, "qa_v1.json", [bad])
+    with pytest.raises(ValueError, match="alt_gold_chunks 与 gold_chunks 重复"):
+        load_qa_exam(path)
+
+
+def test_qa_multi_with_alt_gold_raises(tmp_path):
+    """multi 档不判检索命中，带补标金标准没有意义（防字段写错题）。"""
+    bad = dict(VALID_QA_MULTI, alt_gold_chunks=["chunk-faq001"])
+    path = _write(tmp_path, "qa_v1.json", [bad])
+    with pytest.raises(ValueError, match="kind=multi"):
+        load_qa_exam(path)
+
+
 def test_qa_multi_missing_turns_raises(tmp_path):
     bad = dict(VALID_QA_MULTI, turns=[])
     path = _write(tmp_path, "qa_v1.json", [bad])

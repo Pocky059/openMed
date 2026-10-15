@@ -260,9 +260,11 @@ class EndToEndEvaluator:
         base_url: Optional[str] = None,
         model:    str = "claude-3-5-sonnet-20241022",
         baseline_path: Optional[str] = None,
+        protocol: Optional[str] = None,
     ):
-        #双协议客户端（v2 阶段 0.5）：评测器可用 OPENMED_LLM_PROTOCOL=openai 指向 vLLM
-        client = create_llm_client(api_key=api_key, base_url=base_url)
+        #判卷客户端（v2 阶段 0.5 双协议）：protocol 由判卷配置给定（build_judge_cfg 默认
+        #anthropic，不跟着被测系统的 OPENMED_LLM_PROTOCOL 变）；不传时按全局协议
+        client = create_llm_client(api_key=api_key, base_url=base_url, protocol=protocol)
 
         self._orchestrator     = orchestrator
         self._judge            = LLMJudge(client, model)

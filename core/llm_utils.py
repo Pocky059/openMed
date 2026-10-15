@@ -14,6 +14,7 @@ extract_text_content 都兼容 dict 形式的 block）。
 """
 import json
 import os
+import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional
 
@@ -22,27 +23,35 @@ from anthropic import AsyncAnthropic
 
 # ── 工厂函数 ──────────────────────────────────────────────────────────────────
 
-def create_llm_client(api_key: str, base_url: Optional[str] = None):
-    """按 OPENMED_LLM_PROTOCOL 环境变量构造 LLM 客户端。
+def create_llm_client(api_key: str, base_url: Optional[str] = None,
+                      protocol: Optional[str] = None):
+    """按协议构造 LLM 客户端（protocol 不传时读环境变量 OPENMED_LLM_PROTOCOL）。
 
     - anthropic（默认）: 返回原生 AsyncAnthropic，DeepSeek 等 Anthropic 兼容服务
       直接可用，与 0.5 之前的行为完全一致；
     - openai: 返回 LLMProtocolAdapter（内部包一个 AsyncOpenAI），用于 vLLM 等
       OpenAI 协议服务。base_url 指向服务的根地址（vLLM 是 http://<ip>:8000/v1），
-      api_key 取 OPENAI_API_KEY（vLLM 一般不校验，给占位符 EMPTY 即可）。
+      api_key 取 OPENAI_API_KEY（vLLM 一般不校验，给占位符 EMPTY 即可）；
+      思考开关读 OPENMED_LLM_THINKING（off/on，不设 = 模型默认，见 LLMProtocolAdapter）。
+
+    protocol 显式传入时优先于环境变量：判卷客户端固定传 anthropic（build_judge_cfg），
+    被测系统切到 vLLM 时判卷不跟着切（2026-10-15 Qwen3 基线准备）。
 
     两种返回值的共同点是都有 messages.create(**kwargs)，所以调用方无感知。
     """
-    protocol = os.getenv("OPENMED_LLM_PROTOCOL", "anthropic").strip().lower()
+    protocol = (protocol or os.getenv("OPENMED_LLM_PROTOCOL", "anthropic")).strip().lower()
     if protocol == "openai":
         # 延迟导入：只有真正切到 OpenAI 协议时才需要这个依赖，
         # 默认的 anthropic 链路不会因为没装 openai 包而启动失败
         from openai import AsyncOpenAI
 
-        return LLMProtocolAdapter(AsyncOpenAI(
-            api_key=os.getenv("OPENAI_API_KEY", api_key or "EMPTY"),
-            base_url=os.getenv("OPENAI_BASE_URL", base_url),
-        ))
+        return LLMProtocolAdapter(
+            AsyncOpenAI(
+                api_key=os.getenv("OPENAI_API_KEY", api_key or "EMPTY"),
+                base_url=os.getenv("OPENAI_BASE_URL", base_url),
+            ),
+            thinking=os.getenv("OPENMED_LLM_THINKING"),
+        )
 
     # anthropic 分支：与原代码行为完全一致
     kwargs: Dict[str, Any] = {"api_key": api_key}
@@ -74,6 +83,22 @@ _FINISH_REASON_MAP = {
     "content_filter": "refusal",
 }
 
+# Qwen3 思考模式的输出格式：思考过程包在回答开头的 <think>…</think> 里
+_THINK_BLOCK = re.compile(r"^\s*<think>.*?</think>\s*", re.DOTALL)
+
+
+def _parse_thinking_mode(value: Optional[str]) -> Optional[bool]:
+    """OPENMED_LLM_THINKING 的取值 → 思考开关：off→False、on→True、其余（含不设）→None。
+
+    None 表示不替模型做决定（不传开关，按模型默认；Qwen3 默认开思考）。
+    """
+    mode = (value or "").strip().lower()
+    if mode in ("off", "0", "false", "disabled"):
+        return False
+    if mode in ("on", "1", "true", "enabled"):
+        return True
+    return None
+
 
 # ── 适配器 ────────────────────────────────────────────────────────────────────
 
@@ -86,28 +111,33 @@ class LLMProtocolAdapter:
                → self._openai.chat.completions.create(...)
                → 翻译回 AnthropicStyleResponse
     只实现本项目实际用到的 kwargs 子集：system / messages / tools / tool_choice /
-    max_tokens / temperature / stop_sequences。
+    max_tokens / temperature / stop_sequences / extra_body（思考开关翻译，见下）。
+
+    thinking：思考开关的默认值（工厂从 OPENMED_LLM_THINKING 读），调用方没在
+    extra_body 里显式指定时用它。
     """
 
-    def __init__(self, openai_client: Any):
+    def __init__(self, openai_client: Any, thinking: Optional[str] = None):
         self._openai = openai_client
         # 关键伪装：把内部的 chat.completions.create 挂到 messages.create 上，
         # 调用方写 client.messages.create(...) 时走的就是这里
-        self.messages = self._Messages(self._openai)
+        self.messages = self._Messages(self._openai, _parse_thinking_mode(thinking))
 
     class _Messages:
-        def __init__(self, client: Any):
+        def __init__(self, client: Any, thinking_default: Optional[bool] = None):
             self._client = client
+            self._thinking_default = thinking_default
 
         async def create(self, **kwargs: Any) -> AnthropicStyleResponse:
-            request = self._to_openai_request(kwargs)
+            request = self._to_openai_request(kwargs, self._thinking_default)
             resp = await self._client.chat.completions.create(**request)
             return self._to_anthropic_response(resp)
 
         # ── 请求方向：Anthropic kwargs → OpenAI 请求体 ────────────────────────
 
         @staticmethod
-        def _to_openai_request(kwargs: Dict[str, Any]) -> Dict[str, Any]:
+        def _to_openai_request(kwargs: Dict[str, Any],
+                               thinking_default: Optional[bool] = None) -> Dict[str, Any]:
             request: Dict[str, Any] = {}
 
             # model / temperature / max_tokens 两边同名，直接透传
@@ -157,6 +187,26 @@ class LLMProtocolAdapter:
             if "stop_sequences" in kwargs:
                 request["stop"] = kwargs["stop_sequences"]
 
+            # 思考开关（2026-10-15 Qwen3 基线准备）：两边写法不同——
+            #   Anthropic/DeepSeek：extra_body={"thinking": {"type": "disabled"}}
+            #   Qwen3（vLLM）：     extra_body={"chat_template_kwargs": {"enable_thinking": False}}
+            #   （Qwen3 的开关做在 chat template 里，vLLM 把这个字段转交给模板）
+            # 优先级：调用方显式传的 thinking > 适配器默认值（OPENMED_LLM_THINKING）> 不传。
+            # 现有调用点（记忆摘要/画像/合并、判卷）显式关思考，翻译后对 Qwen3 同样生效；
+            # 主链路/意图识别没传，靠 OPENMED_LLM_THINKING=off 统一关。
+            # extra_body 里其他键原样转发（OpenAI SDK 会并进请求体）。
+            extra_body = dict(kwargs.get("extra_body") or {})
+            thinking = extra_body.pop("thinking", None)
+            enable_thinking = thinking_default
+            if isinstance(thinking, dict) and thinking.get("type") in ("disabled", "enabled"):
+                enable_thinking = thinking["type"] == "enabled"
+            if enable_thinking is not None:
+                template_kwargs = dict(extra_body.get("chat_template_kwargs") or {})
+                template_kwargs.setdefault("enable_thinking", enable_thinking)
+                extra_body["chat_template_kwargs"] = template_kwargs
+            if extra_body:
+                request["extra_body"] = extra_body
+
             return request
 
         # ── 响应方向：OpenAI 响应 → Anthropic 风格 ────────────────────────────
@@ -175,6 +225,11 @@ class LLMProtocolAdapter:
             blocks: List[Dict[str, Any]] = []
             # 文本部分：OpenAI 的 content 可能为 None（纯工具调用时）
             text = getattr(message, "content", None)
+            if isinstance(text, str):
+                # 防御：思考开关没生效时，Qwen3 会把思考过程写在回答开头的
+                # <think>…</think> 里——去掉，不让思考内容混进最终回答和轨迹
+                # （vLLM 开了 reasoning parser 时思考走单独字段，这里本来就看不到）
+                text = _THINK_BLOCK.sub("", text, count=1)
             if isinstance(text, str) and text:
                 blocks.append({"type": "text", "text": text})
 

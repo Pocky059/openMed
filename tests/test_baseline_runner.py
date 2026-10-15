@@ -16,6 +16,13 @@ evaluation/baseline_runner.py 的离线单测（v2 阶段 1 第 7 步配套）�
      不产轨迹，缺轨迹不算缺失（2026-10-13 pilot 误报修复）
   6. --rejudge-from 重聚合：旧 run 产物读入、指定题重判、其余行保留、
      口径清理后聚合落盘新 run_id（2026-10-13 用户指令）
+  7. rev3 口径（2026-10-15）：qa single 改 MRR/hit@k 且正确片段含补标
+     alt_gold_chunks（跑题与重判离线重算同一函数）；只取「本次运行」的轨迹
+     （started_at 之后 / 旧行按最后一轮往前数剧本轮数）；qa multi faithfulness
+     用整场检索内容、急症固定回复不评、未检索作答不进均值；走对话的题开跑前
+     清记忆；--merge 时质量报告与收件箱按题合并
+  8. 判卷与被测系统分开（2026-10-15）：被测系统走 OpenAI 协议而判卷没单独
+     配置时拦下；--skip-model-independent 跳过与模型无关的两部分
 """
 import asyncio
 import json
@@ -27,7 +34,8 @@ import pytest
 
 from evaluation.baseline_runner import (
     BaselineRunner, EmergencyWebhookInbox, EvalAbortError,
-    case_conv_id, render_webhook_summary,
+    case_conv_id, qa_single_stats, render_webhook_summary, select_run_turns,
+    user_turn_count,
 )
 from evaluation.trajectory_reader import Trajectory
 
@@ -48,7 +56,7 @@ class FakeClient:
 
 
 class FakeMemory:
-    """假记忆管理器（get_context/add_message/update_profile + get_summary）。"""
+    """假记忆管理器（get_context/add_message/update_profile + get_summary + forget_user）。"""
 
     def __init__(self):
         self.calls = []
@@ -65,6 +73,9 @@ class FakeMemory:
 
     async def get_summary(self, user_id, conv_id):
         return "summary 原文"
+
+    async def forget_user(self, user_id, conv_id):
+        self.calls.append(("forget_user", user_id, conv_id))
 
 
 def _post(port: int, path: str, payload: dict):
@@ -211,6 +222,9 @@ def test_run_emergency_default_inbox(tmp_path, monkeypatch, no_llm_network):
     assert rows[0]["passed"] is True
     assert rows[0]["scores"]["actual_escalated"] is True
     assert rows[0]["scores"]["actual_urgency"] == "CRITICAL"
+    # 开跑前先清这个评测用户的记忆（rev3：确定性 id 下上一次运行的记忆会串进来）
+    assert runner._ctx.memory.calls[0] == ("forget_user", "eval-ESC-001", "eval-ESC-001")
+    assert rows[0]["turns_sent"] == 1 and rows[0]["started_at"]
     # 告警真的落网（假编排器在跑题时 POST 到注入地址）
     assert len(runner._webhook_payloads) == 1
     assert runner._webhook_payloads[0]["user_id"] == case_conv_id("ESC-001")
@@ -575,7 +589,7 @@ def test_run_rejudge_rejudges_specified_cases(tmp_path, monkeypatch, no_llm_netw
         return {"headline": {}, "config": {}, "exams": {}, "safety": {},
                 "emergency": {}, "retrieval": {}, "results": list(rows)}
 
-    async def fake_save(baseline, rows):
+    def fake_save(baseline, rows):  # _save_outputs 是同步函数，假实现也得同步
         pass
 
     monkeypatch.setattr(runner, "_collect_trajectories", fake_collect)
@@ -651,3 +665,374 @@ def test_progress_zero_total_is_silent(capsys):
     p.start("跑题", 0)
     p.tick("不该出现")
     assert capsys.readouterr().err == ""
+
+
+# ── 7. rev3 口径（2026-10-15）─────────────────────────────────────────────────
+
+def _traj(tid: str, ts: str, conv: str = "eval-QA-003", answer: str = "",
+          results=None, primary_agent: str = "") -> Trajectory:
+    """一轮对话的轨迹：可带检索结果（tool_result）与最终回答（final 纯字符串形态）。"""
+    messages = []
+    if results:
+        messages.append({"kind": "tool_result", "content": [{
+            "type": "tool_result", "tool_use_id": f"tu-{tid}",
+            "content": json.dumps({"results": results}, ensure_ascii=False)}]})
+    if answer:
+        messages.append({"kind": "final", "content": answer})
+    meta = {"conv_id": conv}
+    if primary_agent:
+        meta["primary_agent"] = primary_agent
+    return Trajectory.from_dict({"trajectory_id": tid, "request_id": f"r-{tid}", "timestamp": ts,
+                                 "meta": meta, "messages": messages, "steps": []})
+
+
+def test_qa_single_stats_counts_alt_gold():
+    """正确片段 = 出题依据 ∪ 补标；MRR 只看前 5（第 6 名命中不算）。"""
+    assert qa_single_stats(["x", "alt", "g"], ["g", "alt"]) == {"mrr": 0.5, "hit_at_1": 0, "hit_at_5": 1}
+    assert qa_single_stats(["a", "b", "c", "d", "e", "g"], ["g"]) == {"mrr": 0.0, "hit_at_1": 0, "hit_at_5": 0}
+
+
+def test_run_qa_single_scores_with_alt_gold(tmp_path, monkeypatch, no_llm_network):
+    """跑题时补标片段排第 1 算对（QA-062 场景：《预约挂号常见问题》排在出题依据前面）。"""
+    runner = _make_runner(tmp_path, monkeypatch)
+
+    async def fake_search(tool, query, top_k=5):
+        return SimpleNamespace(success=True, data=[{"id": "alt"}, {"id": "g"}],
+                               error="", rerank_degraded=False)
+
+    runner._ctx.tool_manager = SimpleNamespace(search_with_rerank=fake_search)
+    case = {"id": "QA-062", "kind": "single", "question": "专家号需要提前多久预约？",
+            "gold_chunks": ["g"], "alt_gold_chunks": ["alt"], "split": "train"}
+    row = asyncio.run(runner._run_qa_single(case))
+    assert row["scores"] == {"mrr": 1.0, "hit_at_1": 1, "hit_at_5": 1}
+    assert row["detail"]["alt_gold_chunks"] == ["alt"]
+    assert row["detail"]["retrieved_chunks"] == ["alt", "g"]
+
+
+def test_rescore_qa_single_offline(tmp_path, monkeypatch, no_llm_network):
+    """重判时按当前考卷离线重算：旧 F1 统计被换掉；检索失败行与 multi 行不动。"""
+    runner = _make_runner(tmp_path, monkeypatch)
+    runner._cases_by_id = {"QA-062": {"id": "QA-062", "gold_chunks": ["g"], "alt_gold_chunks": ["alt"]},
+                           "QA-099": {"id": "QA-099", "gold_chunks": ["g2"]}}
+    rows = [
+        {"case_id": "QA-062", "exam": "qa", "scores": {"f1_at_5": 0.3333, "mrr": 0.5},
+         "detail": {"gold_chunks": ["g"], "retrieved_chunks": ["alt", "g", "x"]}},
+        {"case_id": "QA-099", "exam": "qa", "passed": False, "scores": {},
+         "detail": {"gold_chunks": ["g2"], "retrieved_chunks": []}},
+        {"case_id": "QA-003", "exam": "qa", "scores": {"mean": 0.9}, "detail": {"gold_answer": "挂内科"}},
+    ]
+    runner._rescore_qa_single(rows)
+    assert rows[0]["scores"] == {"mrr": 1.0, "hit_at_1": 1, "hit_at_5": 1}
+    assert rows[0]["detail"]["alt_gold_chunks"] == ["alt"]
+    assert rows[1]["scores"] == {}
+    assert rows[2]["scores"] == {"mean": 0.9}
+
+
+def test_select_run_turns():
+    """只取这一次运行的轮次：新行按 started_at，旧行按最后一轮往前数剧本轮数。"""
+    trajs = [_traj("p1", "2026-10-12T16:34:41"), _traj("p2", "2026-10-12T16:38:18"),
+             _traj("f1", "2026-10-12T18:10:30"), _traj("f2", "2026-10-12T18:10:40")]
+    ids = lambda ts: [t.trajectory_id for t in ts]  # noqa: E731
+    assert ids(select_run_turns(trajs, started_at="2026-10-12T18:00:00")) == ["f1", "f2"]
+    assert ids(select_run_turns(trajs, anchor_id="p2", expected_turns=2)) == ["p1", "p2"]
+    assert ids(select_run_turns(trajs, anchor_id="f2", expected_turns=2)) == ["f1", "f2"]
+    assert select_run_turns(trajs, anchor_id="不存在", expected_turns=2) == []
+    assert ids(select_run_turns(trajs)) == ["f2"]  # 什么都没给：只取最新一条
+
+
+def test_user_turn_count():
+    """一道题发几轮用户消息：qa multi 跳过助手轮、长会话数 speaker=user、单轮题 1。"""
+    assert user_turn_count({"turns": ["用户：孩子咳嗽", "助手：多大？", "用户：5 岁"]}) == 2
+    assert user_turn_count({"turns": [{"speaker": "user"}, {"speaker": "assistant"},
+                                      {"speaker": "user"}]}) == 2
+    assert user_turn_count({"question": "单轮题"}) == 1
+    assert user_turn_count(None) == 1
+
+
+def _write_trajectories(traj_dir, items):
+    traj_dir.mkdir(parents=True, exist_ok=True)
+    lines = [json.dumps({"trajectory_id": tid, "request_id": f"r-{tid}", "timestamp": ts,
+                         "meta": {"conv_id": conv}, "messages": [], "steps": []})
+             for tid, ts, conv in items]
+    (traj_dir / "trajectories-2026-10-12.jsonl").write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def test_collect_trajectories_only_this_run(tmp_path, monkeypatch, no_llm_network):
+    """同一 conv_id 有 pilot 留下的旧轨迹：新行只取 started_at 之后的；旧行按记录的
+    最后一轮往前取剧本轮数（2026-10-12 pilot 轨迹混进全量判分的修复）。"""
+    traj_dir = tmp_path / "traj"
+    _write_trajectories(traj_dir, [
+        ("p1", "2026-10-12T16:34:41", "eval-QA-003"), ("p2", "2026-10-12T16:38:18", "eval-QA-003"),
+        ("f1", "2026-10-12T18:10:30", "eval-QA-003"), ("f2", "2026-10-12T18:10:40", "eval-QA-003"),
+    ])
+    monkeypatch.setattr("evaluation.baseline_runner._TRAJECTORY_WAIT_TIMEOUT_S", 0)
+    runner = _make_runner(tmp_path / "out", monkeypatch)
+    runner._trajectory_dir = str(traj_dir)
+
+    new_row = {"case_id": "QA-003", "exam": "qa", "detail": {"gold_answer": "挂内科"},
+               "started_at": "2026-10-12T18:00:00", "turns_sent": 2, "trajectory_id": ""}
+    index = asyncio.run(runner._collect_trajectories([new_row]))
+    assert index["eval-QA-003"].trajectory_id == "f2"
+    assert [t.trajectory_id for t in runner._conv_turns["eval-QA-003"]] == ["f1", "f2"]
+
+    runner._cases_by_id = {"QA-003": {"id": "QA-003", "turns": ["用户：a", "助手：b", "用户：c"]}}
+    old_row = {"case_id": "QA-003", "exam": "qa", "detail": {"gold_answer": "挂内科"},
+               "trajectory_id": "p2"}
+    index = asyncio.run(runner._collect_trajectories([old_row]))
+    assert index["eval-QA-003"].trajectory_id == "p2"
+    assert [t.trajectory_id for t in runner._conv_turns["eval-QA-003"]] == ["p1", "p2"]
+
+
+def test_collect_trajectories_waits_for_all_turns(tmp_path, monkeypatch, no_llm_network):
+    """新行发了 3 轮、盘上只落了 2 轮：记为未齐（超时后告警），不会把第 2 轮当最终回答还不吭声。"""
+    traj_dir = tmp_path / "traj"
+    _write_trajectories(traj_dir, [("f1", "2026-10-12T18:10:30", "eval-QA-003"),
+                                   ("f2", "2026-10-12T18:10:40", "eval-QA-003")])
+    monkeypatch.setattr("evaluation.baseline_runner._TRAJECTORY_WAIT_TIMEOUT_S", 0)
+    runner = _make_runner(tmp_path / "out", monkeypatch)
+    runner._trajectory_dir = str(traj_dir)
+    warnings = []
+    monkeypatch.setattr("evaluation.baseline_runner.logger.warning",
+                        lambda msg, *args: warnings.append(msg % args))
+    row = {"case_id": "QA-003", "exam": "qa", "detail": {"gold_answer": "挂内科"},
+           "started_at": "2026-10-12T18:00:00", "turns_sent": 3, "trajectory_id": ""}
+    asyncio.run(runner._collect_trajectories([row]))
+    assert any("eval-QA-003" in w for w in warnings)
+
+
+def test_generation_quality_uses_all_turns_contexts(tmp_path, monkeypatch, no_llm_network):
+    """faithfulness 的检索上下文取整场对话：第 1 轮检索、第 2 轮直接作答也有依据可对照。"""
+    calls = {}
+
+    async def fake_faithfulness(question, answer, contexts, client, model):
+        calls["contexts"] = contexts
+        return SimpleNamespace(score=1.0, supported=1, total=1, judge_failed=False)
+
+    async def fake_relevancy(question, answer, client, model, embedder=None):
+        return SimpleNamespace(score=0.8, judge_failed=False)
+
+    monkeypatch.setattr("evaluation.ragas_metrics.judge_faithfulness", fake_faithfulness)
+    monkeypatch.setattr("evaluation.ragas_metrics.judge_answer_relevancy", fake_relevancy)
+    runner = _make_runner(tmp_path, monkeypatch)
+    hit = {"id": "c1", "title": "呼吸内科", "content": "咳嗽不需手术挂内科", "score": 0.9, "chunk": 0}
+    turn1 = _traj("t1", "2026-10-15T10:00:00", answer="建议先挂内科", results=[hit])
+    turn2 = _traj("t2", "2026-10-15T10:00:10", answer="挂内科就可以", results=None)
+    row = {"case_id": "QA-007", "scores": {}, "detail": {"answer": ""}, "judge_failed": False}
+    asyncio.run(runner._judge_generation_quality(row, turn2, question="挂哪个科",
+                                                 context_trajs=[turn1, turn2]))
+    assert calls["contexts"] == ["咳嗽不需手术挂内科"]
+    assert row["scores"]["generation_quality"]["faithfulness"]["score"] == 1.0
+
+
+def test_generation_quality_skips_emergency_template(tmp_path, monkeypatch, no_llm_network):
+    """最后一轮路由到急症 Agent（固定安全回复）：不评生成质量、零 LLM 调用。"""
+    client = FakeClient()
+    runner = _make_runner(tmp_path, monkeypatch, judge_client=client)
+    traj = _traj("t1", "2026-10-15T10:00:00", answer="我已将这个问题标记为急症/人工交接处理。",
+                 primary_agent="emergency")
+    row = {"case_id": "QA-009", "scores": {}, "detail": {"answer": ""}, "judge_failed": False}
+    asyncio.run(runner._judge_generation_quality(row, traj, question="该去急诊吗"))
+    assert row["scores"]["generation_quality"] == {"skipped": "急症固定回复"}
+    assert client.messages.calls == []
+
+
+def test_generation_quality_no_retrieval_skips_faithfulness_only(tmp_path, monkeypatch, no_llm_network):
+    """整场没检索就作答：faithfulness 不调 judge、记「未检索作答」；answer_relevancy 照算。"""
+    called = {"faith": 0}
+
+    async def fake_faithfulness(question, answer, contexts, client, model):
+        called["faith"] += 1
+        return SimpleNamespace(score=0.0, supported=0, total=1, judge_failed=False)
+
+    async def fake_relevancy(question, answer, client, model, embedder=None):
+        return SimpleNamespace(score=0.7, judge_failed=False)
+
+    monkeypatch.setattr("evaluation.ragas_metrics.judge_faithfulness", fake_faithfulness)
+    monkeypatch.setattr("evaluation.ragas_metrics.judge_answer_relevancy", fake_relevancy)
+    runner = _make_runner(tmp_path, monkeypatch)
+    traj = _traj("t1", "2026-10-15T10:00:00", answer="5 岁属于儿科，挂儿科。")
+    row = {"case_id": "QA-004", "scores": {}, "detail": {"answer": ""}, "judge_failed": False}
+    asyncio.run(runner._judge_generation_quality(row, traj, question="5 岁挂哪个科"))
+    quality = row["scores"]["generation_quality"]
+    assert quality["faithfulness"] == {"skipped": "未检索作答"}
+    assert quality["answer_relevancy"] == {"score": 0.7, "judge_failed": False}
+    assert called["faith"] == 0
+
+
+def test_generation_quality_lines_count_skips_separately():
+    """报告：两类跳过单独计数、不进均值。"""
+    rows = [
+        {"scores": {"generation_quality": {"faithfulness": {"score": 1.0}, "answer_relevancy": {"score": 0.8}}}},
+        {"scores": {"generation_quality": {"faithfulness": {"score": 0.5}, "answer_relevancy": {"score": 0.6}}}},
+        {"scores": {"generation_quality": {"faithfulness": {"skipped": "未检索作答"},
+                                           "answer_relevancy": {"score": 0.4}}}},
+        {"scores": {"generation_quality": {"skipped": "急症固定回复"}}},
+    ]
+    text = "\n".join(BaselineRunner._generation_quality_lines(rows))
+    assert "faithfulness 均值：0.75（2 题）" in text
+    assert "整场未检索就作答：1 题" in text
+    assert "answer_relevancy 均值：0.6（3 题）" in text
+    assert "急症固定回复：1 题" in text
+
+
+def test_reset_eval_memory_only_eval_users(tmp_path, monkeypatch, no_llm_network):
+    """只清 eval- 前缀的评测用户；其余 id 直接拒绝（防误删真实用户数据）。"""
+    runner = _make_runner(tmp_path, monkeypatch)
+    asyncio.run(runner._reset_eval_memory("eval-LS-001"))
+    assert runner._ctx.memory.calls == [("forget_user", "eval-LS-001", "eval-LS-001")]
+    with pytest.raises(EvalAbortError):
+        asyncio.run(runner._reset_eval_memory("real-user-123"))
+
+
+def test_run_qa_multi_resets_memory_and_marks_run(tmp_path, monkeypatch, no_llm_network):
+    """qa multi：开跑前清记忆，只喂用户轮，行里记下 started_at 与发了几轮。"""
+    runner = _make_runner(tmp_path, monkeypatch)
+    sent = []
+
+    async def fake_turn(text, user_id, conv_id):
+        sent.append(text)
+        return SimpleNamespace(response=f"答:{text}")
+
+    runner._chat = SimpleNamespace(handle_chat_turn=fake_turn)
+    case = {"id": "QA-004", "kind": "multi", "gold_answer": "挂儿科", "split": "train",
+            "turns": ["用户：孩子咳嗽发热挂什么科", "助手：孩子多大？", "用户：5 岁"]}
+    row = asyncio.run(runner._run_qa_multi(case))
+    assert sent == ["孩子咳嗽发热挂什么科", "5 岁"]
+    assert row["turns_sent"] == 2 and row["started_at"]
+    assert runner._ctx.memory.calls[0] == ("forget_user", "eval-QA-004", "eval-QA-004")
+    assert row["detail"]["answer"] == "答:5 岁"
+
+
+def test_merge_quality_reports_by_case(tmp_path, monkeypatch, no_llm_network):
+    """质量报告按题合并：重跑题的旧条目换新；旧总数里扣掉重跑题当时的计数。"""
+    runner = _make_runner(tmp_path, monkeypatch)
+    prev = {"total": 141, "violations": [{"case_id": "QA-003", "reason": "旧违规"}], "missing": ["LS-001"]}
+    new = {"total": 2, "violations": [], "missing": []}
+    new_rows = [_row_for_quality("QA-003", "qa", {"gold_answer": "挂内科"}),
+                _row_for_quality("LS-001", "long_session", {})]
+    existing = {"QA-003": {"trajectory_id": "t-old"}, "LS-001": {"trajectory_id": ""}}
+    merged = runner._merge_quality_reports(prev, new, new_rows, existing)
+    # 141 − 1（QA-003 旧计数；LS-001 旧时缺失没计）+ 2 = 142
+    assert merged == {"total": 142, "violations": [], "missing": []}
+
+
+def test_run_all_merge_keeps_previous_webhooks(tmp_path, monkeypatch, no_llm_network):
+    """--merge 只重跑 ESC-001：收件箱保留 ESC-002 的旧告警，ESC-001 的换成本次的。"""
+    monkeypatch.delenv("OPENMED_EMERGENCY_WEBHOOK_URL", raising=False)
+    from agents.agent_orchestrator import EmergencyAgent
+    EmergencyAgent._webhook_url = None
+    tmp_path.mkdir(parents=True, exist_ok=True)
+    (tmp_path / "cases.jsonl").write_text("\n".join(
+        json.dumps({"case_id": cid, "exam": "emergency", "split": "train", "trajectory_id": f"t-{cid}",
+                    "scores": {}, "detail": {}}) for cid in ("ESC-001", "ESC-002")) + "\n",
+        encoding="utf-8")
+    (tmp_path / "trajectory_quality_report.json").write_text(
+        json.dumps({"total": 2, "violations": [], "missing": []}), encoding="utf-8")
+    (tmp_path / "emergency_webhooks.jsonl").write_text("\n".join([
+        json.dumps({"user_id": "eval-ESC-001", "message": "旧告警"}, ensure_ascii=False),
+        json.dumps({"user_id": "eval-ESC-002", "message": "保留的告警"}, ensure_ascii=False),
+    ]) + "\n", encoding="utf-8")
+    runner = _make_runner(tmp_path, monkeypatch)
+    seen, captured = [], {}
+    _prepare_run_all(runner, monkeypatch, seen, captured)
+    esc2 = dict(_emergency_case(), id="ESC-002")
+    exams = {"intent": [], "qa": [], "multihop": [], "long_session": [],
+             "emergency": [_emergency_case(), esc2]}
+    asyncio.run(runner.run_all(exams, manifest={}, case_ids=["ESC-001"], merge=True))
+    messages = [p.get("message") for p in runner._webhook_payloads]
+    assert messages[0] == "保留的告警"
+    assert len(messages) == 2 and "旧告警" not in messages
+    assert runner._quality_report["total"] == 1  # 2 − ESC-001 旧计数 1 + 本次 0（假断言返回 0）
+
+
+# ── 8. 判卷与被测系统分开 / 换模型跳过与模型无关的部分 ─────────────────────────
+
+def test_build_judge_cfg_defaults_to_system_cfg(monkeypatch):
+    """一个 OPENMED_JUDGE_* 都不设：与被测系统同配置、协议 anthropic（与改动前一致）。"""
+    from core.app_factory import build_judge_cfg
+    for key in ("OPENMED_JUDGE_API_KEY", "OPENMED_JUDGE_BASE_URL",
+                "OPENMED_JUDGE_MODEL", "OPENMED_JUDGE_PROTOCOL"):
+        monkeypatch.delenv(key, raising=False)
+    system = {"api_key": "k1", "model": "deepseek-v4-pro",
+              "base_url": "https://api.deepseek.com/anthropic"}
+    assert build_judge_cfg(system) == {
+        "api_key": "k1", "model": "deepseek-v4-pro", "protocol": "anthropic",
+        "explicit": False, "base_url": "https://api.deepseek.com/anthropic",
+    }
+
+
+def test_build_judge_cfg_env_overrides(monkeypatch):
+    """被测系统换成 Qwen3 时，判卷用 OPENMED_JUDGE_* 单独指回 DeepSeek。"""
+    from core.app_factory import build_judge_cfg
+    monkeypatch.setenv("OPENMED_JUDGE_MODEL", "deepseek-v4-pro")
+    monkeypatch.setenv("OPENMED_JUDGE_BASE_URL", "https://api.deepseek.com/anthropic")
+    monkeypatch.setenv("OPENMED_JUDGE_API_KEY", "judge-key")
+    monkeypatch.delenv("OPENMED_JUDGE_PROTOCOL", raising=False)
+    cfg = build_judge_cfg({"api_key": "EMPTY", "model": "qwen3-8b"})
+    assert cfg["model"] == "deepseek-v4-pro" and cfg["explicit"] is True
+    assert cfg["api_key"] == "judge-key" and cfg["protocol"] == "anthropic"
+    assert cfg["base_url"] == "https://api.deepseek.com/anthropic"
+
+
+def test_runner_blocks_self_judging_on_openai_protocol(tmp_path, monkeypatch, no_llm_network):
+    """被测系统走 OpenAI 协议（自部署模型）却没单独配判卷模型：直接拦下。"""
+    monkeypatch.setenv("OPENMED_LLM_PROTOCOL", "openai")
+    monkeypatch.delenv("OPENMED_JUDGE_MODEL", raising=False)
+    with pytest.raises(EvalAbortError, match="OPENMED_JUDGE_MODEL"):
+        BaselineRunner(FakeCtx(), results_root=tmp_path)
+
+
+def test_runner_separates_judge_and_system_models(tmp_path, monkeypatch, no_llm_network):
+    """判卷模型读判卷配置；强制失败识别器属于被测系统，用被测系统的模型。"""
+    monkeypatch.delenv("OPENMED_LLM_PROTOCOL", raising=False)
+    monkeypatch.setenv("OPENMED_JUDGE_MODEL", "deepseek-v4-pro")
+    runner = BaselineRunner(FakeCtx(), results_root=tmp_path, judge_client=FakeClient())
+    assert runner._judge_model == "deepseek-v4-pro"
+    assert runner._system_model == "test-model"
+    assert runner._forced_recognizer.model == "test-model"
+
+
+def test_run_all_skip_model_independent(tmp_path, monkeypatch, no_llm_network):
+    """--skip-model-independent：不跑 qa single 与强制 LLM 失败子集，其余照跑。"""
+    runner = _make_runner(tmp_path, monkeypatch)
+    seen, captured = [], {}
+    _prepare_run_all(runner, monkeypatch, seen, captured)
+    ran = {}
+
+    async def fake_intent(cases):
+        ran["intent"] = [c["id"] for c in cases]
+        return []
+
+    async def fake_forced(cases):
+        ran["forced"] = [c["id"] for c in cases]
+        return []
+
+    async def fake_qa(cases):
+        ran["qa"] = [c["id"] for c in cases]
+        return [], []
+
+    monkeypatch.setattr(runner, "run_intent", fake_intent)
+    monkeypatch.setattr(runner, "run_forced_failure", fake_forced)
+    monkeypatch.setattr(runner, "run_qa", fake_qa)
+    exams = {"intent": [{"id": "INT-1", "message": "x", "expected_intent": "query",
+                         "split": "train", "llm_failure": True}],
+             "qa": [{"id": "QA-001", "kind": "single"}, {"id": "QA-003", "kind": "multi"}],
+             "multihop": [], "long_session": [], "emergency": []}
+    asyncio.run(runner.run_all(exams, manifest={}, skip_model_independent=True))
+    assert ran == {"intent": ["INT-1"], "forced": [], "qa": ["QA-003"]}
+
+
+def test_build_baseline_marks_skipped_parts(tmp_path, monkeypatch, no_llm_network):
+    """跳过的部分在 baseline 里记 None/skipped，报告写「未跑」，不写成 0。"""
+    runner = _make_runner(tmp_path, monkeypatch)
+    runner._skip_model_independent = True
+    rows = [{"case_id": "QA-003", "exam": "qa", "split": "train", "passed": True,
+             "scores": {"mean": 0.9}, "detail": {"gold_answer": "挂内科"}, "failure_reason": ""}]
+    baseline = runner._build_baseline(rows, manifest={})
+    assert baseline["headline"]["single_hop_mrr"] is None
+    assert baseline["exams"]["intent_llm_failure"]["skipped"] is True
+    assert baseline["retrieval"]["skipped"] is True
+    assert baseline["config"]["system_model"] == "test-model"
+    report = runner._render_report(baseline, rows)
+    assert "未跑（与被测模型无关）" in report
+    assert "single 档检索：本次未跑" in report

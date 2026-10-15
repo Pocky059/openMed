@@ -58,6 +58,34 @@ def build_llm_cfg() -> Dict[str, Any]:
     return cfg
 
 
+def build_judge_cfg(system_cfg: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """判卷模型配置：与被测系统的 LLM 配置分开（2026-10-15 Qwen3 基线准备）。
+
+    为什么要分开：换 Qwen3 跑基线时，被测系统改走 vLLM（OPENMED_LLM_PROTOCOL=openai
+    + ANTHROPIC_MODEL 改成 Qwen3），判卷必须仍是固定的第三方 DeepSeek——否则判卷
+    跟着 build_llm_cfg 一起变成 Qwen3，等于被测模型给自己打分，而且训练前后
+    判卷标准不同，数字没法比。
+
+    读 OPENMED_JUDGE_API_KEY / OPENMED_JUDGE_BASE_URL / OPENMED_JUDGE_MODEL /
+    OPENMED_JUDGE_PROTOCOL；没设的项沿用被测系统配置，协议默认 anthropic（不跟着
+    OPENMED_LLM_PROTOCOL 变）——一个 OPENMED_JUDGE_* 都不设时，与改动前完全一样。
+    explicit = 是否显式设了判卷模型，基线 CLI 用它拦「被测系统走自部署模型、
+    判卷却没单独配」的情况。
+    """
+    system_cfg = system_cfg if system_cfg is not None else build_llm_cfg()
+    judge_model = os.getenv("OPENMED_JUDGE_MODEL", "").strip()
+    cfg: Dict[str, Any] = {
+        "api_key":  os.getenv("OPENMED_JUDGE_API_KEY", "").strip() or system_cfg["api_key"],
+        "model":    judge_model or system_cfg["model"],
+        "protocol": os.getenv("OPENMED_JUDGE_PROTOCOL", "").strip().lower() or "anthropic",
+        "explicit": bool(judge_model),
+    }
+    base_url = os.getenv("OPENMED_JUDGE_BASE_URL", "").strip() or system_cfg.get("base_url", "")
+    if base_url:
+        cfg["base_url"] = base_url
+    return cfg
+
+
 def build_intent_recognizer(cfg: Dict[str, Any]) -> "IntentRecognizer":
     """独立意图识别器实例（给 EndToEndEvaluator 用；Orchestrator 内部还会创建一个）。"""
     from core.intent_recognizer import IntentRecognizer
@@ -188,14 +216,20 @@ def build_evaluator(
     orchestrator: "AgentOrchestrator",
     recognizer: "IntentRecognizer",
 ) -> "EndToEndEvaluator":
-    """端到端评测器（旧四维 judge 评测，/eval/run 用；v2 基线评测走第 5/7 步的新判分器）。"""
+    """端到端评测器（旧四维 judge 评测，/eval/run 用；v2 基线评测走第 5/7 步的新判分器）。
+
+    判卷用 build_judge_cfg（与被测系统分开，见其 docstring）；不设 OPENMED_JUDGE_*
+    时与被测系统同一配置，行为与改动前一致。
+    """
     from evaluation.evaluator import EndToEndEvaluator
+    judge_cfg = build_judge_cfg(cfg)
     return EndToEndEvaluator(
         orchestrator=orchestrator,   #要评测的对象有两个：编排器和意图识别器。使用llm端到端、四维度评测（看重回答质量，意图生成质量等）
         recognizer=recognizer,
-        api_key=cfg["api_key"],
-        base_url=cfg.get("base_url"),
-        model=cfg["model"],
+        api_key=judge_cfg["api_key"],
+        base_url=judge_cfg.get("base_url"),
+        model=judge_cfg["model"],
+        protocol=judge_cfg["protocol"],
         baseline_path=os.getenv("EVAL_BASELINE_PATH", "/app/data/eval/baseline.json"),  #基线文件路径，默认后者
     )
 

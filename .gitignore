@@ -23,3 +23,6 @@ data/eval/baseline.json
 
 # 每次基线评测的产物目录（第 7 步 scripts/run_baseline_eval.py 运行时生成）
 data/eval/results/
+
+# SFT 训练数据（2026-10-15 用户决定：数据/RL 路线终止，数据留本地不进仓库）
+data/sft/

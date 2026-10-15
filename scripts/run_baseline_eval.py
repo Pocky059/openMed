@@ -22,6 +22,19 @@
         python scripts/run_baseline_eval.py --run-id baseline-20261013-rev2 \
             --rejudge-from baseline-20261013 --cases LS-006,LS-007,LS-008
 
+换被测模型跑基线（2026-10-15 Qwen3 基线准备；vLLM 起在 AutoDL、SSH 隧道
+转到宿主机 8000 端口）：被测系统改走 OpenAI 协议，判卷单独配回 DeepSeek
+（不单独配会被 BaselineRunner 拦下，防止被测模型给自己打分），qa single 与
+强制 LLM 失败子集与模型无关，跳过：
+    docker compose exec openmed env OPENMED_EVAL_MODE=1 \
+        OPENMED_LLM_PROTOCOL=openai OPENAI_BASE_URL=http://host.docker.internal:8000/v1 \
+        OPENAI_API_KEY=EMPTY ANTHROPIC_MODEL=<vLLM 的 served-model-name> \
+        OPENMED_LLM_THINKING=off \
+        OPENMED_JUDGE_MODEL=deepseek-v4-pro \
+        OPENMED_JUDGE_BASE_URL=https://api.deepseek.com/anthropic \
+        python scripts/run_baseline_eval.py --run-id qwen3-base-<日期> --skip-model-independent
+（OPENMED_JUDGE_API_KEY 不设时沿用 .env 的 ANTHROPIC_API_KEY，即 DeepSeek key。）
+
 产出 results/<run_id>/ 四件：baseline.json / cases.jsonl /
 trajectory_quality_report.json / report.md，急症告警另落
 emergency_webhooks.jsonl；baseline.json 同时复制到 data/eval/。
@@ -57,6 +70,9 @@ def parse_args() -> argparse.Namespace:
                         help="关闭进度条（把输出重定向到文件时用，动态刷新行会糊成一片）")
     parser.add_argument("--allow-emergency-webhook", action="store_true",
                         help="急症告警允许发往容器配置的真实 URL（默认模拟收件箱，绝不外发）")
+    parser.add_argument("--skip-model-independent", action="store_true",
+                        help="换被测模型时用：跳过 qa single（直测检索）与强制 LLM 失败子集"
+                             "（LLM 路被短路）——两者都不经过被测模型，结果与模型无关")
     return parser.parse_args()
 
 
@@ -97,6 +113,7 @@ async def main() -> None:
         case_ids=case_ids,
         resume=args.resume,
         merge=args.merge,
+        skip_model_independent=args.skip_model_independent,
     )
 
 

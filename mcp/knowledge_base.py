@@ -86,6 +86,50 @@ def _tokenize(text: str) -> List[str]:
     return tokens
 
 
+# ── 查询别名展开（P2，2026-10-15）──────────────────────────────────────────────
+# 用户叫法与语料写法不一致会导致「文档在库里却搜不到」：BM25 是字面匹配，
+# 异字别名词分数直接为 0；向量模型对「长得完全不像但同一个东西」的别名
+# 也常常拉不近（基线归因 + SFT 扩充先验检查都实测到这类漏检，如贯叶连翘→圣约翰草）。
+#
+# 解法：查询进检索前，若命中别名词，把语料规范名追加进查询串。保留原词
+# （原词对向量路仍有价值），追加词让 BM25 能字面命中规范名所在文档。
+# 映射放在 data/knowledge/aliases.json（数据文件，加别名不动代码），
+# 每条必须医药上同物、零歧义。查询改写（口语化表达→规范医学术语）不在这里做，
+# 那是 Agent 的职责（2.1 的 SFT 数据正在强化它）——这里只兜底封闭别名集合。
+
+_ALIASES_PATH = Path(__file__).resolve().parents[1] / "data" / "knowledge" / "aliases.json"
+_aliases_cache: Optional[List[Dict[str, List[str]]]] = None
+
+
+def _load_aliases() -> List[Dict[str, List[str]]]:
+    """惰性加载别名映射；文件缺失/损坏时返回空表（检索链路不受影响）。"""
+    global _aliases_cache
+    if _aliases_cache is not None:
+        return _aliases_cache
+    try:
+        raw = json.loads(_ALIASES_PATH.read_text(encoding="utf-8"))
+        _aliases_cache = [
+            {"from": entry["from"], "to": entry["to"]}
+            for entry in raw["aliases"]
+            if entry.get("from") and entry.get("to")
+        ]
+    except (OSError, json.JSONDecodeError, KeyError):
+        logger.warning(f"别名表不可用，检索不做展开: {_ALIASES_PATH}")
+        _aliases_cache = []
+    return _aliases_cache
+
+
+def _expand_aliases(query: str) -> str:
+    """查询里出现任一 from 词 → 追加该条 to 词（多组命中全部追加，去重）。"""
+    added: List[str] = []
+    for entry in _load_aliases():
+        if any(word in query for word in entry["from"]):
+            added.extend(entry["to"])
+    seen = set()
+    unique = [w for w in added if not (w in seen or seen.add(w))]
+    return f"{query} {' '.join(unique)}".strip() if unique else query
+
+
 class KnowledgeBase:
     """
     基于 ChromaDB + BM25 的医疗 RAG 知识库。
@@ -223,7 +267,11 @@ class KnowledgeBase:
 
         recall_pool 控制每一路召回的候选池大小，融合后再截断到 top_k，
         为后续 Cross-Encoder 精排留出足够的候选空间。
+
+        入口先做别名展开（_expand_aliases）：生产 Agent、评测直测、
+        SFT 回填等所有走本方法的链路统一吃到，行为确定性可复现。
         """
+        query = _expand_aliases(query)
         vector_hits = self._vector_search_raw(query, recall_pool)
         bm25_hits = self._bm25_search_raw(query, recall_pool)
         fused = self._reciprocal_rank_fusion([vector_hits, bm25_hits])

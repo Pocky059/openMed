@@ -22,7 +22,9 @@ from evaluation.safety_scorer import SafetyResult
 
 logger = logging.getLogger(__name__)
 
-SCHEMA_VERSION = "2.0"
+# 2.0 → 2.1（2026-10-15 rev3）：单跳 headline 由 single_hop_f1 改为 single_hop_mrr，
+# 检索统计去掉 P/R/F1、加 hit@1——字段名变了，旧版报告不能当新版读
+SCHEMA_VERSION = "2.1"
 
 
 # ── 各集聚合（确定性纯函数）───────────────────────────────────────────────────
@@ -62,25 +64,37 @@ def aggregate_intent(pairs: List[Dict[str, str]]) -> Dict[str, Any]:
 
 
 def aggregate_dialog_single(stats: List[Dict[str, float]]) -> Dict[str, float]:
-    """对话集单轮检索统计聚合：P@k/R@k/F1@k/MRR/hit@k 的均值。
+    """问答集 single 档检索统计聚合：MRR / hit@1 / hit@5 的均值。
 
-    stats 每项是单题检索统计（基线 CLI 用 ragas_metrics 的确定性函数算）。
+    stats 每项是单题检索统计（基线 CLI 用 ragas_metrics 的确定性函数算，
+    正确片段 = gold_chunks ∪ alt_gold_chunks）。
+    为什么不用 F1@5（2026-10-15 rev3 改口径）：每题只有 1 个出题依据片段、
+    检索固定返回 5 条，命中时 P@5=0.2、R@5=1、F1=1/3——F1@5 = hit@5 ÷ 3，
+    上限锁死在 0.3333，排第 1 还是第 5 分数一样，看不出排序好坏。
     """
     if not stats:
-        return {"f1_at_5": 0.0, "precision_at_5": 0.0, "recall_at_5": 0.0,
-                "mrr": 0.0, "hit_at_5": 0.0, "cases": 0}
-    keys = ("precision_at_5", "recall_at_5", "f1_at_5", "mrr", "hit_at_5")
+        return {"mrr": 0.0, "hit_at_1": 0.0, "hit_at_5": 0.0, "cases": 0}
+    keys = ("mrr", "hit_at_1", "hit_at_5")
     out = {key: round(sum(s.get(key, 0.0) for s in stats) / len(stats), 4) for key in keys}
     out["cases"] = len(stats)
     return out
 
 
 def aggregate_dialog(single_stats: List[Dict[str, float]],
-                     judge_scores: Optional[List[float]] = None) -> Dict[str, Any]:
-    """对话（问答）集聚合：single_hop_f1 = 单轮检索 F1@5 均值（headline），
-    avg_judge_scores = 现有四维 judge 的均值（legacy 语义延续，可选）。"""
-    retrieval = aggregate_dialog_single(single_stats)
-    out: Dict[str, Any] = {"single_hop_f1": retrieval["f1_at_5"], "retrieval": retrieval}
+                     judge_scores: Optional[List[float]] = None,
+                     single_skipped: bool = False) -> Dict[str, Any]:
+    """对话（问答）集聚合：single_hop_mrr = single 档检索 MRR 均值（headline），
+    avg_judge_scores = 现有四维 judge 的均值（legacy 语义延续，可选）。
+
+    single_skipped：本次 run 没跑 single 档（--skip-model-independent，换被测
+    模型时用）——single 档直测检索、不经过模型，换模型数字一定不变，所以
+    headline 记 None（「未跑」），不能记 0（会被误读成检索全挂）。
+    """
+    if single_skipped:
+        out: Dict[str, Any] = {"single_hop_mrr": None, "retrieval": {"skipped": True}}
+    else:
+        retrieval = aggregate_dialog_single(single_stats)
+        out = {"single_hop_mrr": retrieval["mrr"], "retrieval": retrieval}
     if judge_scores:
         out["avg_judge_scores"] = round(sum(judge_scores) / len(judge_scores), 4)
     return out
@@ -200,7 +214,8 @@ def build_baseline(
     第二份数字，改口径只改聚合函数一处。
     """
     headline = {
-        "single_hop_f1": exam_metrics.get("dialog", {}).get("single_hop_f1", 0.0),
+        # 单跳 MRR：single 档没跑时为 None（见 aggregate_dialog 的 single_skipped）
+        "single_hop_mrr": exam_metrics.get("dialog", {}).get("single_hop_mrr", 0.0),
         "multihop_success_rate": exam_metrics.get("multihop", {}).get("success_rate", 0.0),
         "long_session_loss_rate": exam_metrics.get("long_session", {}).get("loss_rate", 0.0),
         "safety_violation_rate": safety.get("overall_violation_rate", 0.0),

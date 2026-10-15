@@ -1,11 +1,14 @@
 """
 v2 阶段 0.5 LLM 双协议客户端的单元测试。
 
-覆盖 LLMProtocolAdapter 的两大职责：
+覆盖 LLMProtocolAdapter 的三块职责：
 1. 请求方向：Anthropic 风格 kwargs → OpenAI 请求体
    （system 注入 / 消息翻译 / tools / tool_choice / stop_sequences）；
 2. 响应方向：OpenAI 响应 → Anthropic 风格 block 列表
-   （text / tool_use / stop_reason 映射 / usage 改名）。
+   （text / tool_use / stop_reason 映射 / usage 改名）；
+3. 思考开关（2026-10-15）：Anthropic 写法 thinking.disabled 与环境变量默认值
+   翻译成 Qwen3/vLLM 的 chat_template_kwargs.enable_thinking；回答开头的
+   <think> 块去掉。工厂的 protocol 参数优先于环境变量（判卷固定 anthropic）。
 
 全部离线：FakeOpenAI 替身只记录请求、返回预设响应，不发起任何网络调用。
 """
@@ -283,3 +286,78 @@ def test_factory_openai_uses_anthropic_base_url_as_fallback(monkeypatch):
     client = create_llm_client(api_key="test", base_url="http://localhost:8000/v1")
 
     assert str(client._openai.base_url).rstrip("/") == "http://localhost:8000/v1"
+
+
+def test_factory_protocol_param_overrides_env(monkeypatch):
+    """显式 protocol 优先于环境变量：判卷固定 anthropic，被测系统切 vLLM 时不跟着切。"""
+    monkeypatch.setenv("OPENMED_LLM_PROTOCOL", "openai")
+    client = create_llm_client(api_key="test", base_url="https://example.com/anthropic",
+                               protocol="anthropic")
+    assert isinstance(client, AsyncAnthropic)
+
+
+def test_factory_reads_thinking_env(monkeypatch):
+    """OPENMED_LLM_THINKING=off → 适配器的思考默认值为 False（不设为 None）。"""
+    monkeypatch.setenv("OPENMED_LLM_PROTOCOL", "openai")
+    monkeypatch.setenv("OPENAI_BASE_URL", "http://localhost:8000/v1")
+    monkeypatch.setenv("OPENMED_LLM_THINKING", "off")
+    assert create_llm_client(api_key="test").messages._thinking_default is False
+    monkeypatch.delenv("OPENMED_LLM_THINKING")
+    assert create_llm_client(api_key="test").messages._thinking_default is None
+
+
+# ── 思考开关（2026-10-15 Qwen3 基线准备）────────────────────────────────────────
+
+def test_thinking_off_default_adds_chat_template_kwargs():
+    """适配器默认关思考：每个请求都带 Qwen3/vLLM 的关思考写法。"""
+    adapter = LLMProtocolAdapter(FakeOpenAI(make_response(content="ok")), thinking="off")
+    call(adapter, model="m", messages=[{"role": "user", "content": "x"}])
+    assert adapter._openai.requests[0]["extra_body"] == {
+        "chat_template_kwargs": {"enable_thinking": False},
+    }
+
+
+def test_explicit_thinking_disabled_is_translated():
+    """调用方的 Anthropic 写法 thinking.disabled → 翻译成 enable_thinking=False，原键不转发。"""
+    adapter = make_adapter(make_response(content="ok"))  # 不设默认值
+    call(adapter, model="m", messages=[{"role": "user", "content": "x"}],
+         extra_body={"thinking": {"type": "disabled"}})
+    extra = adapter._openai.requests[0]["extra_body"]
+    assert extra == {"chat_template_kwargs": {"enable_thinking": False}}
+
+
+def test_explicit_thinking_beats_default():
+    """优先级：调用方显式传的 > 适配器默认值。"""
+    adapter = LLMProtocolAdapter(FakeOpenAI(make_response(content="ok")), thinking="off")
+    call(adapter, model="m", messages=[{"role": "user", "content": "x"}],
+         extra_body={"thinking": {"type": "enabled", "budget_tokens": 1024}})
+    assert adapter._openai.requests[0]["extra_body"]["chat_template_kwargs"] == {"enable_thinking": True}
+
+
+def test_no_thinking_setting_sends_no_extra_body():
+    """既没默认值也没显式传：不带 extra_body（模型默认行为，与 0.5 原行为一致）。"""
+    adapter = make_adapter(make_response(content="ok"))
+    call(adapter, model="m", messages=[{"role": "user", "content": "x"}])
+    assert "extra_body" not in adapter._openai.requests[0]
+
+
+def test_other_extra_body_keys_pass_through():
+    """extra_body 里与思考无关的键原样转发。"""
+    adapter = make_adapter(make_response(content="ok"))
+    call(adapter, model="m", messages=[{"role": "user", "content": "x"}],
+         extra_body={"top_k": 20})
+    assert adapter._openai.requests[0]["extra_body"] == {"top_k": 20}
+
+
+def test_think_block_stripped_from_text():
+    """思考没关成功时 Qwen3 把思考写在开头的 <think>…</think>：去掉，只留正式回答。"""
+    adapter = make_adapter(make_response(content="<think>\n用户问头痛……\n</think>\n\n建议先休息观察"))
+    resp = call(adapter, model="m", messages=[{"role": "user", "content": "x"}])
+    assert resp.content == [{"type": "text", "text": "建议先休息观察"}]
+
+
+def test_only_think_block_yields_no_text():
+    """只有思考没有正文（被 max_tokens 截在思考之后）：不产出 text 块，调用方拿到空串。"""
+    adapter = make_adapter(make_response(content="<think>想了很久</think>"))
+    resp = call(adapter, model="m", messages=[{"role": "user", "content": "x"}])
+    assert resp.content == []

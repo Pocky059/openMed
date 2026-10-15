@@ -353,6 +353,27 @@ class MemoryManager:
         conv_id = self._safe_text(conv_id)
         return await self._redis.get(self._summary_key(user_id, conv_id)) or ""
 
+    async def forget_user(self, user_id: str, conv_id: str) -> None:
+        """删除一个用户的全部记忆：三级记忆各删各的（2026-10-15 rev3）。
+
+          - 工作记忆 + 会话摘要（Redis）：按 (user_id, conv_id) 删 wm/summary 两个 key
+          - 情景记忆 + 用户画像（ChromaDB）：按 metadata 里的 user_id 删，跨会话一并清掉
+
+        用途：基线评测每道走对话的题开跑前调用。评测的 user_id/conv_id 固定是
+        eval-<题号>，不清的话上一次运行留下的记忆会注入这一次——2026-10-12 先跑
+        pilot 再跑全量，全量跑 LS-001 时第 1 轮上下文里已有 pilot 存下的摘要；
+        情景记忆/画像存在 ChromaDB 里不会过期，换模型跑还会读到上一个模型的回答。
+        也是「用户要求删除个人数据」的落地入口。
+
+        与其他记忆方法不同，这里删除失败直接抛异常不吞：调用方（评测）需要
+        确知记忆已清干净，静默失败等于带着脏记忆继续跑。
+        """
+        user_id = self._safe_text(user_id)
+        conv_id = self._safe_text(conv_id)
+        await self._redis.delete(self._wm_key(user_id, conv_id), self._summary_key(user_id, conv_id))
+        await asyncio.to_thread(self._episodic.delete, where={"user_id": user_id})
+        await asyncio.to_thread(self._profile.delete, where={"user_id": user_id})
+
     # ── 压缩（防止 context 爆炸）─────────────────────────────────────────────
 
     async def _compress(self, user_id: str, conv_id: str) -> None:

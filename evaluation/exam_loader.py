@@ -146,7 +146,12 @@ class QaCase:
     question: str = ""                           # kind=single 的题干
     turns: List[str] = field(default_factory=list)      # kind=multi 的对话文本轮
     source_docs: List[str] = field(default_factory=list)  # 题目事实出处的语料文件名（「语料有据」纪律）
-    gold_chunks: List[str] = field(default_factory=list)  # 金标准 chunk id（单跳 F1 判分依据；multi 可空）
+    gold_chunks: List[str] = field(default_factory=list)  # 金标准 chunk id = 出题依据的那一篇（单跳 MRR 判分依据；multi 可空）
+    # 补标金标准（2026-10-15 rev3）：库里其他同样完整包含答案的片段 id。
+    # 医院知识库有内容重叠的文档（如《科室挂号指引》与各篇《科室介绍》），出题时
+    # 只标了出题依据那一篇，检索排到别的含答案片段会被误判成错。判分时
+    # gold_chunks ∪ alt_gold_chunks 都算对；分两个字段存，是为了保留「哪些是事后补的」
+    alt_gold_chunks: List[str] = field(default_factory=list)
     gold_answer: str = ""                        # 标准答案要点（judge 校准用）
     split: str = "train"
 
@@ -341,16 +346,24 @@ def load_qa_exam(path: Optional[Any] = None) -> List[QaCase]:
             if not item.get("question"):
                 _fail(case_id, "kind=single 必须给出 question（题干）")
             if not item.get("gold_chunks"):
-                _fail(case_id, "kind=single 必须给出 gold_chunks（单跳 F1 的金标准）")
+                _fail(case_id, "kind=single 必须给出 gold_chunks（单跳 MRR 的金标准）")
+            # 补标片段与出题依据重复 = 手改考卷时写错了（同一片段不该记两次）
+            overlap = set(item.get("alt_gold_chunks", [])) & set(item["gold_chunks"])
+            if overlap:
+                _fail(case_id, f"alt_gold_chunks 与 gold_chunks 重复: {sorted(overlap)}")
         else:  # multi
             if not item.get("turns"):
                 _fail(case_id, "kind=multi 必须给出 turns（多轮对话）")
+            # multi 档走 agent 链路、不判检索命中，补标金标准对它没有意义
+            if item.get("alt_gold_chunks"):
+                _fail(case_id, "kind=multi 不判检索命中，不应给出 alt_gold_chunks")
         cases.append(QaCase(
             id=item["id"], kind=kind,
             question=item.get("question", ""),
             turns=list(item.get("turns", [])),
             source_docs=list(item.get("source_docs", [])),
             gold_chunks=list(item.get("gold_chunks", [])),
+            alt_gold_chunks=list(item.get("alt_gold_chunks", [])),
             gold_answer=item.get("gold_answer", ""),
             split=item["split"],
         ))

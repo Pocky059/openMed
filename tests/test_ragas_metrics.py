@@ -10,13 +10,10 @@ import json
 
 from evaluation.ragas_metrics import (
     cosine_similarity,
-    f1_at_k,
     hit_at_k,
     judge_answer_relevancy,
     judge_faithfulness,
     mrr,
-    precision_at_k,
-    recall_at_k,
     split_sentences,
 )
 
@@ -255,23 +252,18 @@ def test_answer_relevancy_embedder_unavailable_returns_none():
 
 # ── 检索质量确定性统计 ────────────────────────────────────────────────────────
 
-def test_precision_recall_f1_at_k():
-    """P@3 / R@3 / F1 的标准定义与 k 截断（函数内部统一 round 到 4 位小数）。"""
-    retrieved = ["g1", "x1", "g2", "x2"]
-    gold = ["g1", "g2", "g3"]
-    assert precision_at_k(retrieved, gold, k=3) == 0.6667
-    assert recall_at_k(retrieved, gold, k=3) == 0.6667
-    assert f1_at_k(0.6667, 0.6667) == 0.6667
-    assert precision_at_k([], gold) == 0.0
-    assert recall_at_k(retrieved, []) == 0.0
-    assert f1_at_k(0.0, 0.0) == 0.0
-
-
 def test_mrr_rank_of_first_gold_hit():
     """金文档排名越靠前分数越高，没捞到为 0。"""
     assert mrr(["g1", "x"], ["g1"]) == 1.0
     assert mrr(["x", "g1"], ["g1"]) == 0.5
     assert mrr(["x", "y"], ["g1"]) == 0.0
+
+
+def test_mrr_multiple_gold_takes_first_hit():
+    """多个正确片段（出题依据 + 补标）时按排得最前的那个算（rev3 补标口径）。"""
+    assert mrr(["x", "alt", "g1"], ["g1", "alt"]) == 0.5
+    assert hit_at_k(["x", "alt", "g1"], ["g1", "alt"], k=1) is False
+    assert hit_at_k(["alt", "x"], ["g1", "alt"], k=1) is True
 
 
 def test_hit_at_k():

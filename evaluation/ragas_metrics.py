@@ -16,9 +16,11 @@
      embedding（bge-small-zh-v1.5）算原始问题与反推问题的余弦均值
      ——向量计算零 API 成本，只有反推问题花一次 LLM 调用。
   3. Context Precision/Recall —— ragas 里这两个是 LLM 判"检索片段
-     有没有用"，主观性强；本项目退化为确定性统计（P@k / R@k / F1@k /
-     MRR / hit@k），检索质量按排名硬算，不用 judge（判分纪律：
-     确定性统计为主，LLM 判卷只兜底语义复核）。
+     有没有用"，主观性强；本项目退化为确定性统计（MRR / hit@k），
+     检索质量按排名硬算，不用 judge（判分纪律：确定性统计为主，LLM
+     判卷只兜底语义复核）。P@k/R@k/F1@k 已于 2026-10-15 rev3 移除：
+     单跳题只有 1 个出题依据片段、检索固定返回 5 条，F1@5 命中也只有
+     2×0.2×1/1.2 = 1/3，上限被口径锁死，看不出排序好坏。
 """
 import json
 import logging
@@ -284,30 +286,6 @@ async def judge_answer_relevancy(
 
 
 # ── 检索质量（确定性统计，不用 judge）────────────────────────────────────────
-
-def precision_at_k(retrieved_ids: List[str], gold_ids: List[str], k: int = 5) -> float:
-    """前 k 个结果里金标准资料的比例（检索的"准不准"）。"""
-    top = retrieved_ids[:k]
-    if not top:
-        return 0.0
-    gold = set(gold_ids)
-    return round(sum(1 for cid in top if cid in gold) / len(top), 4)
-
-
-def recall_at_k(retrieved_ids: List[str], gold_ids: List[str], k: int = 5) -> float:
-    """金标准资料在前 k 个结果里被捞回的比例（检索的"全不全"）。"""
-    if not gold_ids:
-        return 0.0
-    top = set(retrieved_ids[:k])
-    return round(sum(1 for gid in gold_ids if gid in top) / len(gold_ids), 4)
-
-
-def f1_at_k(precision: float, recall: float) -> float:
-    """P@k 与 R@k 的调和平均；两者都为 0 时返回 0（防除零）。"""
-    if precision + recall == 0.0:
-        return 0.0
-    return round(2 * precision * recall / (precision + recall), 4)
-
 
 def mrr(retrieved_ids: List[str], gold_ids: List[str]) -> float:
     """平均倒数排名（简化版：单个查询）：第一个金标准资料排名的倒数。

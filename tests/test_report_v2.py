@@ -56,30 +56,40 @@ def test_aggregate_intent_empty():
 # ── 对话（问答）集聚合 ─────────────────────────────────────────────────────────
 
 def test_aggregate_dialog_single_means():
-    """P@5/R@5/F1@5/MRR/hit@5 逐项取均值。"""
+    """MRR / hit@1 / hit@5 逐项取均值。"""
     stats = [
-        {"precision_at_5": 1.0, "recall_at_5": 0.5, "f1_at_5": 0.6667, "mrr": 1.0, "hit_at_5": 1},
-        {"precision_at_5": 0.5, "recall_at_5": 1.0, "f1_at_5": 0.6667, "mrr": 0.5, "hit_at_5": 1},
+        {"mrr": 1.0, "hit_at_1": 1, "hit_at_5": 1},
+        {"mrr": 0.5, "hit_at_1": 0, "hit_at_5": 1},
     ]
     out = aggregate_dialog_single(stats)
-    assert out["precision_at_5"] == 0.75
-    assert out["f1_at_5"] == 0.6667
     assert out["mrr"] == 0.75
+    assert out["hit_at_1"] == 0.5
+    assert out["hit_at_5"] == 1.0
     assert out["cases"] == 2
+    assert "f1_at_5" not in out  # rev3 起 F1@5 不再统计（上限锁死在 1/3）
 
 
 def test_aggregate_dialog_empty():
-    assert aggregate_dialog_single([])["f1_at_5"] == 0.0
+    assert aggregate_dialog_single([])["mrr"] == 0.0
 
 
-def test_aggregate_dialog_wraps_single_hop_f1():
-    """dialog 组 = single_hop_f1（=F1@5 均值）+ 可选 judge 分均值。"""
-    stats = [{"precision_at_5": 1.0, "recall_at_5": 1.0, "f1_at_5": 1.0, "mrr": 1.0, "hit_at_5": 1}]
+def test_aggregate_dialog_wraps_single_hop_mrr():
+    """dialog 组 = single_hop_mrr（=MRR 均值）+ 可选 judge 分均值。"""
+    stats = [{"mrr": 1.0, "hit_at_1": 1, "hit_at_5": 1}]
     out = aggregate_dialog(stats, judge_scores=[3.0, 4.0])
-    assert out["single_hop_f1"] == 1.0
+    assert out["single_hop_mrr"] == 1.0
     assert out["avg_judge_scores"] == 3.5
     # 不传 judge 分：键不存在（legacy 兼容字段可选）
     assert "avg_judge_scores" not in aggregate_dialog(stats)
+
+
+def test_aggregate_dialog_single_skipped_is_none():
+    """single 档本次没跑（换被测模型时跳过）：headline 记 None 而不是 0，
+    0 会被误读成「检索全挂」。"""
+    out = aggregate_dialog([], judge_scores=[0.9], single_skipped=True)
+    assert out["single_hop_mrr"] is None
+    assert out["retrieval"] == {"skipped": True}
+    assert out["avg_judge_scores"] == 0.9
 
 
 # ── 多跳集聚合 ────────────────────────────────────────────────────────────────
@@ -224,7 +234,7 @@ def test_build_baseline_schema_complete():
     )
     assert data["schema_version"] == SCHEMA_VERSION
     assert data["run_id"] == "baseline-20261012"
-    assert set(data["headline"]) == {"single_hop_f1", "multihop_success_rate",
+    assert set(data["headline"]) == {"single_hop_mrr", "multihop_success_rate",
                                      "long_session_loss_rate", "safety_violation_rate",
                                      "emergency_miss_rate"}
     assert set(data["exams"]) == {"intent", "dialog", "multihop", "long_session"}

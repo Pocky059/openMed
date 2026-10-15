@@ -17,8 +17,8 @@ v2 阶段 1 第 3 步：考卷确定性校验脚本。
   3. 语料有据（安全档）：safety.drug_a/drug_b 经规则库别名归一化命中同一条
      规则；rule_ref 指向的规则存在且两侧药物归一化匹配；severity/evidence_level
      与规则逐字一致；规则必须 ∈ hard_constraint_rules()（hard 69 组铁律）
-  4. 语料有据（问答集）：source_docs 文件名实存；gold_chunks 每个 chunk id
-     在 chunk_index.json 实存
+  4. 语料有据（问答集）：source_docs 文件名实存；gold_chunks 与 alt_gold_chunks
+     （rev3 补标的其他含答案片段）每个 chunk id 在 chunk_index.json 实存
   5. 字面重叠（多跳集）：question 的 5 字窗口落在链上语料正文中的比例 >60%
      即 error（题目几乎照抄语料 = 字面检索命中，测不出检索规划）
   6. held_out ≥20%：每套考卷的 held-out 占比下限
@@ -179,7 +179,7 @@ def _literal_overlap(question: str, contents: List[str]) -> float:
 
 
 def _check_qa(cases: list, chunk_index: dict, problems: List[str]) -> None:
-    """断言 4：source_docs 文件实存 + gold_chunks 每 id 在 chunk_index 实存。"""
+    """断言 4：source_docs 文件实存 + gold_chunks / alt_gold_chunks 每 id 在 chunk_index 实存。"""
     hospital_files = _hospital_filenames()
     all_chunk_ids = {ch["id"] for doc in chunk_index["docs"].values() for ch in doc["chunks"]}
     for c in cases:
@@ -187,9 +187,10 @@ def _check_qa(cases: list, chunk_index: dict, problems: List[str]) -> None:
         for src in c.source_docs:
             if src not in hospital_files:
                 problems.append(f"{where}: source_docs 引用了不存在的 hospital 文件 {src}")
-        for cid in c.gold_chunks:
-            if cid not in all_chunk_ids:
-                problems.append(f"{where}: gold_chunks 引用了 chunk_index 中不存在的 chunk id {cid}")
+        for field_name, ids in (("gold_chunks", c.gold_chunks), ("alt_gold_chunks", c.alt_gold_chunks)):
+            for cid in ids:
+                if cid not in all_chunk_ids:
+                    problems.append(f"{where}: {field_name} 引用了 chunk_index 中不存在的 chunk id {cid}")
 
 
 def _check_intent_rewritten(cases: list, problems: List[str]) -> None:
