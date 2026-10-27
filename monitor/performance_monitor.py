@@ -22,9 +22,13 @@ from enum import Enum
 from typing import Any, Deque, Dict, List, Optional
 
 import httpx
-from prometheus_client import Counter, Gauge, Histogram, start_http_server
+from prometheus_client import Gauge, Histogram, start_http_server
 
 logger = logging.getLogger(__name__)
+
+# 业务指标的模块级单例（见 PerformanceMonitor._setup_prometheus）：指标注册
+# 一次、所有实例共享——prometheus_client 同名指标重复注册会抛 ValueError
+_METRICS: Optional[Dict[str, Any]] = None
 
 
 # ── 数据结构 ──────────────────────────────────────────────────────────────────
@@ -139,20 +143,32 @@ class PerformanceMonitor:
         self._active       = False
         self._task:        Optional[asyncio.Task] = None
 
-        # Prometheus 指标（可选）
+        # Prometheus 指标：注册永远执行（注册本身零成本、不占端口），独立
+        # HTTP 端口（start_http_server）才是可选项。FastAPI 的 /metrics 端点
+        # （api/main.py）用 generate_latest() 输出默认 REGISTRY 里已注册的
+        # 指标——注册了才有得输出，Prometheus 容器按 compose 配置每 10s 抓取。
+        # 教训（2026-10-26 接通）：注册原来绑在 start_http_server 一起、被
+        # PROMETHEUS_PORT 默认 0 挡死——容器跑了半天，/metrics 里只有 python
+        # 平台指标，业务指标从未注册，Prometheus 抓的是空仓库。
         self._prom: Dict[str, Any] = {}
+        self._setup_prometheus()
         if prometheus_port:
-            self._setup_prometheus(prometheus_port)
+            start_http_server(prometheus_port)
+            logger.info(f"Prometheus 独立端口已启动: :{prometheus_port}")
 
-    def _setup_prometheus(self, port: int) -> None:
-        self._prom = {
-            "agent_success_rate": Gauge("agent_success_rate", "Agent 成功率", ["agent"]),
-            "agent_latency_ms":   Histogram("agent_latency_ms", "Agent 延迟", ["agent"]),
-            "tool_success_rate":  Gauge("tool_success_rate", "工具成功率", ["tool"]),
-            "requests_total":     Counter("requests_total", "总请求数"),
-        }
-        start_http_server(port)
-        logger.info(f"Prometheus 已启动: :{port}")
+    def _setup_prometheus(self) -> None:
+        """注册业务指标。模块级单例缓存：prometheus_client 同名指标重复注册
+        会抛 ValueError，多实例构造（测试/多进程导入）都复用同一组全局指标。"""
+        global _METRICS
+        if _METRICS is None:
+            _METRICS = {
+                "agent_success_rate": Gauge("agent_success_rate", "Agent 成功率", ["agent"]),
+                "agent_latency_ms":   Histogram("agent_latency_ms", "Agent 延迟", ["agent"]),
+                "tool_success_rate":  Gauge("tool_success_rate", "工具成功率", ["tool"]),
+                # requests_total 已删（2026-10-26）：定义了但全库没有 .inc() 埋点——
+                # 没有埋点的指标是挂羊头，宁可少一个指标也不留死的
+            }
+        self._prom = _METRICS
 
     # ── 生命周期 ──────────────────────────────────────────────────────────────
 

@@ -199,7 +199,9 @@ def register_knowledge_tool(tool_manager: "MCPToolManager", kb: "KnowledgeBase")
 
 
 def build_monitor(orchestrator: "AgentOrchestrator", tool_manager: "MCPToolManager") -> "PerformanceMonitor":
-    """性能监控（可选启动 Prometheus，默认为0，即不启动）。"""
+    """性能监控。PROMETHEUS_PORT 只控制独立指标端口（可选，默认 0 不启动）；
+    业务指标注册不依赖该开关、永远注册（2026-10-26 接通）——/metrics 端点
+    始终有业务指标可输出，Prometheus 容器按 compose 配置定时抓取。"""
     from monitor.performance_monitor import PerformanceMonitor
     prom_port = int(os.getenv("PROMETHEUS_PORT", "0")) or None
     return PerformanceMonitor(
@@ -261,10 +263,10 @@ async def assemble(*, start_monitor: bool = True) -> AppContext:
     monitor.start 在 evaluator 构造之前，保持旧启动时序。
 
     start_monitor：生产 lifespan 用默认 True；基线评测 CLI 传 False——
-    容器里生产 API 已占着 Prometheus 端口，而监控的端口绑定发生在
-    PerformanceMonitor 构造阶段（prometheus_client.start_http_server 在
-    __init__ 里调用），CLI 再构造也会「地址已被占用」直接崩
-    （2026-10-13 pilot 实测）。评测用不上监控，连构造一起跳过，monitor 置 None。
+    若生产容器设了 PROMETHEUS_PORT，监控的端口绑定（prometheus_client.
+    start_http_server）发生在 PerformanceMonitor 构造阶段，CLI 再构造也会
+    「地址已被占用」直接崩（2026-10-13 pilot 实测）。评测用不上监控，
+    连构造一起跳过，monitor 置 None。
     """
     from agents.agent_orchestrator import build_shared_rag_tools
 

@@ -33,5 +33,8 @@ data/trajectories/
 logs/
 docs/
 
+# 前端：node_modules 巨大且镜像里不跑 npm；dist 是本地 build 好的产物，打进镜像（单端口演示用）
+frontend/node_modules/
+
 # Docker 自身文件
 docker-compose*.yml

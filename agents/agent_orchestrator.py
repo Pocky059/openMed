@@ -286,7 +286,7 @@ class BaseAgent:
                 "model": self._model,
                 "max_tokens": self.profile.max_tokens,
                 "temperature": self.profile.temperature,
-                "system": self._build_system_prompt(req),
+                "system": self._build_system_prompt(req),   #先放入system prompt
                 "messages": messages,
             }
             if tools:
@@ -455,6 +455,8 @@ class BaseAgent:
             f"允许的数据/工具范围：{'、'.join(self.profile.tool_scope) or '仅使用当前请求上下文'}\n"
             "不要给出确定性诊断结论，不要声称执行了未提供的检查、处方或退费操作；缺少证据时明确说明需要核验或就医确认。"
         )
+
+        #skills 注入
         base_prompt = f"{self.system_prompt}{profile_prompt}"
         if self._skill_manager is None:
             return base_prompt

@@ -24,6 +24,7 @@ import uvicorn
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Response, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 from pydantic import BaseModel, Field
 
@@ -138,6 +139,20 @@ async def health():
     return {"status": "ok", "agents": _orchestrator.get_stats()}    #get_stats方法见orchestrator.py
 
 
+@app.post("/demo/reset", tags=["演示"])
+async def reset_demo(user_id: str = "web-demo"):
+    """重置演示用户的全部记忆（前端「重置记忆」按钮，面试演示用）。
+
+    演示前端 user_id 写死 web-demo，且每刷新页面就开一个新 conv_id（会话数量
+    不定），所以按用户维度全清：Redis 工作记忆/摘要 + ChromaDB 情景记忆/画像。
+    （清空逻辑在 memory/conversation_memory.py 的 reset_user，返回删除计数。）
+    """
+    if _memory is None:
+        raise HTTPException(503, "记忆管理器未就绪")
+    deleted = await _memory.reset_user(user_id)
+    return {"ok": True, "user_id": user_id, "deleted": deleted}
+
+
 @app.get("/skills", tags=["Skills"])
 async def skills_summary():
     """查看当前已加载的 Skills，便于确认热加载结果和排查解析错误。"""
@@ -169,7 +184,21 @@ async def chat(req: ChatRequest):                        #需要一个输入，�
         # 只防"未来初始化改为可失败/延迟创建"时，把未就绪状态如实报 503 而不是 500
         raise HTTPException(503, "服务未就绪")
 
-    return await _chat_service.handle_chat_turn(req.message, req.user_id, req.conv_id)
+    try:
+        return await _chat_service.handle_chat_turn(req.message, req.user_id, req.conv_id)
+    except Exception as ex:
+        # 端点级兜底（2026-10-26 补齐）：LLM/依赖服务异常时返回降级响应而不是裸 500。
+        # 前端拿到的是正常 ChatResponse 结构，能直接渲染「稍后再试」；错误详情进
+        # 日志（完整堆栈可溯源），内部错误细节不泄漏给调用方。
+        logger.exception(f"对话处理失败: {ex}")
+        return ChatResponse(
+            conv_id=req.conv_id or "",
+            response="系统暂时不可用，请稍后再试。",
+            intent="other",            # 降级响应不虚构意图，如实标记 other
+            agent_type="none",         # 没有任何 agent 实际处理过
+            escalated=False,
+            latency_ms=0.0,
+        )
 
 @app.get("/monitor")
 async def monitor_summary():
@@ -437,6 +466,16 @@ async def _cli():
         print(f"\nOpenMed [{result.agent_type.value}]: {result.response}\n")
 
     await mem.close()
+
+
+# ── 前端静态挂载（2026-10-15 新增，单端口演示用）───────────────────────────────
+# 前端是 frontend/ 下的 React+Vite 项目，`npm run build` 后产物在 frontend/dist/。
+# 挂到根路径后浏览器打开 http://localhost 直接就是聊天界面；API 路由（/chat /docs
+# /health 等）在 FastAPI 中优先级高于本挂载，不受影响。
+# dist 目录不存在时跳过挂载——没 build 前端的纯后端运行不受任何影响。
+_FRONTEND_DIST = pathlib.Path(_ROOT) / "frontend" / "dist"
+if _FRONTEND_DIST.is_dir():
+    app.mount("/", StaticFiles(directory=str(_FRONTEND_DIST), html=True), name="frontend")
 
 
 if __name__ == "__main__":

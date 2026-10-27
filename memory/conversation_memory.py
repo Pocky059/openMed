@@ -101,6 +101,34 @@ def merge_field_summaries(old_text: str, new_text: str) -> Optional[str]:
     return json.dumps(merged, ensure_ascii=False)
 
 
+def truncate_summary(text: str, max_chars: int) -> str:
+    """按安全优先级截断四字段摘要（超长时丢低优先级字段的最新条目）。
+
+    字段优先级 = SUMMARY_FIELDS 顺序：allergies > medications > symptoms >
+    history——过敏史/用药史是安全关键字段，最后牺牲；history 的最新条目最先丢。
+    字段内条目旧在前（合并保序），从尾部（最新）开始丢。
+
+    为什么要按优先级而不是硬截：之前的 merged[:max_chars] 从头保留，把
+    history 尾部的最新病史连同其他字段尾部一起切掉，且不区分字段——安全
+    关键字段可能被 history 挤出。丢的时候也让最低优先级的字段先承担损失。
+
+    非四字段 JSON（旧版自由文本）不处理——调用方走自己的截断逻辑。
+    """
+    parsed = parse_summary(text)
+    if parsed is None:
+        return text[:max_chars]
+
+    def dump() -> str:
+        return json.dumps(parsed, ensure_ascii=False)
+
+    # 从最低优先级字段开始丢尾部条目，每丢一条重新量长度
+    for field in reversed(SUMMARY_FIELDS):
+        while len(dump()) > max_chars and parsed[field]:
+            parsed[field].pop()
+    # 兜底：条目丢光仍超长（理论上单条不可能超长）时硬截，保证 ≤ max_chars
+    return dump()[:max_chars]
+
+
 class MsgRole(Enum):
     USER      = "user"
     ASSISTANT = "assistant"
@@ -155,7 +183,9 @@ class MemoryManager:
     COMPRESS_AT   = 15    # 达到此条数时触发压缩（add_message 检查），保留摘要 + 最近 5 条
     HISTORY_TOP_K = 5     # 情景记忆检索返回条数
     # 四字段 JSON 摘要的长度上限（2026-10-12 从 800 提到 1600：800 截断 JSON 会破坏
-    # 可解析性，病史多的长会话需要更多空间——长会话考卷每场 3-5 项病史实测够用）
+    # 可解析性，病史多的长会话需要更多空间——长会话考卷每场 3-5 项病史实测够用）。
+    # 超长截断按安全优先级丢低优先级字段的最新条目（见 truncate_summary，
+    # 2026-10-26：原硬截 merged[:MAX] 不分字段，安全关键字段可能被挤掉）
     SUMMARY_MAX_CHARS = 1600
     PROFILE_DOC_PREFIX = "user_profile:"
 
@@ -224,18 +254,24 @@ class MemoryManager:
         msg = Message(role=role, content=self._safe_text(content), metadata=clean_metadata)
         key = self._wm_key(user_id, conv_id)
 
-        # 追加到 Redis 列表（左推，最新在前）
-        await self._redis.lpush(key, json.dumps({
-            "role":      msg.role.value,
-            "content":   msg.content,
-            "ts":        msg.timestamp.isoformat(),
-            "metadata":  msg.metadata,
-        }))
-        await self._redis.expire(key, 86400)  # 24h TTL
+        # 追加到 Redis 列表（左推，最新在前）+ 压缩阈值检查。
+        # Redis 不可用时降级跳过（2026-10-26 补齐）：写不进去就记日志返回，
+        # 不阻塞主链路——在线可用性优先于记忆完整性。ChromaDB 两侧早就有
+        # try/except，Redis 侧一直裸奔：Redis 挂了 /chat 直接 500。
+        try:
+            await self._redis.lpush(key, json.dumps({
+                "role":      msg.role.value,
+                "content":   msg.content,
+                "ts":        msg.timestamp.isoformat(),
+                "metadata":  msg.metadata,
+            }))
+            await self._redis.expire(key, 86400)  # 24h TTL
 
-        # 超过压缩阈值时触发压缩
-        if await self._redis.llen(key) >= self.COMPRESS_AT:
-            await self._compress(user_id, conv_id)
+            # 超过压缩阈值时触发压缩
+            if await self._redis.llen(key) >= self.COMPRESS_AT:
+                await self._compress(user_id, conv_id)
+        except Exception as ex:
+            logger.warning(f"工作记忆写入失败（Redis 不可用，本轮记忆降级）: {ex}")
 
     async def update_profile(self, user_id: str, conv_id: str) -> None:
         """
@@ -331,8 +367,12 @@ class MemoryManager:
         # 3. 用户画像
         profile = await self._get_profile(user_id)
 
-        # 4. 会话摘要（如果已压缩过）
-        summary = await self._redis.get(self._summary_key(user_id, conv_id)) or ""
+        # 4. 会话摘要（如果已压缩过；Redis 不可用时降级为空——读失败不阻塞）
+        try:
+            summary = await self._redis.get(self._summary_key(user_id, conv_id)) or ""
+        except Exception as ex:
+            logger.warning(f"会话摘要读取失败（Redis 不可用，本轮按无摘要处理）: {ex}")
+            summary = ""
 
         return MemoryContext(
             recent_messages=recent,
@@ -374,6 +414,32 @@ class MemoryManager:
         await asyncio.to_thread(self._episodic.delete, where={"user_id": user_id})
         await asyncio.to_thread(self._profile.delete, where={"user_id": user_id})
 
+    async def reset_user(self, user_id: str) -> Dict[str, int]:
+        """清空一个用户的全部记忆（前端「重置记忆」按钮用，2026-10-15 演示）。
+
+        与 forget_user 的区别：forget_user 只删 (user_id, conv_id) 单个会话的
+        Redis 窗口；演示用户 web-demo 每刷新页面就开一个新 conv_id，会话数量
+        不定，所以这里扫前缀把该用户所有会话的 wm/summary 一并删掉。
+        ChromaDB 两侧（情景记忆/用户画像）本来按 user_id 删就跨会话，同 forget_user。
+
+        返回删除计数 {redis_keys, episodic_rows, profile_rows}，前端据此提示。
+        """
+        user_id = self._safe_text(user_id)
+        keys: List[str] = []
+        async for key in self._redis.scan_iter(f"wm:{user_id}:*"):
+            keys.append(key)
+        async for key in self._redis.scan_iter(f"summary:{user_id}:*"):
+            keys.append(key)
+        redis_keys = await self._redis.delete(*keys) if keys else 0
+        # ChromaDB delete 返回删除的 id 列表（版本差异可能为 None），len 兜底
+        episodic_ids = await asyncio.to_thread(self._episodic.delete, where={"user_id": user_id})
+        profile_ids = await asyncio.to_thread(self._profile.delete, where={"user_id": user_id})
+        return {
+            "redis_keys": redis_keys,
+            "episodic_rows": len(episodic_ids or []),
+            "profile_rows": len(profile_ids or []),
+        }
+
     # ── 压缩（防止 context 爆炸）─────────────────────────────────────────────
 
     async def _compress(self, user_id: str, conv_id: str) -> None:
@@ -407,31 +473,44 @@ class MemoryManager:
         except Exception:
             summary = f"对话包含 {len(to_compress)} 条消息（摘要生成失败）"
 
-        # 存摘要到 Redis
+        # 读旧摘要（Redis 不可用时按首次压缩处理——读侧降级为空，不阻塞）
         skey = self._summary_key(user_id, conv_id)
-        old_summary = await self._redis.get(skey) or ""
+        try:
+            old_summary = await self._redis.get(skey) or ""
+        except Exception as ex:
+            logger.warning(f"读取旧摘要失败（Redis 不可用，按首次压缩处理）: {ex}")
+            old_summary = ""
         new_summary = await self._merge_summary(old_summary, summary)
-        await self._redis.setex(skey, 86400, new_summary)
 
-        # 旧消息摘要存入情景记忆
+        # 旧消息摘要存入情景记忆（ChromaDB，不依赖 Redis）——放在 Redis 写
+        # 之前：Redis 挂了历史片段也能落盘，只是工作记忆/摘要窗口丢了
         await self._store_episodic(user_id, conv_id, summary)
 
-        # 重置工作记忆为最近 5 条
-        key = self._wm_key(user_id, conv_id)
-        await self._redis.delete(key)
-        for m in reversed(keep):
-            await self._redis.lpush(key, json.dumps({
-                "role": m.role.value, "content": m.content,
-                "ts": m.timestamp.isoformat(), "metadata": m.metadata,
-            }))
-        await self._redis.expire(key, 86400)
-        logger.info(f"工作记忆压缩完成: {user_id}/{conv_id}，摘要 {len(summary)} 字")
+        # 摘要 + 重置工作记忆都写 Redis：挂了一个就整体跳过（写失败不阻塞）
+        try:
+            await self._redis.setex(skey, 86400, new_summary)
+            key = self._wm_key(user_id, conv_id)
+            await self._redis.delete(key)
+            for m in reversed(keep):
+                await self._redis.lpush(key, json.dumps({
+                    "role": m.role.value, "content": m.content,
+                    "ts": m.timestamp.isoformat(), "metadata": m.metadata,
+                }))
+            await self._redis.expire(key, 86400)
+            logger.info(f"工作记忆压缩完成: {user_id}/{conv_id}，摘要 {len(summary)} 字")
+        except Exception as ex:
+            logger.warning(f"压缩结果写入 Redis 失败（本轮压缩仅存入情景记忆）: {ex}")
 
     # ── 内部辅助 ──────────────────────────────────────────────────────────────
 
     async def _get_working_memory(self, user_id: str, conv_id: str) -> List[Message]:
+        """读工作记忆；Redis 不可用时降级为空列表（读失败不阻塞主链路）。"""
         key  = self._wm_key(user_id, conv_id)
-        raws = await self._redis.lrange(key, 0, self.WORKING_MAX - 1)
+        try:
+            raws = await self._redis.lrange(key, 0, self.WORKING_MAX - 1)
+        except Exception as ex:
+            logger.warning(f"工作记忆读取失败（Redis 不可用，本轮按无记忆处理）: {ex}")
+            return []
         msgs = []
         for raw in reversed(raws):  # Redis lpush 最新在前，reversed 还原时序
             d = json.loads(raw)
@@ -510,8 +589,11 @@ class MemoryManager:
         return {}
 
     async def close(self) -> None:
-        """关闭异步 Redis 连接。"""
-        await self._redis.aclose()
+        """关闭异步 Redis 连接。连接已断时静默——shutdown 不应因 Redis 故障报错。"""
+        try:
+            await self._redis.aclose()
+        except Exception as ex:
+            logger.warning(f"关闭 Redis 连接失败: {ex}")
 
     @staticmethod
     def _wm_key(user_id: str, conv_id: str) -> str:
@@ -560,11 +642,30 @@ class MemoryManager:
 
     @staticmethod
     def _extract_docs(results: Dict[str, Any]) -> List[str]:
+        """提取检索命中的文档文本，并把 metadata 的 ts 拼成「[日期 的对话]」前缀。
+
+        ts 是时间维度，医疗场景不能丢：模型需要区分「上周还在吃的药」和
+        「三年前的药」——不带时间戳的历史片段会误导用药判断（2026-10-26 补齐）。
+        文档与 metadata 按索引对齐（query 返回双层列表）；任一缺失时降级为
+        不带前缀（不抛，历史片段本身仍可用）。
+        """
         docs = results.get("documents") or []
         if not docs:
             return []
         first = docs[0] if isinstance(docs[0], list) else docs
-        return [doc for doc in first if isinstance(doc, str) and doc.strip()]
+        metas = results.get("metadatas") or []
+        first_metas = metas[0] if metas and isinstance(metas[0], list) else metas
+        out = []
+        for i, doc in enumerate(first):
+            if not isinstance(doc, str) or not doc.strip():
+                continue
+            ts = ""
+            if i < len(first_metas) and isinstance(first_metas[i], dict):
+                raw_ts = str(first_metas[i].get("ts") or "")
+                if raw_ts:
+                    ts = raw_ts[:10]  # ISO 取日期部分：2026-10-15T14:30:00 → 2026-10-15
+            out.append(f"[{ts} 的对话] {doc}" if ts else doc)
+        return out
 
     @staticmethod
     def _dedupe_texts(values: List[str]) -> List[str]:
@@ -590,7 +691,8 @@ class MemoryManager:
         # 零遗漏风险）；任一段是旧版自由文本 → 回退 LLM 合并（兼容旧数据）
         merged = merge_field_summaries(old_summary, new_summary)
         if merged is not None:
-            return merged[: self.SUMMARY_MAX_CHARS]
+            # 超长按安全优先级截断（见 truncate_summary），不做硬截
+            return truncate_summary(merged, self.SUMMARY_MAX_CHARS)
 
         prompt = self._safe_text(
             f"""你是对话摘要器。请把下面两段摘要合并为一段不超过 {self.SUMMARY_MAX_CHARS} 个中文字符的摘要。
