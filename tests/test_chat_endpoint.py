@@ -34,3 +34,32 @@ def test_chat_503_when_service_not_ready(monkeypatch):
     with pytest.raises(HTTPException) as exc:
         asyncio.run(main.chat(main.ChatRequest(message="你好", user_id="u1")))
     assert exc.value.status_code == 503
+
+
+def test_trace_full_returns_trajectory_from_disk(monkeypatch):
+    """/trace/full 读落盘轨迹：命中返回完整轨迹，未命中 found=False 空轨迹。"""
+    import api.main as main
+
+    class FakeOrchestrator:
+        def get_full_trajectory(self, request_id):
+            return {"request_id": request_id, "meta": {"intent": "query"}} if request_id == "r1" else None
+
+    monkeypatch.setattr(main, "_orchestrator", FakeOrchestrator())
+    hit = asyncio.run(main.get_full_trace("r1"))
+    assert hit.found is True
+    assert hit.trajectory["meta"]["intent"] == "query"
+
+    miss = asyncio.run(main.get_full_trace("missing"))
+    assert miss.found is False
+    assert miss.trajectory == {}
+
+
+def test_trace_full_503_when_service_not_ready(monkeypatch):
+    """_orchestrator 未初始化时报 503。"""
+    import api.main as main
+    from fastapi import HTTPException
+
+    monkeypatch.setattr(main, "_orchestrator", None)
+    with pytest.raises(HTTPException) as exc:
+        asyncio.run(main.get_full_trace("r1"))
+    assert exc.value.status_code == 503

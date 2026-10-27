@@ -132,6 +132,34 @@ class TrajectoryLogger:
         self._thread.join(timeout=5.0)
         self._thread = None
 
+    # ── 读回轨迹（/trace/full 调试接口用）─────────────────────────────────────
+
+    def find_by_request_id(self, request_id: str, max_files: int = 3) -> Optional[Dict[str, Any]]:
+        """从落盘文件找回某 request_id 的完整轨迹。
+
+        轨迹按天切分文件，从最新文件往前扫最近 max_files 个：调试场景是
+        「刚测完马上来查」，几天内必在；故意不建索引——查询是低频路径，
+        每次现读文件，简单直白。读取失败只告警不抛异常（轨迹文件可能
+        正被写线程追加、或被外部清理）。
+        """
+        if not self._enabled:
+            return None
+        # 文件名 trajectories-YYYY-MM-DD.jsonl，字典序即时间序
+        files = sorted(self._log_dir.glob("trajectories-*.jsonl"), reverse=True)[:max_files]
+        for path in files:
+            try:
+                with path.open("r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        record = json.loads(line)
+                        if record.get("request_id") == request_id:
+                            return record
+            except (OSError, json.JSONDecodeError):
+                logger.warning("轨迹文件读取失败（跳过）: %s", path)
+        return None
+
     # ── 后台写线程 ────────────────────────────────────────────────────────────
 
     def _writer_loop(self) -> None:

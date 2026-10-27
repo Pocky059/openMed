@@ -27,6 +27,9 @@ data/eval/results/
 # SFT 训练数据（2026-10-15 用户决定：数据/RL 路线终止，数据留本地不进仓库）
 data/sft/
 
+# 用户上传的 Skill（运行时数据；内置 skills/ 进仓库，上传的不进）
+skills_uploads/
+
 # 前端依赖与构建产物（源代码进仓库；node_modules 用 npm install 重建、dist 用 npm run build 重建）
 frontend/node_modules/
 frontend/dist/

@@ -48,14 +48,24 @@ class FakeOrchestrator:
 
     async def recognize_intent(self, message, history=None):
         self.calls.append(("recognize_intent", message, history))
-        return SimpleNamespace(
+        result = SimpleNamespace(
             entities={"drug": ["布洛芬"]},
             intent=self._intent,
             intent_group="medication",
             urgency=SimpleNamespace(name="LOW", value=1),  # 模拟真实 UrgencyLevel 枚举（int 值 + 字符串名）
             confidence=0.8765,
             source_scores={"emb": 0.9, "llm": 0.8},
+            reasoning="三路投票融合",
+            latency_ms=10.0,
         )
+        # 模拟真实 IntentResult.to_trajectory_detail：chat_service 用它做轨迹快照
+        result.to_trajectory_detail = (
+            lambda msg, hist=None: {
+                "input": {"message": msg, "history": hist or []},
+                "output": {"intent": getattr(result.intent, "value", None)},
+            }
+        )
+        return result
 
     async def run(self, req):
         self.calls.append(("run", req))
@@ -93,6 +103,10 @@ def test_five_step_order_and_response_mapping():
     # 五步顺序：记忆读 → 意图 → 编排 → 写用户消息 → 写助手回答 → 画像更新
     assert [c[0] for c in mem.calls] == ["get_context", "add_message", "add_message", "update_profile"]
     assert [c[0] for c in orch.calls] == ["recognize_intent", "run"]
+    # 编排器收到的请求体带意图识别完整快照（轨迹 meta.intent_detail 的数据来源）
+    orch_req = orch.calls[1][1]
+    assert orch_req.intent_detail["input"]["message"] == "布洛芬怎么吃"
+    assert orch_req.intent_detail["output"]["intent"] == "medication_advice"
     assert mem.calls[1][1] is MsgRole.USER          # 先写用户提问
     assert mem.calls[1][2] == "布洛芬怎么吃"
     assert mem.calls[2][1] is MsgRole.ASSISTANT     # 再写模型回答

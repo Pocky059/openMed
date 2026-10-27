@@ -100,9 +100,13 @@ def build_skill_manager() -> "SkillManager":
     """Skills：从环境变量（没有的话，默认值用skills目录下的）加载业务能力说明，并在 Agent 调用 LLM 时动态注入。"""
     from core.skill_loader import SkillManager
     skills_dir = os.getenv("OPENMED_SKILLS_DIR", str(pathlib.Path(_ROOT) / "skills"))
+    # 用户上传目录与内置目录分离：内置 skills/ 进仓库、不可改动；上传的
+    # Skill 落 skills_uploads/（运行时数据，gitignore），加载时两者合并。
+    uploads_dir = os.getenv("OPENMED_SKILLS_UPLOADS_DIR", str(pathlib.Path(_ROOT) / "skills_uploads"))
     manager = SkillManager(
         root_dir=skills_dir,      #skill管理器接收两个参数，skill_dir目录和最大prompt字符数，后者没有的话，默认值5000
         max_prompt_chars=int(os.getenv("OPENMED_SKILLS_MAX_PROMPT_CHARS", "5000")), #防止注入的prompt长度太长
+        uploads_dir=uploads_dir,
     )
     manager.load()
     return manager

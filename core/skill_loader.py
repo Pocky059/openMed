@@ -23,6 +23,8 @@ class Skill:
     keywords: List[str] = field(default_factory=list)
     agents: List[str] = field(default_factory=list)
     enabled: bool = True
+    # 来源：builtin = 项目内置（不可改动）；uploaded = 用户经 /skills/upload 上传
+    source: str = "builtin"
 
     def matches(self, message: str, agent_type: Optional[str] = None) -> bool:
         """
@@ -62,6 +64,7 @@ class Skill:
             "keywords": self.keywords,
             "agents": self.agents,
             "enabled": self.enabled,
+            "source": self.source,
             "content_chars": len(self.content),
         }
 
@@ -77,9 +80,12 @@ class SkillManager:
 
     SUPPORTED_SUFFIXES = {".md", ".txt", ".json"}
 
-    def __init__(self, root_dir: str, max_prompt_chars: int = 5000):
+    def __init__(self, root_dir: str, max_prompt_chars: int = 5000, uploads_dir: Optional[str] = None):
         self.root_dir = Path(root_dir).expanduser().resolve()
         self.max_prompt_chars = max_prompt_chars
+        # 用户上传目录（可选）：与内置 root_dir 分开存放，上传的 Skill 经
+        # save_uploaded 写入这里并热加载；内置目录只读，不会被上传覆盖。
+        self.uploads_dir = Path(uploads_dir).expanduser().resolve() if uploads_dir else None
         self._skills: List[Skill] = []
         self._errors: List[str] = []
 
@@ -96,21 +102,27 @@ class SkillManager:
         loaded: List[Skill] = []
         errors: List[str] = []
 
-        if not self.root_dir.exists():
-            logger.info(f"Skill 目录不存在，跳过加载: {self.root_dir}")
-            self._skills = []
-            self._errors = []
-            return []
+        # 扫描源：内置目录 + 用户上传目录（可选）。分开扫描并打 source
+        # 标记——上传的 Skill 与内置同名会被 save_uploaded 拦下，展示层
+        # 也能一眼区分「项目内置不可改动」和「用户上传」。
+        sources: List[tuple[Path, str]] = [(self.root_dir, "builtin")]
+        if self.uploads_dir is not None:
+            sources.append((self.uploads_dir, "uploaded"))
 
-        for path in self._discover_files(self.root_dir):
-            try:
-                skill = self._load_file(path)
-                if skill is not None:
-                    loaded.append(skill)
-            except Exception as ex:
-                msg = f"{path}: {ex}"
-                errors.append(msg)
-                logger.warning(f"Skill 加载失败: {msg}")
+        for src_dir, source in sources:
+            if not src_dir.exists():
+                if source == "builtin":
+                    logger.info(f"Skill 目录不存在，跳过加载: {src_dir}")
+                continue
+            for path in self._discover_files(src_dir):
+                try:
+                    skill = self._load_file(path, source=source)
+                    if skill is not None:
+                        loaded.append(skill)
+                except Exception as ex:
+                    msg = f"{path}: {ex}"
+                    errors.append(msg)
+                    logger.warning(f"Skill 加载失败: {msg}")
 
         self._skills = loaded
         self._errors = errors
@@ -120,6 +132,50 @@ class SkillManager:
     def reload(self) -> List[Skill]:
         """运行时热加载入口，供 API 调用。"""
         return self.load()
+
+    def save_uploaded(self, filename: str, raw_content: str, agents: Optional[List[str]] = None) -> Skill:
+        """保存用户上传的 Skill 文件并热加载（/skills/upload 用）。
+
+        agents（可选）：上传页选择的适用 Agent 列表。None = 不干预文件
+        内容；空列表 = 公用（删掉文件里自带的 agents）；非空 = 写入/覆盖
+        文件里的 agents 字段。
+
+        文件落在独立 uploads_dir（与内置 skills/ 目录分离），内置 Skill
+        不可改动：解析出的 name 与内置重名时，删除刚写入的文件并抛
+        ValueError——同名即覆盖语义，必须在生效前拦下。
+        """
+        if self.uploads_dir is None:
+            raise RuntimeError("SkillManager 未配置上传目录")
+
+        safe_name = Path(filename).name  # 只取文件名，防路径穿越
+        suffix = Path(safe_name).suffix.lower()
+        if not safe_name or suffix not in self.SUPPORTED_SUFFIXES:
+            raise ValueError(f"仅支持 {' / '.join(sorted(self.SUPPORTED_SUFFIXES))} 格式，收到: {safe_name or '(空)'}")
+
+        if agents is not None:
+            raw_content = self._inject_agents(raw_content, suffix, agents)
+
+        dest = self.uploads_dir / safe_name
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_text(raw_content, encoding="utf-8")
+        self.reload()
+
+        # 按落盘路径找回刚上传的 Skill；解析失败时清理文件，避免坏文件
+        # 长期留在目录里（每次 reload 都会重试并记 error，污染热加载日志）
+        dest_path = str(dest.resolve())
+        uploaded = next((s for s in self._skills if s.path == dest_path), None)
+        if uploaded is None:
+            dest.unlink(missing_ok=True)
+            self.reload()
+            raise ValueError(f"文件已保存但解析失败（{safe_name}），请检查格式")
+
+        builtin_names = {s.name for s in self._skills if s.source == "builtin"}
+        if uploaded.name in builtin_names:
+            dest.unlink(missing_ok=True)
+            self.reload()
+            raise ValueError(f"与内置 Skill 重名（{uploaded.name}），内置 Skill 不可改动")
+
+        return uploaded
 
     def prompt_for(self, message: str, agent_type: Optional[str] = None) -> str:
         """
@@ -173,12 +229,23 @@ class SkillManager:
             + "\n\n".join(blocks)
         )
 
-    def summary(self) -> Dict[str, Any]:
-        """返回 Skill 管理器状态，用于 /skills 接口和排障。"""
+    def summary(self, include_content: bool = False) -> Dict[str, Any]:
+        """返回 Skill 管理器状态，用于 /skills 接口和排障。
+
+        include_content：前端 Agent 管理页要展示 Skill 完整内容时传 True
+        （默认关——/health 一类轻量接口不需要背大段文本）。
+        """
+        skills = []
+        for skill in self._skills:
+            item = skill.to_summary()
+            if include_content:
+                item["content"] = skill.content
+            skills.append(item)
         return {
             "root_dir": str(self.root_dir),
+            "uploads_dir": str(self.uploads_dir) if self.uploads_dir else None,
             "count": len(self._skills),
-            "skills": [skill.to_summary() for skill in self._skills],
+            "skills": skills,
             "errors": self.errors,
         }
 
@@ -229,12 +296,12 @@ class SkillManager:
             if path.suffix.lower() in self.SUPPORTED_SUFFIXES:
                 yield path
 
-    def _load_file(self, path: Path) -> Optional[Skill]:
+    def _load_file(self, path: Path, source: str = "builtin") -> Optional[Skill]:
         if path.suffix.lower() == ".json":
-            return self._load_json(path)
-        return self._load_text(path)
+            return self._load_json(path, source=source)
+        return self._load_text(path, source=source)
 
-    def _load_json(self, path: Path) -> Optional[Skill]:
+    def _load_json(self, path: Path, source: str = "builtin") -> Optional[Skill]:
         raw = json.loads(path.read_text(encoding="utf-8"))
         if not isinstance(raw, dict):
             raise ValueError("JSON Skill 必须是对象格式")
@@ -251,9 +318,10 @@ class SkillManager:
             keywords=self._as_list(raw.get("keywords")),
             agents=[item.lower() for item in self._as_list(raw.get("agents"))],
             enabled=self._as_bool(raw.get("enabled"), default=True),
+            source=source,
         )
 
-    def _load_text(self, path: Path) -> Optional[Skill]:
+    def _load_text(self, path: Path, source: str = "builtin") -> Optional[Skill]:
         raw = path.read_text(encoding="utf-8")
         meta, body = self._split_front_matter(raw)
         body = body.strip()
@@ -274,6 +342,7 @@ class SkillManager:
             keywords=self._as_list(meta.get("keywords")),
             agents=[item.lower() for item in self._as_list(meta.get("agents"))],
             enabled=self._as_bool(meta.get("enabled"), default=True),
+            source=source,
         )
 
     def _split_front_matter(self, raw: str) -> tuple[Dict[str, Any], str]:
@@ -338,3 +407,36 @@ class SkillManager:
         if isinstance(value, bool):
             return value
         return str(value).strip().lower() not in {"0", "false", "no", "off", "disabled"}
+
+    @staticmethod
+    def _inject_agents(raw: str, suffix: str, agents: List[str]) -> str:
+        """把上传页选择的适用 Agent 写进 Skill 文件：json 改字段，文本改 front matter。
+
+        agents 非空 => 覆盖/新增 agents；空列表 => 删除文件里自带的 agents
+        （上传页选择「公用」= 适用所有 Agent，用户文件里残留的限制要清掉）。
+        """
+        if suffix == ".json":
+            data = json.loads(raw)
+            if not isinstance(data, dict):
+                raise ValueError("JSON Skill 必须是对象格式")
+            if agents:
+                data["agents"] = agents
+            else:
+                data.pop("agents", None)
+            return json.dumps(data, ensure_ascii=False, indent=2)
+
+        # md/txt：改写 front matter 里的 agents 行（没有 front matter 且
+        # 选「公用」时无需改动，原样返回）
+        text = raw.lstrip()
+        if text.startswith("---"):
+            lines = text.splitlines()
+            end_idx = next((i for i in range(1, len(lines)) if lines[i].strip() == "---"), None)
+            if end_idx is None:
+                raise ValueError("front matter 格式错误：缺少结束 ---")
+            meta_lines = [ln for ln in lines[1:end_idx] if not ln.strip().startswith("agents:")]
+            if agents:
+                meta_lines.append(f"agents: {', '.join(agents)}")
+            return "---\n" + "\n".join(meta_lines) + "\n---\n" + "\n".join(lines[end_idx + 1:])
+        if agents:
+            return "---\n" + f"agents: {', '.join(agents)}" + "\n---\n" + raw
+        return raw

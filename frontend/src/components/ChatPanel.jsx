@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import ReactMarkdown from 'react-markdown'
+// GFM 插件：ReactMarkdown 默认不解析表格语法，不装的话 | 分隔的表格
+// 会原样输出成一行竖线文本（2026-10-27 实测用药回答的对比表渲染失败）
+import remarkGfm from 'remark-gfm'
 
 // 意图显示名（后端枚举值 → 中文，方便演示时看懂）
 const INTENT_NAMES = {
@@ -28,12 +31,32 @@ export default function ChatPanel({ messages, busy, selectedId, onSelect, onSend
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+  // 输入框自适应长高：先归零再按内容高度撑开，最高 180px 后内部滚动；
+  // 文本超宽自动换行（textarea 原生行为），不再横向延伸。
+  const handleInput = (e) => {
+    setInput(e.target.value)
+    const el = e.target
+    el.style.height = 'auto'
+    el.style.height = `${Math.min(el.scrollHeight, 180)}px`
+  }
+
   const submit = (e) => {
     e.preventDefault()
     if (busy || !input.trim()) return
     onSend(input.trim())
     setInput('')
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto' // 清空后恢复单行高度
+    }
     inputRef.current?.focus()
+  }
+
+  // 回车发送、Shift+回车换行
+  const onKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      submit(e)
+    }
   }
 
   return (
@@ -57,6 +80,7 @@ export default function ChatPanel({ messages, busy, selectedId, onSelect, onSend
             className={`msg-row ${m.role} ${selectedId === m.id ? 'selected' : ''}`}
             onClick={() => onSelect(m.id)}
           >
+            {m.ts && <span className="msg-time">{m.ts}</span>}
             <div className={`bubble ${m.error ? 'error' : ''}`}>
               {m.loading ? (
                 <div className="thinking">
@@ -68,7 +92,7 @@ export default function ChatPanel({ messages, busy, selectedId, onSelect, onSend
               ) : m.error ? (
                 <p className="error-text">⚠️ {m.error}</p>
               ) : m.role === 'assistant' ? (
-                <ReactMarkdown>{m.text}</ReactMarkdown>
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text}</ReactMarkdown>
               ) : (
                 <p>{m.text}</p>
               )}
@@ -94,11 +118,13 @@ export default function ChatPanel({ messages, busy, selectedId, onSelect, onSend
       </div>
 
       <form className="inputbar" onSubmit={submit}>
-        <input
+        <textarea
           ref={inputRef}
           value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="描述你的症状或问题，回车发送…"
+          onChange={handleInput}
+          onKeyDown={onKeyDown}
+          rows={1}
+          placeholder="描述你的症状或问题，回车发送（Shift+回车换行）…"
           disabled={busy}
         />
         <button type="submit" disabled={busy || !input.trim()}>

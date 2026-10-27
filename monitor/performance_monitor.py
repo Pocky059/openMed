@@ -115,12 +115,14 @@ class PerformanceMonitor:
     """
 
     # 告警阈值
-    # agent_avg_ms 按 LLM 多步流水线的现实量级设定：意图识别 + 工具调用 + 生成，
-    # 单次 6~15s 属于正常范围，3000ms 会把每次正常调用都打成告警
+    # agent_avg_ms 按 DeepSeek 全链路（意图识别 + 工具调用 + 生成）的实测量级设定：
+    # 单次 30~40s 是 LLM 慢响应的天然延迟而非性能劣化，60000ms 给约 1.8 倍余量。
+    # 曾设 15000ms（按 OpenAI 快模型的量级）——每次正常调用都被打成告警 + 触发
+    # 路由惩罚，属固定阈值误报（2026-10-27 用户实测确认后修正）。
     THRESHOLDS = {
         "agent_success_rate":  (0.90, Severity.ERROR,   "less_than"),
         "tool_success_rate":   (0.95, Severity.WARNING,  "less_than"),
-        "agent_avg_ms":        (15000, Severity.WARNING, "greater_than"),
+        "agent_avg_ms":        (60000, Severity.WARNING, "greater_than"),
         "tool_avg_ms":         (8000, Severity.ERROR,    "greater_than"),
     }
 
@@ -264,9 +266,10 @@ class PerformanceMonitor:
         penalty = 0.0
         if success_rate < 0.90:
             penalty += min(0.5, (0.90 - success_rate) * 2)
-        # 延迟惩罚的起点与 agent_avg_ms 告警阈值对齐（LLM 流水线正常单次要 6~15s）
-        if avg_ms > 15000:
-            penalty += min(0.4, (avg_ms - 15000) / 30000)
+        # 延迟惩罚的起点与 agent_avg_ms 告警阈值对齐（DeepSeek 正常单次 30~40s），
+        # 斜率：超出起点后每 60000ms 加满 0.4——天然慢响应不再误伤路由评分
+        if avg_ms > 60000:
+            penalty += min(0.4, (avg_ms - 60000) / 60000)
         return min(penalty, 0.9)
 
     def _check_threshold(self, metric: str, value: float, label: str) -> None:

@@ -303,3 +303,20 @@ class TestForgetUser:
         mgr._profile = FakeCollection()
         with pytest.raises(RuntimeError, match="chromadb down"):
             asyncio.run(mgr.forget_user("eval-LS-001", "eval-LS-001"))
+
+
+def test_to_prompt_text_keeps_chinese_profile_readable():
+    """回归：用户画像若被 ensure_ascii=True 转义成 \\uXXXX，人和模型都读不动——
+    前端轨迹面板里看起来就是「乱码」。"""
+    from memory.conversation_memory import MemoryContext
+
+    ctx = MemoryContext(
+        recent_messages=[],
+        relevant_history=["半年前有过胃痛就诊"],
+        user_profile={"preferences": ["喜欢安静"], "entities": {"drug_name": ["布洛芬"]}},
+        summary="",
+    )
+    text = ctx.to_prompt_text()
+    assert "[用户画像]" in text
+    assert "喜欢安静" in text
+    assert "\\u" not in text

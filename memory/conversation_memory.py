@@ -164,7 +164,8 @@ class MemoryContext:
         if self.relevant_history:
             parts.append("[相关历史]\n" + "\n".join(f"- {self._clean(h)}" for h in self.relevant_history[:3]))
         if self.user_profile:
-            parts.append(f"[用户画像]\n{json.dumps(self.user_profile, ensure_ascii=True)}")
+            # ensure_ascii=False：中文画像被转义成 \uXXXX 时人和模型都读不动，保留原文
+            parts.append(f"[用户画像]\n{json.dumps(self.user_profile, ensure_ascii=False)}")
         if self.recent_messages:
             parts.append("[最近对话]")
             for m in self.recent_messages[-8:]:

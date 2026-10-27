@@ -81,6 +81,8 @@ class ChatService:
             intent_group=intent_result.intent_group,
             urgency=intent_result.urgency,
             intent_confidence=intent_result.confidence,
+            # 意图识别完整输入/输出快照：编排器落盘轨迹时写进 meta.intent_detail
+            intent_detail=intent_result.to_trajectory_detail(message, history),
         )
 
         # 3. 送入编排器，决定接下来交给哪个agent，用什么工具，要不要多agent等

@@ -67,7 +67,11 @@ class AgentProfile:
     tool_scope: Tuple[str, ...] = ()
     model: Optional[str] = None
     temperature: float = 0.2
-    max_tokens: int = 1024
+    # 4096（2026-10-27 从 1024 提上来）：DeepSeek 的 thinking 块和 text 块
+    # 共享 max_tokens 额度（老坑加强版），回答稍长时思考就把正文额度吃光、
+    # 输出被拦腰截断（实测用药解答讲到一半就断）。生产主链路保留 thinking
+    # （质量依赖它），所以只能把额度给足——实际花费按真实输出计，不会每轮烧满。
+    max_tokens: int = 4096
 
 
 def _env_float(name: str, default: float) -> float:
@@ -123,6 +127,7 @@ class AgentResponse:
     tool_traces: List[Dict[str, Any]] = field(default_factory=list)
     messages:    List[Dict[str, Any]] = field(default_factory=list)  # 完整 LLM 消息流（SFT 训练数据模板）
     steps:       List[Dict[str, Any]] = field(default_factory=list)  # 每轮工具调用统计（评测视图）
+    system_prompt: Optional[str] = None  # 拼给 LLM 的 system prompt（轨迹调试：复盘模型当时看到了什么）
 
 
 @dataclass
@@ -137,6 +142,7 @@ class Request:  #编排器要处理的传入体，包括会话id，用户聊天�
     intent_group: Optional[str] = None
     urgency:     Optional[UrgencyLevel]   = None
     intent_confidence: float = 1.0
+    intent_detail: Optional[Dict[str, Any]] = None  # 意图识别完整输入/输出快照（轨迹 meta 用）
     request_id:  str = field(default_factory=lambda: str(uuid.uuid4())[:8])
 
 
@@ -199,6 +205,7 @@ class BaseAgent:
         self._last_tool_traces: List[Dict[str, Any]] = []
         self._last_messages: List[Dict[str, Any]] = []   # 供轨迹落盘：完整 LLM 消息流
         self._last_steps: List[Dict[str, Any]] = []      # 供轨迹落盘：每轮工具调用统计
+        self._last_system_prompt: Optional[str] = None   # 供轨迹落盘：拼给 LLM 的 system prompt
         self._shared_tools: Dict[str, AgentToolSpec] = {}
 
     def get_tools(self) -> Dict[str, AgentToolSpec]:
@@ -215,6 +222,7 @@ class BaseAgent:
         self._last_tool_traces = []
         self._last_messages = []
         self._last_steps = []
+        self._last_system_prompt = None
         try:
             content = await self._call_llm(req)
             ms = (time.monotonic() - t0) * 1000
@@ -234,6 +242,7 @@ class BaseAgent:
                 tool_traces=list(self._last_tool_traces),
                 messages=list(self._last_messages),
                 steps=list(self._last_steps),
+                system_prompt=self._last_system_prompt,
             )
         except Exception as ex:
             ms = (time.monotonic() - t0) * 1000
@@ -248,6 +257,7 @@ class BaseAgent:
                 tool_traces=list(self._last_tool_traces),
                 messages=list(self._last_messages),
                 steps=list(self._last_steps),
+                system_prompt=self._last_system_prompt,
             )
 
     #实际上真正干活的，负责调用llm和处理工具调用的循环
@@ -279,6 +289,12 @@ class BaseAgent:
         steps: List[Dict[str, Any]] = []   # 每轮的轻量统计（轨迹评测视图），与 tool_traces 同源
 
 
+        # system prompt 只拼一次（内容不随轮次变化），存副本到 _last_system_prompt，
+        # handle() 组装 AgentResponse 时带进轨迹——SDK 调用里 system 是独立参数、
+        # 不进 messages，不存副本的话轨迹里「模型当时看到了什么」是不完整的
+        system_text = self._build_system_prompt(req)
+        self._last_system_prompt = system_text
+
         #跟LLM对话，直到LLM不再要求调用工具，返回最终文本。最大轮次：三轮。
         #实际上就是ReAct循环
         for round_idx in range(3):
@@ -286,7 +302,7 @@ class BaseAgent:
                 "model": self._model,
                 "max_tokens": self.profile.max_tokens,
                 "temperature": self.profile.temperature,
-                "system": self._build_system_prompt(req),   #先放入system prompt
+                "system": system_text,
                 "messages": messages,
             }
             if tools:
@@ -494,7 +510,7 @@ class SymptomTriageAgent(BaseAgent):
         handoff_conditions=("怀疑急症或高风险症状", "涉及处方药调整、复杂病情判断", "用户明确要求人工/转诊"),
         tool_scope=("search_knowledge_base", "inspect_request_context", "suggest_required_fields"),
         temperature=0.3,
-        max_tokens=900,
+        max_tokens=4096,  # thinking 与正文共享额度，长回答需要给足（见 AgentProfile 注释）
     )
     system_prompt = (
         "你是 OpenMed 智能问诊分诊助手。友好、简洁地帮助用户描述和理解症状，"
@@ -525,7 +541,7 @@ class MedicationAgent(BaseAgent):
         handoff_conditions=("怀疑严重药物不良反应或过敏反应", "涉及处方药调整或停药决策", "孕妇/儿童/慢性病患者特殊用药场景"),
         tool_scope=("search_knowledge_base", "build_medication_plan"),
         temperature=0.1,
-        max_tokens=1200,
+        max_tokens=4096,  # thinking 与正文共享额度，长回答需要给足（见 AgentProfile 注释）
     )
     system_prompt = (
         "你是 OpenMed 用药咨询专家。专注于：用法用量、禁忌、相互作用、不良反应说明。"
@@ -559,7 +575,7 @@ class AppointmentAgent(BaseAgent):
         handoff_conditions=("号源冲突或系统显示异常", "重复扣费或支付成功但未生成预约", "专家号/加号等需要人工审核的场景", "涉及退费"),
         tool_scope=("search_knowledge_base", "check_appointment_fields", "compare_registration_fees"),
         temperature=0.0,
-        max_tokens=1100,
+        max_tokens=4096,  # thinking 与正文共享额度，长回答需要给足（见 AgentProfile 注释）
     )
     system_prompt = (
         "你是 OpenMed 预约挂号专家。专注于：科室指引、挂号流程、预约查询、改期取消、挂号费说明。"
@@ -704,7 +720,9 @@ class ResponseComposer:
         try:
             response = await self._client.messages.create(
                 model=self._model,
-                max_tokens=_env_int("OPENMED_COMPOSER_MAX_TOKENS", 1000),
+                # 默认 1000 → 4096：与 Agent 同病（thinking 吃共享额度），
+                # 合成多 Agent 结果的长回复同样会被拦腰截断
+                max_tokens=_env_int("OPENMED_COMPOSER_MAX_TOKENS", 4096),
                 temperature=_env_float("OPENMED_COMPOSER_TEMPERATURE", 0.1),
                 messages=[{"role": "user", "content": prompt}],
             )
@@ -836,6 +854,14 @@ class AgentOrchestrator:
         limit = max(1, min(int(limit or 20), len(self._recent_tool_traces)))
         return list(reversed(list(self._recent_tool_traces)[-limit:]))
 
+    def get_full_trajectory(self, request_id: str) -> Optional[Dict[str, Any]]:
+        """从落盘轨迹文件读取某 request_id 的完整轨迹（供 /trace/full 调试接口）。
+
+        与 get_tool_trace 的区别：工具轨迹读内存（重启即失、上限 200 条），
+        完整轨迹读磁盘文件（重启不丢，含意图明细 / system prompt / 完整消息流）。
+        """
+        return self._trajectory_logger.find_by_request_id(request_id)
+
     # ── 轨迹落盘（v2 阶段 0.1）────────────────────────────────────────────────
 
     @staticmethod
@@ -844,9 +870,22 @@ class AgentOrchestrator:
 
         并行请求时多个 Agent 各有一段消息流，按执行顺序拼接；每条消息都带
         agent_type 标签，阶段 2 构造训练数据时可按 Agent 过滤。
+
+        每个 Agent 的消息流最前面额外放一条 kind=system 消息：拼给 LLM 的完整
+        system prompt（角色契约 + 动态 Skills）。system 在 SDK 调用里是独立参数、
+        不进 messages，不加这条的话轨迹里的「LLM 看到了什么」是不完整的。
         """
         messages: List[Dict[str, Any]] = []
         for response in responses:
+            if response.system_prompt:
+                messages.append(
+                    {
+                        "role": "system",
+                        "agent_type": response.agent_type.value,
+                        "content": response.system_prompt,
+                        "kind": "system",
+                    }
+                )
             messages.extend(classify_messages(response.messages, response.agent_type.value))
         return messages
 
@@ -879,6 +918,17 @@ class AgentOrchestrator:
                     "success": all(response.success for response in responses) if responses else True,
                     "latency_ms": round(result.latency_ms, 1),
                     "phase": phase,   # normal=单Agent / parallel=并行 / clarification=澄清追问
+                    # 编排器输入快照：喂给路由决策和 Agent 的原始输入
+                    # （message 之外的 context/entities/history 此前从不落盘）
+                    "input": {
+                        "message": req.message,
+                        "history": req.history or [],
+                        "context": req.context,
+                        "entities": req.entities,
+                    },
+                    # 意图识别完整输入/输出（chat_service 或 run() 兜底识别时快照；
+                    # 调用方预设 intent 跳过识别时为 None）
+                    "intent_detail": req.intent_detail,
                 },
                 "messages": self._build_trajectory_messages(responses),
                 "steps": [step for response in responses for step in response.steps],
@@ -907,6 +957,8 @@ class AgentOrchestrator:
             req.intent_group = intent_result.intent_group
             req.urgency = intent_result.urgency
             req.intent_confidence = intent_result.confidence
+            # 完整输入/输出快照进轨迹（meta.intent_detail），调试可复盘「为什么路由到这里」
+            req.intent_detail = intent_result.to_trajectory_detail(req.message, req.history)
 
         if self._needs_clarification(req):
             result = OrchestratorResult(
@@ -1251,6 +1303,37 @@ class AgentOrchestrator:
                     "model": agent._model,
                 }
         return result
+
+    def catalog(self) -> Dict[str, Any]:
+        """Agent 静态定义目录（前端 Agent 管理页）：角色契约 + 工具白名单明细。
+
+        与 get_stats()（运行时指标视角）互补：这里返回 profile 各字段、
+        system_prompt 与每个 Agent 真实可调用的工具定义（AgentToolSpec 的
+        name/description/input_schema；handler 是函数对象，不可序列化，排除）。
+        """
+        agents = []
+        for agent_type, pool in self._pool.items():
+            for agent in pool:
+                profile = agent.profile
+                agents.append({
+                    "agent_type": agent_type.value,
+                    "role": profile.role,
+                    "mission": profile.mission,
+                    "system_prompt": agent.system_prompt,
+                    "workflow": list(profile.workflow),
+                    "input_contract": list(profile.input_contract),
+                    "output_contract": list(profile.output_contract),
+                    "handoff_conditions": list(profile.handoff_conditions),
+                    "tool_scope": list(profile.tool_scope),
+                    "model": agent._model,
+                    "temperature": profile.temperature,
+                    "max_tokens": profile.max_tokens,
+                    "tools": [
+                        {"name": spec.name, "description": spec.description, "input_schema": spec.input_schema}
+                        for spec in agent.get_tools().values()
+                    ],
+                })
+        return {"agents": agents}
 
     def update_routing_penalties(self, penalties: Dict[str, float]) -> None:
         """

@@ -22,7 +22,7 @@ if _ROOT not in sys.path:
 
 import uvicorn
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Response, UploadFile, File
+from fastapi import FastAPI, HTTPException, Response, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
@@ -131,6 +131,12 @@ class RecentToolTracesResponse(BaseModel):     #最近工具追踪列表，用�
     items: List[Dict[str, Any]] = Field(default_factory=list)    #返回一个由字典组成的列表。默认为空。
 
 
+class FullTraceResponse(BaseModel):    #完整轨迹的响应体：意图明细 + 编排器输入 + 拼给 LLM 的完整对话
+    request_id: str     #必填：请求id
+    found: bool         #必填：是否找到轨迹记录
+    trajectory: Dict[str, Any] = Field(default_factory=dict)      #完整轨迹（meta/messages/steps），默认为空
+
+
 # ── 路由 ──────────────────────────────────────────────────────────────────────
 @app.get("/health")
 async def health():
@@ -154,11 +160,11 @@ async def reset_demo(user_id: str = "web-demo"):
 
 
 @app.get("/skills", tags=["Skills"])
-async def skills_summary():
-    """查看当前已加载的 Skills，便于确认热加载结果和排查解析错误。"""
+async def skills_summary(full: bool = False):
+    """查看当前已加载的 Skills。full=True 时附带完整内容（Agent 管理页展示用）。"""
     if _skill_manager is None:
         raise HTTPException(503, "Skills 未初始化")
-    return _skill_manager.summary()
+    return _skill_manager.summary(include_content=full)
 
 
 @app.post("/skills/reload", tags=["Skills"])              #重载skill（运行时就可以重载，即所谓热加载）
@@ -170,6 +176,44 @@ async def reload_skills():
     if _orchestrator is not None:
         _orchestrator.set_skill_manager(_skill_manager)
     return _skill_manager.summary()
+
+
+@app.post("/skills/upload", tags=["Skills"])
+async def upload_skill(file: UploadFile = File(...), agents: Optional[str] = Form(None)):
+    """上传新 Skill（.md/.txt/.json，格式与内置一致）。
+
+    agents 表单字段（逗号分隔，可选）：不传/空串 = 公用（适用所有 Agent），
+    非空 = 只注入指定 Agent（symptom_triage/medication/appointment/emergency），
+    后端会把选择写进 Skill 文件（文本改 front matter、JSON 改 agents 字段）。
+
+    上传文件落独立目录 skills_uploads/，与内置 skills/ 分离；内置 Skill
+    不可改动——解析出的 name 与内置重名会被拒绝（400）。
+    """
+    if _skill_manager is None:
+        raise HTTPException(503, "Skills 未初始化")
+    content = await file.read()
+    if len(content) > 1024 * 1024:
+        raise HTTPException(413, "文件大小超过 1MB 限制")
+    text = content.decode("utf-8", errors="ignore")
+    agent_list = None
+    if agents is not None:
+        agent_list = [a.strip().lower() for a in agents.split(",") if a.strip()]
+    try:
+        skill = _skill_manager.save_uploaded(file.filename or "skill.md", text, agents=agent_list)
+    except ValueError as ex:
+        raise HTTPException(400, str(ex))
+    # 上传即生效：编排器同步换上新 skill_manager（与 /skills/reload 同款处理）
+    if _orchestrator is not None:
+        _orchestrator.set_skill_manager(_skill_manager)
+    return {"ok": True, "skill": skill.to_summary()}
+
+
+@app.get("/agents/catalog", tags=["Agents"])
+async def agents_catalog():
+    """Agent 管理页数据：每个 Agent 的角色契约与工具白名单（含参数 schema）。"""
+    if _orchestrator is None:
+        raise HTTPException(503, "服务未就绪")
+    return _orchestrator.catalog()
 
 #核心流程
 @app.post("/chat", response_model=ChatResponse)          #规定/chat接口的响应用ChatResponse回复体序列化
@@ -227,6 +271,27 @@ async def list_recent_tool_traces(limit: int = 20):
     if _orchestrator is None:
         raise HTTPException(503, "服务未就绪")
     return RecentToolTracesResponse(items=_orchestrator.get_recent_tool_traces(limit=limit))
+
+
+@app.get("/trace/full/{request_id}", response_model=FullTraceResponse)
+async def get_full_trace(request_id: str):
+    """查看某次请求的完整轨迹：意图识别输入/输出、编排器输入、拼给 LLM 的完整对话。
+
+    与 /trace/tool/{request_id}（读内存、重启即失、最多 200 条）不同，
+    本接口读磁盘轨迹文件（重启不丢），返回：
+      - meta.input        编排器输入快照（message/context/entities/history）
+      - meta.intent_detail 意图识别完整输入/输出（含 reasoning/source_scores）
+      - messages          完整 LLM 对话（首条 kind=system 是拼好的 system prompt）
+      - steps             每轮工具调用统计
+    """
+    if _orchestrator is None:
+        raise HTTPException(503, "服务未就绪")
+    trajectory = _orchestrator.get_full_trajectory(request_id)
+    return FullTraceResponse(
+        request_id=request_id,
+        found=trajectory is not None,
+        trajectory=trajectory or {},
+    )
 
 
 @app.get("/metrics")
@@ -357,6 +422,26 @@ async def knowledge_stats():
         raise HTTPException(503, "知识库未初始化")
     kb = tool.handler.__self__
     return {"total_chunks": await kb.doc_count_async()}
+
+
+@app.get("/knowledge/docs", tags=["知识库"])
+async def knowledge_docs():
+    """知识库文档列表（按标题聚合片段数，区分内置/用户上传）。"""
+    tool = _tool_manager._tools.get("knowledge_search") if _tool_manager else None
+    if tool is None:
+        raise HTTPException(503, "知识库未初始化")
+    kb = tool.handler.__self__
+    return await kb.list_documents_async()
+
+
+@app.get("/knowledge/doc/{title}", tags=["知识库"])
+async def knowledge_doc(title: str):
+    """按标题取回一篇文档的全部片段（只读阅览，无修改/删除入口）。"""
+    tool = _tool_manager._tools.get("knowledge_search") if _tool_manager else None
+    if tool is None:
+        raise HTTPException(503, "知识库未初始化")
+    kb = tool.handler.__self__
+    return await kb.get_document_async(title)
 
 
 @app.post("/eval/run")

@@ -41,3 +41,23 @@ def test_duplicate_construction_does_not_raise():
     """重复构造不炸（模块级单例复用）：prometheus_client 同名指标重复注册抛 ValueError。"""
     _make_monitor(prometheus_port=None)
     _make_monitor(prometheus_port=None)  # 不抛就是通过
+
+
+# ── 路由惩罚（2026-10-27 阈值修正：DeepSeek 天然延迟不再误伤路由评分） ──────
+
+def test_routing_penalty_no_penalty_for_natural_llm_latency():
+    """34s（DeepSeek 全链路实测典型值）< 60s 新起点 => 零延迟惩罚。
+    曾设 15000ms 起点：每次正常调用都吃 0.4 惩罚、告警刷屏（固定阈值误报）。"""
+    assert PerformanceMonitor._routing_penalty(1.0, 34000) == 0.0
+    assert PerformanceMonitor._routing_penalty(1.0, 15000) == 0.0
+
+
+def test_routing_penalty_ramps_after_new_start():
+    """超过 60s 才起罚：72s（超 1/5）罚 0.2，120s（超 1 倍）封顶 0.4。"""
+    assert PerformanceMonitor._routing_penalty(1.0, 72000) == 0.2
+    assert PerformanceMonitor._routing_penalty(1.0, 120000) == 0.4
+
+
+def test_routing_penalty_success_rate_part_unchanged():
+    """成功率惩罚不受阈值修正影响：85% => 0.1（浮点误差范围内）。"""
+    assert abs(PerformanceMonitor._routing_penalty(0.85, 1000) - 0.1) < 1e-9

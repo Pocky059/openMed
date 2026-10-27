@@ -99,14 +99,24 @@ class WebhookFakeOrchestrator:
     用来验证「收件箱真的收到告警」而不是只有空文件。"""
 
     async def recognize_intent(self, message, history=None):
-        return SimpleNamespace(
+        result = SimpleNamespace(
             entities={},
             intent=SimpleNamespace(value="emergency"),
             intent_group="emergency",
             urgency=SimpleNamespace(name="CRITICAL", value=4),
             confidence=1.0,
             source_scores={},
+            reasoning="急症关键词命中",
+            latency_ms=5.0,
         )
+        # 模拟真实 IntentResult.to_trajectory_detail（chat_service 用它做轨迹快照）
+        result.to_trajectory_detail = (
+            lambda msg, hist=None: {
+                "input": {"message": msg, "history": hist or []},
+                "output": {"intent": "emergency"},
+            }
+        )
+        return result
 
     async def run(self, req):
         from urllib.parse import urlparse

@@ -68,6 +68,32 @@ class IntentResult:
     latency_ms: float
     source_scores: Dict[str, float] = field(default_factory=dict)
 
+    def to_trajectory_detail(
+        self,
+        input_message: str,
+        input_history: Optional[List[Dict[str, str]]] = None,
+    ) -> Dict[str, Any]:
+        """意图识别的完整输入/输出快照（轨迹 meta.intent_detail 用）。
+
+        编排器只挑 intent/intent_group/urgency/confidence 四个字段复制到请求体，
+        entities/reasoning/source_scores 算完即弃——调试时无法复盘「为什么路由到
+        这个 Agent」。此方法把输入（用户消息 + 历史）和全部输出字段打成快照，
+        供轨迹落盘（chat_service 与 orchestrator.run 的兜底识别共用）。
+        """
+        return {
+            "input": {"message": input_message, "history": input_history or []},
+            "output": {
+                "intent": self.intent.value,
+                "intent_group": self.intent_group,
+                "confidence": self.confidence,
+                "urgency": self.urgency.name,
+                "entities": self.entities,
+                "reasoning": self.reasoning,
+                "latency_ms": round(self.latency_ms, 1),
+                "source_scores": self.source_scores,
+            },
+        }
+
 
 # ── Few-shot 模板（同时用于 LLM 示例和 Embedding 匹配）────────────────────────
 _TEMPLATES: Dict[IntentCategory, List[str]] = {

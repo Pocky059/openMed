@@ -266,3 +266,48 @@ def test_success_path_keeps_final_answer_and_tool_traces():
     # H1：消息流以最终回答（assistant 纯文本）结尾，SFT 训练数据模板才完整
     assert response.messages[-1]["role"] == "assistant"
     assert response.messages[-1]["content"] == "已根据现用药清单生成用药核查步骤。"
+
+
+def test_handle_captures_system_prompt_into_response():
+    """system prompt 拼一次并带进 AgentResponse——轨迹里才能复盘「模型当时看到了什么」。"""
+    text_block = type("Block", (), {"type": "text", "text": "已了解。"})()
+    client = FakeClient(response=type("Response", (), {"content": [text_block]})())
+    agent = SymptomTriageAgent(client, "test-model")
+    response = asyncio.run(agent.handle(make_request()))
+
+    # LLM 实际收到的 system 与响应带回的副本是同一份
+    assert client.calls[0]["system"] == response.system_prompt
+    assert "你是 OpenMed 智能问诊分诊助手" in response.system_prompt
+    assert "[角色契约]" in response.system_prompt
+
+
+def test_catalog_lists_agent_definitions_and_tools():
+    """catalog()：每个 Agent 的角色契约 + 工具白名单明细（handler 排除，可 JSON 序列化）。"""
+    orchestrator = AgentOrchestrator(api_key="test-key")
+    orchestrator.set_shared_tools(build_shared_rag_tools(None))
+    data = orchestrator.catalog()
+
+    by_type = {a["agent_type"]: a for a in data["agents"]}
+    assert set(by_type) == {"symptom_triage", "medication", "appointment", "emergency"}
+
+    med = by_type["medication"]
+    assert med["role"]
+    assert med["mission"]
+    assert "用药咨询专家" in med["system_prompt"]
+    assert med["workflow"] and med["input_contract"] and med["output_contract"]
+    assert med["handoff_conditions"]
+    assert "search_knowledge_base" in med["tool_scope"]
+    assert med["model"] == "test-model" or med["model"]  # 默认模型或 profile 覆盖值
+    assert isinstance(med["max_tokens"], int)
+
+    tool_names = {t["name"] for t in med["tools"]}
+    assert tool_names == {"search_knowledge_base", "build_medication_plan"}
+    rag = next(t for t in med["tools"] if t["name"] == "search_knowledge_base")
+    assert rag["description"]
+    assert rag["input_schema"]["properties"]["query"]["type"] == "string"
+    # handler 是函数对象，catalog 序列化输出里不能有
+    assert all("handler" not in t for t in med["tools"])
+
+    # 急症 Agent：硬编码响应、无专属工具，只有共享 RAG 工具
+    # （编排器构造时即注入 build_shared_rag_tools，见 __init__）
+    assert [t["name"] for t in by_type["emergency"]["tools"]] == ["search_knowledge_base"]

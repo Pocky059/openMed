@@ -97,6 +97,7 @@ services:
       - CHROMA_PERSIST_DIRECTORY=/app/data/chroma
       - EVAL_BASELINE_PATH=/app/data/eval/baseline.json
       - OPENMED_SKILLS_DIR=/app/skills
+      - OPENMED_SKILLS_UPLOADS_DIR=/app/skills_uploads
       # 离线模式：与 chromadb 服务同理（模型已缓存，跳过 HF 远程校验；
       # 防止 VPN 关闭时启动失败、联网时模型静默升级）
       - HF_HUB_OFFLINE=1
@@ -104,6 +105,8 @@ services:
       - ./data/chroma:/app/data/chroma
       - ./data/eval:/app/data/eval
       - ./skills:/app/skills
+      # 用户上传 Skill 的落盘目录（与内置 skills/ 分离，重建容器不丢）
+      - ./skills_uploads:/app/skills_uploads
       - ./logs:/app/logs
       # HuggingFace 模型缓存持久化：bge-reranker-base ~1.1GB，
       # 不挂载的话每次重建容器都要重新下载
