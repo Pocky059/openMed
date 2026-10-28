@@ -1,3 +1,5 @@
+<p align="center"><img src="logo.png" alt="OpenMed Logo" width="480"></p>
+
 # OpenMed
 
 OpenMed 是一个面向医疗问诊分流场景的多 Agent 编排智能问诊系统，覆盖症状分诊、预约挂号、用药咨询、急诊四大场景。它不是单纯的聊天机器人，而是把以下能力串成闭环：
